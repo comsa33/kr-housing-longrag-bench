@@ -1,0 +1,23 @@
+[project]
+name = "kr-housing-longrag-bench"
+version = "0.6.3"
+description = "Copyright-safe Korean housing long-context, RAG, and table reasoning benchmark."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "CC-BY-4.0" }
+authors = [
+  { name = "Ruo Lee", email = "comsa333@gmail.com" },
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+  "datasets>=5.0.0",
+  "huggingface-hub>=0.30.0",
+  "pre-commit>=4.0.0",
+  "pyyaml>=6.0.0",
+]
+
+[tool.uv]
+package = false
+

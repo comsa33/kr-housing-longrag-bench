@@ -20,11 +20,20 @@ jobs:
         with:
           python-version: "3.10"
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Sync dev environment
+        run: uv sync --extra dev
+
       # All gates below use only the Python standard library and the PUBLIC files in this repo.
       # The internal extracted corpus / context bundles live under workspace_local/ (gitignored) and
       # are absent on a clean checkout, so verify_qa.py self-skips its deep grounding/recompute pass and
       # check_public_release_readiness.py skips bundle_id resolution — both still exit 0. Run the full
       # grounding gate locally after rebuilding the corpus (scripts/rebuild_v04_from_public_manifest.py).
+
+      - name: Pre-commit hooks
+        run: uv run pre-commit run --all-files
 
       - name: Schema + source resolution (validate_dataset)
         run: python3 scripts/validate_dataset.py

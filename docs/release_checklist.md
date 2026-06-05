@@ -7,6 +7,10 @@ Run before tagging any public release. All gate scripts must exit 0.
 - [ ] `LICENSE` present: annotations under CC BY 4.0 + underlying-source-materials clause.
 - [ ] `CITATION.cff` present and valid YAML (title / version / authors / license).
 - [ ] `.github/workflows/ci.yml` present; runs the public-safe gates on push/PR and is green.
+- [ ] `pyproject.toml` present for optional `uv` development environment; public scripts still work with
+      plain `python3`.
+- [ ] `.pre-commit-config.yaml` present; `uv run pre-commit run --all-files` passes when the dev
+      environment is installed.
 - [ ] `.gitignore` ignores all of `workspace_local/*` (incl. future subdirs like `tools/`) except the
       `.gitkeep` / `secrets/README.txt` placeholders.
 - [ ] README first screen is external-user-oriented (what / version / canonical files / quickstart /

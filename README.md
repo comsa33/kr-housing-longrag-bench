@@ -18,6 +18,8 @@ tabular data (MOLIT 실거래 / HUG 분양이력), and housing statutes.
   [`docs/dataset_statistics_v06.md`](docs/dataset_statistics_v06.md) · **Baselines:**
   [`docs/baseline_protocol_v06.md`](docs/baseline_protocol_v06.md) · **License:** [`LICENSE`](LICENSE) ·
   **Cite:** [`CITATION.cff`](CITATION.cff)
+- **Development workflow:** [`AGENTS.md`](AGENTS.md) · [`docs/agent_workflow.md`](docs/agent_workflow.md) ·
+  [`docs/v1_roadmap.md`](docs/v1_roadmap.md)
 
 This is a seed package, not a finished large-scale benchmark. It is structured so the dataset can grow into a paper-grade benchmark without redistributing copyrighted PDFs/HWPs.
 
@@ -80,6 +82,17 @@ python3 scripts/run_baseline_stub_v06.py                  # oracle/dummy/random/
 Full walkthrough (record fields, prediction format, dummy end-to-end example):
 `docs/quickstart_v06.md`. Full-context vs RAG vs table/tool protocol and trivial-baseline numbers:
 `docs/baseline_protocol_v06.md`. Count tables: `docs/dataset_statistics_v06.md`.
+
+Optional developer setup with `uv`:
+
+```bash
+uv sync --extra dev
+uv run pre-commit install
+uv run pre-commit run --all-files
+```
+
+The `uv` environment is for development, Hugging Face smoke tests, and local hooks. Public scoring and
+validation remain runnable with plain `python3`.
 
 ## Research Framing
 
@@ -153,6 +166,8 @@ Docs:
 - `docs/v0.6_quality_report.md`: realism / bundles / splits / verification report
 - `docs/release_checklist.md`: pre-tag gate checklist
 - `docs/source_selection_and_license_audit.md`: license and source policy
+- `docs/agent_workflow.md`: Codex / Claude Code branch, verification, and handoff workflow
+- `docs/v1_roadmap.md`: post-v0.6.3 roadmap from baseline experiments to v1.0
 - `prompts/worker_corpus_build_prompt.md`: worker prompt for acquisition/license/extraction/annotation
 
 ## Recommended Paper Baselines

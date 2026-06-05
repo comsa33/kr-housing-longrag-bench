@@ -16,6 +16,7 @@ workspace_local/secrets/*
 !workspace_local/secrets/README.txt
 
 .omc/
+.venv/
 __pycache__/
 *.pyc
 .DS_Store

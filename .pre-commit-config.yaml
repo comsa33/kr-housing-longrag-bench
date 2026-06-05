@@ -1,0 +1,33 @@
+repos:
+  - repo: local
+    hooks:
+      - id: validate-dataset
+        name: validate public dataset files
+        entry: python3 scripts/validate_dataset.py
+        language: system
+        pass_filenames: false
+
+      - id: release-readiness
+        name: check public release readiness
+        entry: python3 scripts/check_public_release_readiness.py --qa data/qa_v0.6_realistic_candidates.jsonl
+        language: system
+        pass_filenames: false
+
+      - id: question-realism
+        name: check v0.6 question realism
+        entry: python3 scripts/check_question_realism_v06.py --qa data/qa_v0.6_realistic_candidates.jsonl
+        language: system
+        pass_filenames: false
+
+      - id: eval-harness-self-test
+        name: eval harness self-test
+        entry: python3 scripts/eval_harness_v06.py --self-test
+        language: system
+        pass_filenames: false
+
+      - id: compile-scripts
+        name: byte-compile scripts
+        entry: python3 -m py_compile
+        language: system
+        files: ^scripts/.*\.py$
+
