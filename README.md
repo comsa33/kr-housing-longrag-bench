@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/comsa33/kr-housing-longrag-bench/actions/workflows/ci.yml/badge.svg)](https://github.com/comsa33/kr-housing-longrag-bench/actions/workflows/ci.yml)
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](LICENSE)
-[![DOI](https://zenodo.org/badge/DOI/10.5281%2Fzenodo.20563453.svg)](https://doi.org/10.5281/zenodo.20563453)
+[![DOI](https://zenodo.org/badge/DOI/10.5281%2Fzenodo.20563604.svg)](https://doi.org/10.5281/zenodo.20563604)
 
 **A copyright-safe Korean long-context benchmark for testing whether full-context LLMs can replace or
 complement RAG / table-tool pipelines** on real housing announcements (입주자모집공고), public
@@ -11,7 +11,7 @@ tabular data (MOLIT 실거래 / HUG 분양이력), and housing statutes.
 - **What it is:** 2,011 verified QA over 41 official announcements (10 providers) + public tabular data +
   3 statutes, with evidence locators, deterministic predicates, answerability labels, and
   long-context-bundle references — **no raw PDFs/HWPs, no API keys**.
-- **Current release:** `v0.6.2` (dataset build `v0.6`) — **public-ready seed benchmark, NOT leaderboard-ready** (see caveats below).
+- **Current release:** `v0.6.3` (dataset build `v0.6`) — **public-ready seed benchmark, NOT leaderboard-ready** (see caveats below).
 - **Canonical file:** `data/qa_v0.6_realistic_candidates.jsonl`. Splits: `data/qa_v0.6_dev.jsonl` (1,618),
   `data/qa_v0.6_test_public.jsonl` (105), `data/qa_v0.6_test_hidden_questions.jsonl` (288, answers masked).
 - **Quickstart:** [`docs/quickstart_v06.md`](docs/quickstart_v06.md) · **Stats:**
@@ -21,7 +21,7 @@ tabular data (MOLIT 실거래 / HUG 분양이력), and housing statutes.
 
 This is a seed package, not a finished large-scale benchmark. It is structured so the dataset can grow into a paper-grade benchmark without redistributing copyrighted PDFs/HWPs.
 
-## Current Release: v0.6.2 / Dataset Build: v0.6 (2,011 QA)
+## Current Release: v0.6.3 / Dataset Build: v0.6 (2,011 QA)
 
 **Canonical set: `data/qa_v0.6_realistic_candidates.jsonl` — 2,011 verified QA** across 13 task families,
 built over **41 official announcements** from 10 providers (LH, SH, GH, iH, JPDC, 부산도시공사,
@@ -178,17 +178,17 @@ permits it. Korean statutes/rules fall under the non-protected categories of Cop
 
 ## Citation
 
-If you use this benchmark, cite the Zenodo-archived v0.6.2 release as:
+If you use this benchmark, cite the Zenodo-archived v0.6.3 release as:
 
 ```bibtex
-@dataset{lee_kr_housing_longrag_bench_v062_2026,
+@dataset{lee_kr_housing_longrag_bench_v063_2026,
   author    = {Lee, Ruo},
   title     = {KR-Housing-LongRAG-Bench},
   year      = {2026},
-  version   = {v0.6.2},
+  version   = {v0.6.3},
   publisher = {Zenodo},
-  doi       = {10.5281/zenodo.20563453},
-  url       = {https://doi.org/10.5281/zenodo.20563453},
+  doi       = {10.5281/zenodo.20563604},
+  url       = {https://doi.org/10.5281/zenodo.20563604},
   note      = {Public-ready seed benchmark for Korean housing long-context, RAG, and table reasoning evaluation}
 }
 ```

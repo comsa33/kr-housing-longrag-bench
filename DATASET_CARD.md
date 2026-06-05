@@ -10,7 +10,7 @@ This seed benchmark is designed for research on Korean long-context document und
 
 ## Dataset Status
 
-Release: `v0.6.2`; dataset build: `v0.6` (lineage: `v0.1-seed` → `v0.2` → `v0.3-dev` → `v0.4-public` → `v0.5-dev` → `v0.6` source-expansion → `v0.6` quality)
+Release: `v0.6.3`; dataset build: `v0.6` (lineage: `v0.1-seed` → `v0.2` → `v0.3-dev` → `v0.4-public` → `v0.5-dev` → `v0.6` source-expansion → `v0.6` quality)
 
 Canonical v0.6 files: `data/qa_v0.6_realistic_candidates.jsonl` (full set, realism + cluster + bundle
 metadata) and the release splits `data/qa_v0.6_dev.jsonl` / `data/qa_v0.6_test_public.jsonl` /
@@ -91,17 +91,17 @@ Do not use this benchmark to provide legal, financial, or housing eligibility ad
 
 ## Citation
 
-If you use this benchmark, cite the Zenodo-archived v0.6.2 release as:
+If you use this benchmark, cite the Zenodo-archived v0.6.3 release as:
 
 ```bibtex
-@dataset{lee_kr_housing_longrag_bench_v062_2026,
+@dataset{lee_kr_housing_longrag_bench_v063_2026,
   author    = {Lee, Ruo},
   title     = {KR-Housing-LongRAG-Bench},
   year      = {2026},
-  version   = {v0.6.2},
+  version   = {v0.6.3},
   publisher = {Zenodo},
-  doi       = {10.5281/zenodo.20563453},
-  url       = {https://doi.org/10.5281/zenodo.20563453},
+  doi       = {10.5281/zenodo.20563604},
+  url       = {https://doi.org/10.5281/zenodo.20563604},
   note      = {Public-ready seed benchmark for Korean housing long-context, RAG, and table reasoning evaluation}
 }
 ```

@@ -10,11 +10,11 @@ abstract: >-
   provider/region metadata, and long-context-bundle references — no raw source
   documents, no leaked answers, and no API keys.
 type: dataset
-version: v0.6.2
+version: v0.6.3
 date-released: "2026-06-05"
 license: CC-BY-4.0
 repository-code: "https://github.com/comsa33/kr-housing-longrag-bench"
-doi: "10.5281/zenodo.20563453"
+doi: "10.5281/zenodo.20563604"
 authors:
   - family-names: Lee
     given-names: Ruo
