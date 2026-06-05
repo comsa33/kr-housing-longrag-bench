@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "KR-Housing-LongRAG-Bench QA item",
+  "type": "object",
+  "required": [
+    "qa_id",
+    "split",
+    "task_type",
+    "question",
+    "answer",
+    "answer_type",
+    "source_ids",
+    "required_capabilities",
+    "evidence",
+    "evaluation",
+    "copyright_note"
+  ],
+  "properties": {
+    "qa_id": {"type": "string", "pattern": "^krhlrb_[a-z0-9_]+$"},
+    "split": {"type": "string", "enum": ["seed", "dev", "test", "hidden"]},
+    "task_type": {"type": "string"},
+    "question": {"type": "string", "minLength": 1},
+    "answer": {"type": "string"},
+    "answer_type": {"type": "string"},
+    "source_ids": {
+      "type": "array",
+      "items": {"type": "string"},
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "required_capabilities": {
+      "type": "array",
+      "items": {"type": "string"},
+      "minItems": 1
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["source_id", "locator"],
+        "properties": {
+          "source_id": {"type": "string"},
+          "locator": {"type": "string"}
+        },
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "evaluation": {
+      "type": "object",
+      "required": ["metric"],
+      "properties": {
+        "metric": {"type": "string"},
+        "gold_terms": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "gold_numbers": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      },
+      "additionalProperties": false
+    },
+    "copyright_note": {"type": "string"},
+
+    "bundle_id": {"type": "string"},
+    "context_tier": {"type": "string", "enum": ["32k", "64k", "128k", "256k", "512k"]},
+    "evidence_position": {"type": "string", "enum": ["early", "middle", "late", "multi"]},
+    "row_ids": {"type": "array", "items": {"type": "string"}},
+    "page_ids": {"type": "array", "items": {"type": "string"}},
+    "announcement_ids": {"type": "array", "items": {"type": "string"}},
+    "gold_predicate": {"type": "object"}
+  },
+  "additionalProperties": false
+}
