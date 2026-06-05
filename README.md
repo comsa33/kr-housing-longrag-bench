@@ -175,5 +175,19 @@ permits it. Korean statutes/rules fall under the non-protected categories of Cop
 
 ## Citation
 
-If you use this benchmark, please cite it via [`CITATION.cff`](CITATION.cff) (GitHub's "Cite this
-repository" button renders it automatically).
+If you use this benchmark, cite the v0.6 seed release as:
+
+```bibtex
+@dataset{lee_kr_housing_longrag_bench_2026,
+  author    = {Lee, Ruo},
+  title     = {KR-Housing-LongRAG-Bench},
+  year      = {2026},
+  version   = {v0.6},
+  publisher = {GitHub and Hugging Face},
+  url       = {https://github.com/comsa33/kr-housing-longrag-bench},
+  note      = {Public-ready seed benchmark for Korean housing long-context, RAG, and table reasoning evaluation}
+}
+```
+
+The machine-readable citation metadata is also available in [`CITATION.cff`](CITATION.cff). GitHub's
+"Cite this repository" button uses that file automatically.
