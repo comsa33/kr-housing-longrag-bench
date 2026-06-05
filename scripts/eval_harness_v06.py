@@ -12,6 +12,7 @@ Predictions: JSONL with {"qa_id": ..., "prediction": "..."}. Use --self-test to 
   exact_numbers      -> every numeric token of the gold answer appears in the prediction
   boolean_and_reason -> prediction contains an 'unanswerable' marker
   contains_all/exact_match/term_recall/span/other -> normalized gold answer is contained in prediction
+Missing or empty predictions are always scored as incorrect.
 
 Reports plain accuracy and CLUSTER-WEIGHTED accuracy (each near-dup cluster contributes ~1, not N),
 broken down by split / task_type / question_style.
@@ -44,6 +45,8 @@ def nums(s: str) -> list:
 def score(item: dict, pred: str) -> bool:
     metric = item.get("evaluation", {}).get("metric", "")
     ans = item.get("answer", "")
+    if not pred or not norm(pred):  # missing / None / empty / whitespace-only -> incorrect
+        return False
     if metric == "boolean_and_reason":
         return any(m in pred for m in UNANS)
     if metric == "exact_numbers":

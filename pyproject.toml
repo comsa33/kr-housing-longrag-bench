@@ -17,6 +17,14 @@ dev = [
   "pre-commit>=4.0.0",
   "pyyaml>=6.0.0",
 ]
+# Optional provider SDKs for scripts/run_llm_baseline_v07.py. NOT required for dataset
+# validation/scoring (that path stays plain-python3 + stdlib). The openai package covers both the
+# OpenAI and Azure OpenAI adapters; the Ollama adapter uses the standard library (no SDK).
+baseline = [
+  "openai>=1.0.0",
+  "anthropic>=0.40.0",
+  "google-generativeai>=0.8.0",
+]
 
 [tool.uv]
 package = false
