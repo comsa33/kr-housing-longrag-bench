@@ -1,0 +1,14 @@
+workspace_local/raw/*
+workspace_local/processed/*
+workspace_local/audit/*
+!workspace_local/raw/.gitkeep
+!workspace_local/processed/.gitkeep
+!workspace_local/audit/.gitkeep
+
+workspace_local/secrets/*
+!workspace_local/secrets/README.txt
+
+.omc/
+__pycache__/
+*.pyc
+.DS_Store
