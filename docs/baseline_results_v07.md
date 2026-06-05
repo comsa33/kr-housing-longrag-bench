@@ -97,11 +97,9 @@ task_type / context_tier / evidence_position / question_style, alongside the tri
   not the full-context (class A) number. Do not compare across context regimes without labeling them.
 - **Hidden split.** `test_hidden` is INTERNAL: the runner refuses it unless `--allow-internal-hidden`,
   and hidden predictions/answers must never be published.
-- **Scoring quirk (missing/empty predictions).** `eval_harness_v06.py` scores every gold item; for the
-  contained-answer metric an empty/missing prediction can be counted correct (empty string is "contained"
-  in any gold). So a partial run (`--limit`) scored over a full split **inflates** accuracy. For honest
-  numbers, score a complete split, or treat missing predictions as wrong. (Recommended next-step fix to
-  the harness before publishing real baseline tables.)
+- **Partial-run scoring.** `eval_harness_v06.py` scores against the requested gold split. Missing and
+  empty predictions are always counted wrong, so a `--limit` smoke run can be scored safely, but its
+  result is still only a plumbing check, not a benchmark number.
 - **Provider/model version drift.** Hosted models change behind a fixed name; pin and record exact model
   ids and run dates in `.meta.json`, and re-run when comparing across time.
 - **Determinism.** `--temperature 0.0` reduces but does not guarantee identical outputs across providers
