@@ -67,8 +67,15 @@ def main() -> int:
 
     splits = [s.strip() for s in args.splits.split(",") if s.strip()]
     gold = {}
+    loaded_splits = []
+    missing_splits = []
     for sp in splits:
-        for it in load(GOLD[sp]):
+        rows = load(GOLD[sp])
+        if rows:
+            loaded_splits.append(sp)
+        else:
+            missing_splits.append(sp)
+        for it in rows:
             it["_split"] = sp
             gold[it["qa_id"]] = it
     if not gold:
@@ -106,7 +113,9 @@ def main() -> int:
 
     mode = "self-test (gold-as-prediction)" if args.self_test else f"predictions={args.pred}"
     print(f"== v0.6 eval harness — {mode} ==")
-    print(f"gold items: {len(gold)} over splits {splits}; predictions missing: {missing}")
+    print(f"gold items: {len(gold)} over loaded splits {loaded_splits}; predictions missing: {missing}")
+    if missing_splits:
+        print(f"gold unavailable for requested splits {missing_splits} (expected for clean checkout hidden split)")
     print(line("ALL"))
     for grp in ("split:", "task:", "style:"):
         print(f"-- by {grp[:-1]} --")

@@ -10,7 +10,7 @@ This seed benchmark is designed for research on Korean long-context document und
 
 ## Dataset Status
 
-Version: `v0.6` (lineage: `v0.1-seed` → `v0.2` → `v0.3-dev` → `v0.4-public` → `v0.5-dev` → `v0.6` source-expansion → `v0.6` quality)
+Release: `v0.6.2`; dataset build: `v0.6` (lineage: `v0.1-seed` → `v0.2` → `v0.3-dev` → `v0.4-public` → `v0.5-dev` → `v0.6` source-expansion → `v0.6` quality)
 
 Canonical v0.6 files: `data/qa_v0.6_realistic_candidates.jsonl` (full set, realism + cluster + bundle
 metadata) and the release splits `data/qa_v0.6_dev.jsonl` / `data/qa_v0.6_test_public.jsonl` /
@@ -38,11 +38,11 @@ phrasing (answers/predicates/evidence unchanged; cloze 34% → ~8%), materialize
 long-context bundles, and defined splits. Release files: `data/qa_v0.6_dev.jsonl`,
 `data/qa_v0.6_test_public.jsonl`, `data/qa_v0.6_test_hidden_questions.jsonl` (answers masked).
 
-Hidden-split policy: the `test_hidden` split is **not a sealed leaderboard hidden set**. Its answers are
-masked in the public questions file but kept in an internal file (`workspace_local/audit/
-qa_v0.6_test_hidden_answers.jsonl`); a true hidden benchmark would serve questions only behind a held-out
-harness. Honest caveats: a human-review sample is **prepared (verdict pending)** — the dataset is **not
-human-validated**; question phrasing still skews analyst-style (real_user ≈ 30%); parametric
+Hidden-split policy: the `test_hidden` split is **not a sealed leaderboard hidden set**. The release split
+file masks answers, sets gold predicates to `null`, and leaves gold row ids empty. GitHub also includes a
+canonical full-label file for audit/development, so a true leaderboard benchmark would need a separate
+held-out harness. Honest caveats: a human-review sample is **prepared (verdict pending)** — the dataset is
+**not human-validated**; question phrasing still skews analyst-style (real_user ≈ 30%); parametric
 near-duplicates exist but are clustered (2,011 QA → 286 clusters) and the eval harness reports
 cluster-weighted accuracy so repetition does not inflate scores; some providers contribute few
 announcements / no table cells. No "perfect" or "hallucination-free" claim is made.

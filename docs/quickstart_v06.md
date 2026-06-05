@@ -12,14 +12,15 @@ Canonical release artifacts (all under `data/`):
 | `qa_v0.6_realistic_candidates.jsonl` | 2,011 | **canonical full set** — realism + cluster + bundle metadata |
 | `qa_v0.6_dev.jsonl` | 1,618 | dev split, answers included |
 | `qa_v0.6_test_public.jsonl` | 105 | public test split, answers included |
-| `qa_v0.6_test_hidden_questions.jsonl` | 288 | hidden split, **answers masked** (`answer="[HELD OUT]"`, no gold predicate/terms/numbers/row_ids) |
+| `qa_v0.6_test_hidden_questions.jsonl` | 288 | hidden split, **answers masked** (`answer="[HELD OUT]"`; gold predicate values are `null`, gold row ids are empty) |
 | `qa_v0.6_prompts.jsonl` | 2,011 | locator-only prompt inputs (generated; see §3) |
 | `source_manifest.jsonl` | — | source registry (URLs/metadata) every `source_id` resolves to |
 
-The hidden-split gold answers live only in an INTERNAL file (`workspace_local/audit/
-qa_v0.6_test_hidden_answers.jsonl`), used by the harness; they are never published. Long-context bundle
-**text** is also internal (`workspace_local/processed/bundles-v06/`), rebuilt locally — the public QA
-carries only `bundle_id` + tier/position.
+For a clean public checkout, the harness can score `dev` and `test_public` immediately. Hidden-split
+scoring requires an INTERNAL answer file (`workspace_local/audit/qa_v0.6_test_hidden_answers.jsonl`);
+without it, the harness reports hidden gold as unavailable. Long-context bundle **text** is also internal
+(`workspace_local/processed/bundles-v06/`), rebuilt locally — the public QA carries only `bundle_id` +
+tier/position.
 
 ### QA record fields (public)
 
@@ -84,7 +85,8 @@ python3 scripts/eval_harness_v06.py --pred my_predictions.jsonl --splits dev,tes
 
 ## 5. Self-test + trivial baselines
 
-Confirm the scorer/gold wiring (gold-as-prediction → 100%):
+Confirm the scorer/gold wiring (gold-as-prediction → 100%). In a clean public checkout this covers
+`dev` + `test_public`; with the internal hidden-answer file present it covers all 2,011 items:
 
 ```bash
 python3 scripts/eval_harness_v06.py --self-test

@@ -10,8 +10,8 @@ tabular data (MOLIT 실거래 / HUG 분양이력), and housing statutes.
 
 - **What it is:** 2,011 verified QA over 41 official announcements (10 providers) + public tabular data +
   3 statutes, with evidence locators, deterministic predicates, answerability labels, and
-  long-context-bundle references — **no raw PDFs/HWPs, no answers leaked, no API keys**.
-- **Current version:** `v0.6` — **public-ready seed benchmark, NOT leaderboard-ready** (see caveats below).
+  long-context-bundle references — **no raw PDFs/HWPs, no API keys**.
+- **Current release:** `v0.6.2` (dataset build `v0.6`) — **public-ready seed benchmark, NOT leaderboard-ready** (see caveats below).
 - **Canonical file:** `data/qa_v0.6_realistic_candidates.jsonl`. Splits: `data/qa_v0.6_dev.jsonl` (1,618),
   `data/qa_v0.6_test_public.jsonl` (105), `data/qa_v0.6_test_hidden_questions.jsonl` (288, answers masked).
 - **Quickstart:** [`docs/quickstart_v06.md`](docs/quickstart_v06.md) · **Stats:**
@@ -21,7 +21,7 @@ tabular data (MOLIT 실거래 / HUG 분양이력), and housing statutes.
 
 This is a seed package, not a finished large-scale benchmark. It is structured so the dataset can grow into a paper-grade benchmark without redistributing copyrighted PDFs/HWPs.
 
-## Current build: v0.6 (2,011 QA)
+## Current Release: v0.6.2 / Dataset Build: v0.6 (2,011 QA)
 
 **Canonical set: `data/qa_v0.6_realistic_candidates.jsonl` — 2,011 verified QA** across 13 task families,
 built over **41 official announcements** from 10 providers (LH, SH, GH, iH, JPDC, 부산도시공사,
@@ -35,9 +35,9 @@ The v0.6 quality pass naturalizes question phrasing while keeping every answer/p
 byte-identical to the verified source (cloze-phrased questions cut from 34% → ~8%; `question_style` ∈
 real_user/professional_analyst/diagnostic_probe), materializes **multi-provider** long-context bundles
 (32k–512k; 1,553 bundle-bearing QA, 961 non-LH), clusters parametric near-duplicates (2,011 → 286
-clusters) for cluster-weighted scoring, and defines a release split policy. Release splits:
+clusters) for cluster-weighted scoring, and defines a release split policy. Public release splits:
 `data/qa_v0.6_dev.jsonl` (1,618), `data/qa_v0.6_test_public.jsonl` (105), and
-`data/qa_v0.6_test_hidden_questions.jsonl` (288, answers masked; gold answers kept internal only).
+`data/qa_v0.6_test_hidden_questions.jsonl` (288, answers masked).
 See `docs/v0.6_quality_report.md` and `docs/dataset_statistics_v06.md`.
 
 **Scope claim — read carefully.** This is a **public-ready seed benchmark**. CI runs the public-safe gates
@@ -45,10 +45,12 @@ on every push/PR (`validate_dataset.py`, `check_public_release_readiness.py` →
 surface scans, harness self-test, `py_compile`). The full grounding/recompute gate (`verify_qa.py`,
 2,011/2,011) runs **locally** against the rebuilt internal corpus and self-skips on a clean checkout where
 that corpus is absent. It is **not a leaderboard-ready or sealed-hidden benchmark**: human-review verdicts
-are still pending, the `test_hidden` answers are masked in the public file but present in-repo internally
-(not served by a held-out harness), question phrasing skews analyst-style, and parametric near-duplicates
-exist (clustered for cluster-weighted scoring). No "perfect" or "hallucination-free" claim is made — only
-what the gates verify.
+are still pending, the `test_hidden` split is not served by a held-out harness, question phrasing skews
+analyst-style, and parametric near-duplicates exist (clustered for cluster-weighted scoring). For audit
+and development, GitHub includes the canonical full-label file `data/qa_v0.6_realistic_candidates.jsonl`;
+for public evaluation or Hugging Face loading, use the release split files where
+`data/qa_v0.6_test_hidden_questions.jsonl` masks hidden answers. No "perfect" or "hallucination-free"
+claim is made — only what the gates verify.
 
 To **run** the benchmark with full long-context bundles, reconstruct the internal context locally from
 official URLs + your own API keys: `docs/public_reconstruction.md` and
@@ -70,7 +72,7 @@ python3 scripts/make_prompt_v06.py                        # -> data/qa_v0.6_prom
 # score your predictions ({"qa_id","prediction"} JSONL); plain + cluster-weighted accuracy
 python3 scripts/eval_harness_v06.py --pred my_predictions.jsonl
 
-# sanity: scorer/gold wiring (gold-as-prediction -> 100%) and trivial baselines
+# sanity: scorer/gold wiring and trivial baselines
 python3 scripts/eval_harness_v06.py --self-test
 python3 scripts/run_baseline_stub_v06.py                  # oracle/dummy/random/echo (INTERNAL outputs)
 ```
@@ -129,7 +131,7 @@ Canonical v0.6 data:
 
 - `data/qa_v0.6_realistic_candidates.jsonl`: **canonical full set** (2,011 QA; realism + cluster + bundle metadata)
 - `data/qa_v0.6_dev.jsonl` / `data/qa_v0.6_test_public.jsonl`: release splits with answers
-- `data/qa_v0.6_test_hidden_questions.jsonl`: hidden split, answers masked (gold kept internal only)
+- `data/qa_v0.6_test_hidden_questions.jsonl`: hidden split, answers masked (`answer="[HELD OUT]"`; gold fields null/empty)
 - `data/qa_v0.6_prompts.jsonl`: locator-only prompt inputs (generated by `make_prompt_v06.py`)
 - `data/qa_v0.5_candidates.jsonl`: pre-realism input build (same qa_ids/answers)
 - `data/source_manifest.jsonl`: source registry with access URL, license basis, and inclusion policy
