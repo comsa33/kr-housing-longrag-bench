@@ -29,6 +29,10 @@ Verification: `validate_dataset.py` = 0; `verify_qa.py` = 0 (2,011/2,011, split-
 `check_public_release_readiness.py` = 0; realism + public-surface scans = 0. See `docs/v0.5_batch_report.md`
 (source expansion) and `docs/v0.6_quality_report.md` (realism / bundles / splits).
 
+Usage: `docs/quickstart_v06.md` (load → build prompts → score → baselines), `docs/baseline_protocol_v06.md`
+(full-context vs RAG vs table/tool protocol), `docs/dataset_statistics_v06.md` (count tables). Scoring:
+`python3 scripts/eval_harness_v06.py --pred <predictions>.jsonl` (plain + cluster-weighted accuracy).
+
 **Scope: public-ready seed benchmark, NOT leaderboard-ready.** The v0.6 quality pass naturalized question
 phrasing (answers/predicates/evidence unchanged; cloze 34% → ~8%), materialized multi-provider
 long-context bundles, and defined splits. Release files: `data/qa_v0.6_dev.jsonl`,
