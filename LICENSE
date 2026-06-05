@@ -1,0 +1,67 @@
+KR-Housing-LongRAG-Bench — License
+==================================
+
+Scope
+-----
+This repository contains two distinct kinds of material with different terms:
+
+1. BENCHMARK ANNOTATIONS (this project's own work) — the QA labels, questions,
+   answers, evidence locators, gold predicates, page/cell/row ids, split and
+   provider/region metadata, context-bundle references, documentation, and all
+   evaluation / build / verification code under scripts/.
+
+2. UNDERLYING SOURCE MATERIALS — the original housing announcements
+   (입주자모집공고), public tabular data (e.g. MOLIT 실거래, HUG 분양이력), and
+   statute/rule texts that the annotations point to. These are NOT redistributed
+   in this repository; only locators (source URLs, page/cell/row ids) and short
+   factual excerpts are included.
+
+
+1. Benchmark annotations — CC BY 4.0
+------------------------------------
+The benchmark annotations and code (item 1 above) are licensed under the
+Creative Commons Attribution 4.0 International License (CC BY 4.0).
+
+Full legal code: https://creativecommons.org/licenses/by/4.0/legalcode
+Human-readable summary: https://creativecommons.org/licenses/by/4.0/
+
+You are free to:
+  - Share — copy and redistribute the material in any medium or format.
+  - Adapt — remix, transform, and build upon the material for any purpose,
+    even commercially.
+
+Under the following terms:
+  - Attribution — You must give appropriate credit (cite the work; see
+    CITATION.cff), provide a link to the license, and indicate if changes were
+    made. You may do so in any reasonable manner, but not in any way that
+    suggests the licensor endorses you or your use.
+  - No additional restrictions — You may not apply legal terms or technological
+    measures that legally restrict others from doing anything the license
+    permits.
+
+THE WORK IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED.
+
+
+2. Underlying source materials — original terms apply
+-----------------------------------------------------
+The underlying source materials (item 2 above) remain governed by their own
+licenses and legal status, NOT by CC BY 4.0:
+
+  - Korean statutes, rules, and official notices fall under the non-protected
+    categories described in Article 7 of the Korean Copyright Act
+    (저작권법 제7조) and are not subject to copyright.
+  - Public-data entries are governed by their Public Data Portal license terms
+    (e.g. Korea Open Government License / 이용허락범위), as recorded per source
+    in data/source_manifest.jsonl.
+  - Announcement documents (PDF/HWP/HWPX) are the property of their issuing
+    institutions and are NOT redistributed here.
+
+Do NOT redistribute raw third-party source documents unless their individual
+license clearly permits it. To reconstruct the corpus for evaluation, fetch the
+sources yourself from the official URLs (see docs/public_reconstruction.md).
+
+
+Disclaimer
+----------
+This benchmark is for model evaluation and research only. It must not be used to
+provide legal, financial, or housing-eligibility advice to real applicants.

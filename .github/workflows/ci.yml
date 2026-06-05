@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  workflow_dispatch:
+
+jobs:
+  gates:
+    name: Public-safe dataset gates
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      # All gates below use only the Python standard library and the PUBLIC files in this repo.
+      # The internal extracted corpus / context bundles live under workspace_local/ (gitignored) and
+      # are absent on a clean checkout, so verify_qa.py self-skips its deep grounding/recompute pass and
+      # check_public_release_readiness.py skips bundle_id resolution — both still exit 0. Run the full
+      # grounding gate locally after rebuilding the corpus (scripts/rebuild_v04_from_public_manifest.py).
+
+      - name: Schema + source resolution (validate_dataset)
+        run: python3 scripts/validate_dataset.py
+
+      - name: Predicate recompute + grounding (verify_qa; deep pass skips without internal corpus)
+        run: python3 scripts/verify_qa.py --qa data/qa_v0.6_realistic_candidates.jsonl
+
+      - name: Public release readiness
+        run: python3 scripts/check_public_release_readiness.py --qa data/qa_v0.6_realistic_candidates.jsonl
+
+      - name: Question realism
+        run: python3 scripts/check_question_realism_v06.py --qa data/qa_v0.6_realistic_candidates.jsonl
+
+      - name: Eval harness self-test (scorer + gold wiring)
+        run: python3 scripts/eval_harness_v06.py --self-test
+
+      - name: Byte-compile all scripts
+        run: python3 -m py_compile scripts/*.py

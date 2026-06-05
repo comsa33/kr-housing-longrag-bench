@@ -2,18 +2,34 @@
 
 Run before tagging any public release. All gate scripts must exit 0.
 
+## 0. Release packaging (GitHub public package)
+
+- [ ] `LICENSE` present: annotations under CC BY 4.0 + underlying-source-materials clause.
+- [ ] `CITATION.cff` present and valid YAML (title / version / authors / license).
+- [ ] `.github/workflows/ci.yml` present; runs the public-safe gates on push/PR and is green.
+- [ ] `.gitignore` ignores all of `workspace_local/*` (incl. future subdirs like `tools/`) except the
+      `.gitkeep` / `secrets/README.txt` placeholders.
+- [ ] README first screen is external-user-oriented (what / version / canonical files / quickstart /
+      eval / license / citation / caveats) and links the v0.6 docs.
+
 ## 1. Automated gates
 
+Canonical v0.6 commands (the CI workflow runs these on a clean checkout):
+
 ```bash
-python3 scripts/validate_dataset.py                              # schema + source resolution
-python3 scripts/verify_qa.py                                     # predicate recompute + grounding (CI gate)
-python3 scripts/check_public_release_readiness.py --allow-dev    # dev/seed status report
-python3 scripts/check_public_release_readiness.py                # strict: exits non-zero unless public-ready
+python3 scripts/validate_dataset.py                                                      # schema + source resolution
+python3 scripts/verify_qa.py --qa data/qa_v0.6_realistic_candidates.jsonl                # predicate recompute + grounding (deep pass needs local corpus)
+python3 scripts/check_public_release_readiness.py --qa data/qa_v0.6_realistic_candidates.jsonl   # strict: public-ready or non-zero
+python3 scripts/check_question_realism_v06.py --qa data/qa_v0.6_realistic_candidates.jsonl
+python3 scripts/eval_harness_v06.py --self-test
+python3 -m py_compile scripts/*.py
 ```
 
 - [ ] `validate_dataset.py` exits 0 (ids unique, sources resolve, no raw corpus fields).
-- [ ] `verify_qa.py` exits 0 with `failed=0` on v0.2, v0.3, v0.4, and the current v0.5/v0.6 build.
-- [ ] `check_public_release_readiness.py` reports the intended status (`public-ready` for a public tag).
+- [ ] `verify_qa.py` exits 0 with `failed=0` on v0.2–v0.5 + the v0.6 build **locally** (with the rebuilt
+      internal corpus). On a clean checkout / CI it self-skips the deep grounding pass and exits 0.
+- [ ] `check_public_release_readiness.py` reports the intended status (`public-ready` for a public tag);
+      it tolerates an absent bundle manifest on a clean checkout (bundle_id resolution skipped, warned).
 
 ## 2. Copyright / leakage (must be 0)
 

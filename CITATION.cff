@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+message: "If you use this benchmark, please cite it as below."
+title: KR-Housing-LongRAG-Bench
+abstract: >-
+  A copyright-safe Korean long-context benchmark for evaluating whether
+  full-context LLMs can replace or complement RAG and table/tool pipelines over
+  real housing announcements (입주자모집공고), public tabular data (MOLIT 실거래 /
+  HUG 분양이력), and housing statutes. The public release contains QA labels,
+  evidence locators, deterministic predicates, answerability labels, split and
+  provider/region metadata, and long-context-bundle references — no raw source
+  documents, no leaked answers, and no API keys.
+type: dataset
+version: v0.6
+date-released: "2026-06-05"
+license: CC-BY-4.0
+repository-code: "https://github.com/comsa33/kr-housing-longrag-bench"
+authors:
+  - family-names: Lee
+    given-names: Ruo
+    orcid: "https://orcid.org/0009-0005-4701-1967"
+    affiliation: "Seoul School of Integrated Sciences and Technologies (aSSIST); Posicube Inc."
+keywords:
+  - long-context
+  - retrieval-augmented-generation
+  - benchmark
+  - Korean
+  - table-reasoning
+  - housing
+  - large-language-models

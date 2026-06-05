@@ -149,7 +149,10 @@ def main() -> int:
         if bid:
             public_context_rows += 1
             referenced_bundle_ids.add(bid)
-            if bid not in bundle_ids:
+            # Bundle manifests live under workspace_local (internal, gitignored). On a clean public
+            # checkout / CI they are absent, so bundle_ids is empty — only enforce resolution when a
+            # manifest is actually available (full local/maintainer run).
+            if bundle_ids and bid not in bundle_ids:
                 fail(f"{where}: unknown bundle_id {bid}", failures)
         # collect the announcements cited by this row (dedup across announcement_ids + page_ids)
         row_anns = set(row.get("announcement_ids", []) or [])
@@ -179,6 +182,8 @@ def main() -> int:
 
     if public_context_rows == 0:
         fail("no QA rows reference context bundles", failures)
+    if not bundle_ids:
+        warn("bundle manifest absent (workspace_local, internal) — bundle_id resolution skipped", warnings)
 
     distinct_ann = len(announcement_counts)
     if distinct_ann < args.min_announcements:

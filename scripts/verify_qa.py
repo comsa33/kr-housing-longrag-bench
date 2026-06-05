@@ -31,6 +31,20 @@ ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
 AUDIT = ROOT / "workspace_local" / "audit"
 
+
+def internal_corpus_present() -> bool:
+    """True only if the internal extracted corpus (workspace_local/processed) is populated.
+
+    Deep grounding/recompute verification reads that corpus, which is intentionally gitignored and is
+    therefore absent on a clean public checkout / CI. When absent we SKIP (exit 0) instead of failing —
+    schema + source-id resolution are still covered by validate_dataset.py; rebuild locally
+    (scripts/rebuild_v04_from_public_manifest.py) to run the full grounding gate.
+    """
+    proc = ROOT / "workspace_local" / "processed"
+    if not proc.exists():
+        return False
+    return any(p.is_file() and p.name != ".gitkeep" for p in proc.rglob("*"))
+
 UNANS_MARKERS = ["확정할 수 없", "답할 수 없", "알 수 없", "unanswerable", "근거가 없", "근거 부재", "없음", "제공된 자료"]
 REQUIRED = ["qa_id", "split", "task_type", "question", "answer", "answer_type",
             "source_ids", "required_capabilities", "evidence", "evaluation", "copyright_note"]
@@ -468,6 +482,12 @@ def main() -> int:
     ap.add_argument("--qa", default=None, help="verify a single QA file with the v0.5/v0.6 checker")
     args = ap.parse_args()
     AUDIT.mkdir(parents=True, exist_ok=True)
+    if not internal_corpus_present():
+        print("verify_qa: internal corpus absent (workspace_local/processed not populated) —")
+        print("  deep grounding/recompute verification SKIPPED (clean checkout / CI).")
+        print("  Schema + source-id resolution are covered by validate_dataset.py; rebuild the corpus")
+        print("  locally via scripts/rebuild_v04_from_public_manifest.py to run the full grounding gate.")
+        return 0
     ids = resolvable_ids()
     if args.qa:
         path = ROOT / args.qa

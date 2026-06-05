@@ -1,6 +1,22 @@
 # KR-Housing-LongRAG-Bench
 
-Copyright-safe seed benchmark for evaluating whether long-context LLMs can replace or complement RAG on Korean real-world housing, public announcement, legal-rule, and tabular public-data tasks.
+[![CI](https://github.com/comsa33/kr-housing-longrag-bench/actions/workflows/ci.yml/badge.svg)](https://github.com/comsa33/kr-housing-longrag-bench/actions/workflows/ci.yml)
+[![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](LICENSE)
+
+**A copyright-safe Korean long-context benchmark for testing whether full-context LLMs can replace or
+complement RAG / table-tool pipelines** on real housing announcements (입주자모집공고), public
+tabular data (MOLIT 실거래 / HUG 분양이력), and housing statutes.
+
+- **What it is:** 2,011 verified QA over 41 official announcements (10 providers) + public tabular data +
+  3 statutes, with evidence locators, deterministic predicates, answerability labels, and
+  long-context-bundle references — **no raw PDFs/HWPs, no answers leaked, no API keys**.
+- **Current version:** `v0.6` — **public-ready seed benchmark, NOT leaderboard-ready** (see caveats below).
+- **Canonical file:** `data/qa_v0.6_realistic_candidates.jsonl`. Splits: `data/qa_v0.6_dev.jsonl` (1,618),
+  `data/qa_v0.6_test_public.jsonl` (105), `data/qa_v0.6_test_hidden_questions.jsonl` (288, answers masked).
+- **Quickstart:** [`docs/quickstart_v06.md`](docs/quickstart_v06.md) · **Stats:**
+  [`docs/dataset_statistics_v06.md`](docs/dataset_statistics_v06.md) · **Baselines:**
+  [`docs/baseline_protocol_v06.md`](docs/baseline_protocol_v06.md) · **License:** [`LICENSE`](LICENSE) ·
+  **Cite:** [`CITATION.cff`](CITATION.cff)
 
 This is a seed package, not a finished large-scale benchmark. It is structured so the dataset can grow into a paper-grade benchmark without redistributing copyrighted PDFs/HWPs.
 
@@ -23,18 +39,24 @@ clusters) for cluster-weighted scoring, and defines a release split policy. Rele
 `data/qa_v0.6_test_hidden_questions.jsonl` (288, answers masked; gold answers kept internal only).
 See `docs/v0.6_quality_report.md` and `docs/dataset_statistics_v06.md`.
 
-**Scope claim — read carefully.** This is a **public-ready seed benchmark** (automated gates pass:
-`validate_dataset.py`, `verify_qa.py` 2,011/2,011, `check_public_release_readiness.py`, realism + surface
-scans). It is **not a leaderboard-ready or sealed-hidden benchmark**: human-review verdicts are still
-blank, the `test_hidden` answers are masked in the public file but present in-repo internally (not served
-by a held-out harness), question phrasing skews analyst-style, and parametric near-duplicates exist. No
-"perfect" or "hallucination-free" claim is made — only what the gates verify.
+**Scope claim — read carefully.** This is a **public-ready seed benchmark**. CI runs the public-safe gates
+on every push/PR (`validate_dataset.py`, `check_public_release_readiness.py` → `public-ready`, realism +
+surface scans, harness self-test, `py_compile`). The full grounding/recompute gate (`verify_qa.py`,
+2,011/2,011) runs **locally** against the rebuilt internal corpus and self-skips on a clean checkout where
+that corpus is absent. It is **not a leaderboard-ready or sealed-hidden benchmark**: human-review verdicts
+are still pending, the `test_hidden` answers are masked in the public file but present in-repo internally
+(not served by a held-out harness), question phrasing skews analyst-style, and parametric near-duplicates
+exist (clustered for cluster-weighted scoring). No "perfect" or "hallucination-free" claim is made — only
+what the gates verify.
 
-To **run** the benchmark, reconstruct the internal context locally from official URLs + your own API keys:
-`docs/public_reconstruction.md` and `python3 scripts/rebuild_v04_from_public_manifest.py --check`. Release
-gating: `docs/release_checklist.md`.
+To **run** the benchmark with full long-context bundles, reconstruct the internal context locally from
+official URLs + your own API keys: `docs/public_reconstruction.md` and
+`python3 scripts/rebuild_v04_from_public_manifest.py --check`. Release gating: `docs/release_checklist.md`.
 
-Earlier sets (`qa_seed`, `qa_v0.2`, `qa_v0.3`, `qa_v0.4` candidates) are retained for continuity.
+**Legacy build artifacts** (`qa_seed`, `qa_v0.2`–`qa_v0.5` candidates and their build/verify scripts) are
+**retained in place for reproducibility** — `validate_dataset.py` and `verify_qa.py` still validate every
+prior version, and the v0.3–v0.5 helper modules are imported by the current verifier, so they are kept
+rather than moved/deleted.
 
 ## Quickstart / evaluation
 
@@ -143,6 +165,15 @@ per-position reporting cuts, and the trivial-baseline floors. Evaluate at least 
 - Table/tool pipeline for CSV/API-backed sources
 - Full-context plus retrieved evidence
 
-## Dataset License
+## License
 
-The benchmark annotations in this repository are intended for release under CC BY 4.0. Underlying source materials remain governed by their own public-data, public-work, or statutory status. Do not redistribute raw third-party documents unless their license permits it.
+The benchmark **annotations** in this repository (QA labels, evidence locators, predicates, metadata, and
+evaluation code) are released under **CC BY 4.0** — see [`LICENSE`](LICENSE). **Underlying source
+materials** (announcements, public-data rows, statute text) remain governed by their own public-data,
+public-work, or statutory status; do not redistribute raw third-party documents unless their license
+permits it. Korean statutes/rules fall under the non-protected categories of Copyright Act Article 7.
+
+## Citation
+
+If you use this benchmark, please cite it via [`CITATION.cff`](CITATION.cff) (GitHub's "Cite this
+repository" button renders it automatically).

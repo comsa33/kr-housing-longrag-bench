@@ -1,11 +1,18 @@
+# Internal-only working area — NEVER publish raw corpus, extracted text, bundle text, or API keys.
+# Ignore everything under workspace_local/ (incl. any future subdir like tools/) except the structural
+# placeholders that keep the expected directory layout in the public repo.
+workspace_local/*
+!workspace_local/raw/
+!workspace_local/processed/
+!workspace_local/audit/
+!workspace_local/secrets/
 workspace_local/raw/*
 workspace_local/processed/*
 workspace_local/audit/*
+workspace_local/secrets/*
 !workspace_local/raw/.gitkeep
 !workspace_local/processed/.gitkeep
 !workspace_local/audit/.gitkeep
-
-workspace_local/secrets/*
 !workspace_local/secrets/README.txt
 
 .omc/
