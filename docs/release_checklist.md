@@ -54,7 +54,25 @@ python3 scripts/check_public_release_readiness.py                # strict: exits
       `test_hidden` metadata rather than a true hidden benchmark; for a leaderboard, publish questions
       only and keep answers private.
 
-## 6. Honesty
+## 6. v0.6 quality (realism / clusters / harness / hidden split)
+
+```bash
+python3 scripts/check_question_realism_v06.py --qa data/qa_v0.6_realistic_candidates.jsonl
+python3 scripts/eval_harness_v06.py --self-test        # scorer + gold wiring sanity (must be ~100%)
+python3 scripts/verify_qa.py --qa data/qa_v0.6_realistic_candidates.jsonl
+```
+
+- [ ] Realism validator exits 0: 0 invariant changes vs source; cloze ≤ 15%; diagnostic_probe ≤ 20%;
+      `question_style` present on every row.
+- [ ] `eval_harness_v06.py --self-test` = 100% (per-metric scorer + gold/cluster wiring correct).
+- [ ] `cluster_id`/`cluster_weight` present on every QA; report effective (cluster-weighted) size.
+- [ ] Hidden split: `data/qa_v0.6_test_hidden_questions.jsonl` answers masked; gold only in
+      `workspace_local/audit/qa_v0.6_test_hidden_answers.jsonl`; never label it human-validated.
+- [ ] Human review: sample **prepared, verdict pending** — do NOT claim human-validated.
+- [ ] `bundle_count` reported as `referenced-by-QA` vs `available` (no single ambiguous number).
+- [ ] Canonical file naming per `docs/v0.6_quality_report.md` §8.
+
+## 7. Honesty
 
 - [ ] Report labels the batch correctly: `dev/seed`, `public-ready`, or `leaderboard-ready`.
 - [ ] Known limitations stated (extraction noise, provider/source imbalance, statute effective-date vs

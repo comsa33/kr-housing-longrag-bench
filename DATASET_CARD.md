@@ -10,7 +10,13 @@ This seed benchmark is designed for research on Korean long-context document und
 
 ## Dataset Status
 
-Version: `v0.6-source-expansion` (lineage: `v0.1-seed` → `v0.2` → `v0.3-dev` → `v0.4-public` → `v0.5-dev` → `v0.6`)
+Version: `v0.6` (lineage: `v0.1-seed` → `v0.2` → `v0.3-dev` → `v0.4-public` → `v0.5-dev` → `v0.6` source-expansion → `v0.6` quality)
+
+Canonical v0.6 files: `data/qa_v0.6_realistic_candidates.jsonl` (full set, realism + cluster + bundle
+metadata) and the release splits `data/qa_v0.6_dev.jsonl` / `data/qa_v0.6_test_public.jsonl` /
+`data/qa_v0.6_test_hidden_questions.jsonl` (answers masked). Scoring: `scripts/eval_harness_v06.py`
+(plain + cluster-weighted accuracy). `data/qa_v0.5_candidates.jsonl` is the pre-realism build (same
+qa_ids/answers; input to the realism pass).
 
 This build is a copyright-safe, multi-provider announcement set: **2,011 verified QA** across 13 task
 families over 41 official announcements from 10 providers, MOLIT/HUG public tabular data, and 3 housing
@@ -31,9 +37,11 @@ long-context bundles, and defined splits. Release files: `data/qa_v0.6_dev.jsonl
 Hidden-split policy: the `test_hidden` split is **not a sealed leaderboard hidden set**. Its answers are
 masked in the public questions file but kept in an internal file (`workspace_local/audit/
 qa_v0.6_test_hidden_answers.jsonl`); a true hidden benchmark would serve questions only behind a held-out
-harness. Honest caveats: human-review verdicts are still blank, question phrasing skews analyst-style,
-parametric near-duplicates exist, and some providers contribute few announcements / no table cells. No
-"perfect" or "hallucination-free" claim is made.
+harness. Honest caveats: a human-review sample is **prepared (verdict pending)** — the dataset is **not
+human-validated**; question phrasing still skews analyst-style (real_user ≈ 30%); parametric
+near-duplicates exist but are clustered (2,011 QA → 286 clusters) and the eval harness reports
+cluster-weighted accuracy so repetition does not inflate scores; some providers contribute few
+announcements / no table cells. No "perfect" or "hallucination-free" claim is made.
 
 ## Data Sources
 

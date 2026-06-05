@@ -99,11 +99,20 @@ def rewrite(item: dict) -> tuple[str, str, str]:
         nq = nq.replace("일정 표에서", "청약 일정에서")
         return nq, "real_user", "applicant-voice phrasing for schedule dates (anchors preserved)"
     if tt == "answerability_detection":
-        return q, "real_user", "already an 'is this answerable from the given material?' question"
+        nq = q.replace("확정할 수 있는가?", "확정할 수 있나요?")
+        return nq, "real_user", "applicant 'can I determine this from the given material?' question"
     if tt == "correction_notice_reasoning":
-        return q, "real_user", "already a practical correction-notice question"
+        nq = q.replace("제시하라.", "알려 주세요.").replace("정정(訂正) 공고인가?", "정정(訂正) 공고인가요?")
+        return nq, "real_user", "applicant correction-notice question (citizen voice)"
     if tt in ("region_comparison", "provider_comparison", "multi_document_comparison"):
-        return q, "professional_analyst", "already a comparative analyst question"
+        # citizen comparing two announcements ("which area / which provider?")
+        nq = q.replace("각각 제시하라.", "각각 알려 주세요.").replace("제시하라.", "알려 주세요.")
+        nq = nq.replace("같은 시·도에 속하는가?", "같은 시·도에 속하나요?")
+        return nq, "real_user", "citizen comparison voice (각각 제시하라→각각 알려 주세요); anchors/answer preserved"
+    if tt == "cross_source_aggregation":
+        # citizen/market question about one's region using public sale-history data
+        nq = q.replace("에 대하여, HUG 분양이력정보에서", "에 대해 HUG 분양이력 자료를 보면").replace("얼마인가?", "얼마인가요?")
+        return nq, "real_user", "citizen/market-voice region+public-data question; predicate/answer preserved"
     if tt in ANALYST:
         return q, "professional_analyst", "already an analytic data/lookup query"
     return q, "professional_analyst", "no change needed"

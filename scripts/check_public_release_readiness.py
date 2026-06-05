@@ -134,6 +134,7 @@ def main() -> int:
     nontable_ann_counts = Counter()          # dominance: each announcement counted once per non-table row
     nontable_rows = 0
     public_context_rows = 0
+    referenced_bundle_ids: set = set()
 
     for idx, row in enumerate(rows, 1):
         where = f"{args.qa}:{idx}:{row.get('qa_id', '<no_id>')}"
@@ -147,6 +148,7 @@ def main() -> int:
         bid = row.get("bundle_id")
         if bid:
             public_context_rows += 1
+            referenced_bundle_ids.add(bid)
             if bid not in bundle_ids:
                 fail(f"{where}: unknown bundle_id {bid}", failures)
         # collect the announcements cited by this row (dedup across announcement_ids + page_ids)
@@ -255,7 +257,11 @@ def main() -> int:
         print(f"providers: {n_providers} {dict(provider_counts)}")
         print(f"시도: {len(sido_set)}  housing_types: {len(htype_set)}")
         print(f"splits: {dict(Counter(r.get('split','') for r in rows))}")
-    print(f"bundle_count: {len(bundle_ids)}")
+    # Unified bundle-count definitions (avoid the earlier ambiguous single number):
+    #   bundles_referenced_by_qa = distinct bundle_id actually used by this QA set
+    #   bundles_available        = distinct bundle_id defined across loaded bundle manifests
+    print(f"bundle_count: {len(referenced_bundle_ids)} (referenced by QA)  | bundles_available: {len(bundle_ids)}")
+    print(f"bundle_bearing_qa: {public_context_rows}")
     print(f"warnings: {len(warnings)}")
     for msg in warnings:
         print(f"WARN: {msg}")
