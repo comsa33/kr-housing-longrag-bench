@@ -1,0 +1,26 @@
+{
+  "creators": [
+    {
+      "name": "Lee, Ruo",
+      "orcid": "0009-0005-4701-1967",
+      "affiliation": "Seoul School of Integrated Sciences and Technologies (aSSIST); Posicube Inc."
+    }
+  ],
+  "title": "KR-Housing-LongRAG-Bench",
+  "version": "v0.6.1",
+  "description": "A copyright-safe Korean long-context benchmark for evaluating long-context LLMs, RAG systems, and table/tool pipelines over real housing announcements, public tabular data, and housing statutes. The public release contains QA labels, evidence locators, deterministic predicates, answerability labels, split and provider/region metadata, and long-context-bundle references. It does not redistribute raw PDF/HWP/HWPX documents, bundle text, API keys, or hidden gold answers.",
+  "access_right": "open",
+  "license": "cc-by-4.0",
+  "upload_type": "dataset",
+  "language": "kor",
+  "keywords": [
+    "Korean",
+    "long-context",
+    "retrieval-augmented-generation",
+    "benchmark",
+    "table reasoning",
+    "housing",
+    "large language models",
+    "question answering"
+  ]
+}
