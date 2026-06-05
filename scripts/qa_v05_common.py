@@ -96,7 +96,7 @@ def page_of_table(table_id: str) -> str:
 
 # ----------------------------------------------------------------- announcement-of-page (for split mapping)
 def ann_of_page(pid: str) -> str | None:
-    m = re.match(r"(lh-[a-z0-9-]+)-p\d{3}", pid)
+    m = re.match(r"(.+)-p\d{3}$", pid)  # provider-agnostic (lh-/sh-/gh-/ih-/jpdc-)
     return m.group(1) if m else None
 
 
@@ -109,14 +109,17 @@ def item_announcements(item: dict) -> set:
     return anns
 
 
-def item_split(item: dict) -> str:
-    """Announcement-level split for a QA item; table/aggregation items with no announcement -> dev."""
+def item_split(item: dict):
+    """Announcement-level split for a QA item.
+    - no announcement (MOLIT/HUG-only): 'dev'
+    - one shared split across all cited announcements: that split
+    - mixed splits (multi-doc spanning split boundaries): None  -> caller DROPS it, so no split leakage
+      and test_hidden answers never appear in another split.
+    """
     anns = item_announcements(item)
     splits = {ann_split(a) for a in anns}
     if not splits:
         return "dev"
-    # if an item cites multiple announcements (multi_document_comparison), keep it in dev unless all
-    # cited announcements share one split (avoids cross-split leakage via multi-doc items).
     if len(splits) == 1:
         return next(iter(splits))
-    return "dev"
+    return None

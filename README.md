@@ -4,19 +4,26 @@ Copyright-safe seed benchmark for evaluating whether long-context LLMs can repla
 
 This is a seed package, not a finished large-scale benchmark. It is structured so the dataset can grow into a paper-grade benchmark without redistributing copyrighted PDFs/HWPs.
 
-## Current release: v0.4-public (812 QA)
+## Current build: v0.6 source expansion (2,011 QA)
 
-`data/qa_v0.4_candidates.jsonl` holds **812 verified QA** across 8 task families, built over **10 official
-LH 입주자모집공고** plus MOLIT 실거래 / HUG 분양이력 tabular data and 3 housing statutes. Every item is either
-recomputed from real rows by construction (`scripts/qa_v03_common.recompute`) or grounded verbatim in the
-cited page/statute; agent-authored NL items additionally passed an adversarial reviewer + grounding gate.
-Context bundles span 32k/64k/128k/256k/512k with evidence at early/middle/late/multi positions.
+`data/qa_v0.5_candidates.jsonl` currently holds the **v0.6-expanded build: 2,011 verified QA** across
+13 task families, built over **41 official announcements** from 10 providers (LH, SH, GH, iH, JPDC,
+부산도시공사, 광주광역시도시공사, 대구도시개발공사, 대전도시공사, 충북개발공사), plus MOLIT 실거래 /
+HUG 분양이력 tabular data and 3 housing statutes. It includes real table cell-grid QA, public-data
+predicate QA, provider/region comparisons, eligibility/schedule items, answerability checks, and
+announcement-level splits (`dev`/`test_public`/`test_hidden`) with split leakage verified at 0.
+
+Automated gates currently report **public-ready**: `validate_dataset.py` passes, `verify_qa.py` verifies
+2,011/2,011 QA, `check_public_release_readiness.py` exits 0, and public-surface leakage checks are clean.
+Honest caveats remain: long-context cloze items are a large share of the set, near-duplicate parametric
+questions are warned but grounded, non-LH long-context bundles are not yet materialized, and human-review
+sign-off is pending. See `docs/v0.5_batch_report.md` for the v0.6 expansion report.
 
 To **run** the benchmark, reconstruct the internal context locally from official URLs + your own API keys:
 `docs/public_reconstruction.md` and `python3 scripts/rebuild_v04_from_public_manifest.py --check`. Release
-gating: `docs/release_checklist.md`. Batch detail + honest limitations: `docs/v0.4_batch_report.md`.
+gating: `docs/release_checklist.md`.
 
-Earlier seeds (`data/qa_seed.jsonl`, `qa_v0.2_candidates.jsonl`, `qa_v0.3_candidates.jsonl`) are retained.
+Earlier sets (`qa_seed`, `qa_v0.2`, `qa_v0.3`, `qa_v0.4` candidates) are retained for continuity.
 
 ## Research Framing
 

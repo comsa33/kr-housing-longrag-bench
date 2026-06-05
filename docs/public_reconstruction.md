@@ -70,6 +70,25 @@ bundle file, and the evidence position. Suggested baselines (see `docs/evaluatio
 full-context at 32k/64k/128k/256k/512k, BM25 / dense / hybrid / hierarchical RAG, and a table/tool
 pipeline that executes `gold_predicate`-style queries against the rebuilt rows.
 
+## v0.5 additions
+
+`data/qa_v0.5_candidates.jsonl` (902 QA) supersedes v0.4 and adds table-cell-grounded QA, new families
+(eligibility/schedule/correction), and announcement-level splits (`dev`/`test_public`/`test_hidden`).
+After the steps above, also run:
+
+```bash
+python3 scripts/extract_table_cells_v05.py      # PyMuPDF table cells -> workspace_local (internal)
+python3 scripts/build_qa_v05_det.py             # new cell/eligibility/schedule/correction QA
+python3 scripts/assemble_qa_v05.py              # -> data/qa_v0.5_candidates.jsonl (+ split assignment)
+python3 scripts/verify_qa.py                     # includes v0.5 checks + split-leakage
+```
+
+A v0.5 QA item adds `provider`, `region_sido`, `region_sigungu`, `housing_type`, `split`, and (for
+cell-grounded items) `table_ids` / `cell_ids` resolving to
+`workspace_local/processed/lh-sale-announcements-v04/<announcement>/table_cells.jsonl`. v0.5 reuses the
+v0.4 context bundles (same 10-announcement corpus). The v0.5 source/provider backlog (for diversity
+expansion) is `data/v0.5_announcement_targets.jsonl`.
+
 ## Copyright posture
 
 Korean statutes/rules/official notices are non-protected works (Copyright Act Art. 7). Public-data

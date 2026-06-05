@@ -10,17 +10,20 @@ This seed benchmark is designed for research on Korean long-context document und
 
 ## Dataset Status
 
-Version: `v0.4-public` (seed lineage: `v0.1-seed` → `v0.2` → `v0.3-dev` → `v0.4-public`)
+Version: `v0.6-source-expansion` (lineage: `v0.1-seed` → `v0.2` → `v0.3-dev` → `v0.4-public` → `v0.5-dev` → `v0.6`)
 
-This version is a copyright-safe, multi-announcement build: **812 verified QA** over 10 official LH
-입주자모집공고 + MOLIT/HUG public tabular data + 3 housing statutes. It contains QA labels, evidence
-locators, predicates, source URLs, context-bundle references, and reconstruction code — **no raw source
-documents, row dumps, or bundle text**. Raw materials and API keys are kept internal under
-`workspace_local/` (gitignored) and rebuilt locally via `scripts/rebuild_v04_from_public_manifest.py`.
+This build is a copyright-safe, multi-provider announcement set: **2,011 verified QA** across 13 task
+families over 41 official announcements from 10 providers, MOLIT/HUG public tabular data, and 3 housing
+statutes. It contains QA labels, evidence locators, predicates, page/cell ids, source URLs,
+context-bundle references, and reconstruction code — **no raw documents, row dumps, API keys, or bundle
+text**. Raw materials and API keys stay internal under `workspace_local/` (gitignored) and are rebuilt
+locally.
 
-Verification: `validate_dataset.py`, `verify_qa.py` (812/812), and `check_public_release_readiness.py`
-(public-ready) all pass; leakage scan = 0. Honest caveat: single provider (LH) and 3 시·도 — broadening
-source diversity is the v0.5 priority. See `docs/v0.4_batch_report.md`.
+Verification: `validate_dataset.py` = 0; `verify_qa.py` = 0 (v0.5 file, current v0.6 build: 2,011/2,011,
+split-leakage OK); `check_public_release_readiness.py` = 0 (**public-ready**); public-surface leakage
+scan = 0. Honest caveats: long-context cloze items are a large share of the set, near-duplicate
+parametric QA pairs are warned but grounded, non-LH context bundles are not yet materialized, and
+human-review sign-off is pending. See `docs/v0.5_batch_report.md`.
 
 ## Data Sources
 
@@ -48,8 +51,9 @@ For paper-grade expansion, use this workflow:
 
 ## Known Limitations
 
-- Source diversity: announcements are LH-only across 3 시·도 (broadening providers/regions is the
-  v0.5 priority). Treat provider/region generalization claims cautiously.
+- Source diversity is now substantially broader (10 providers, 9 announcement 시·도), but several new
+  providers contribute only 1-3 announcements. Treat provider-generalization claims cautiously until more
+  announcements are added per provider.
 - Several source URLs point to portals or file-download pages rather than fixed local artifacts.
 - Long-context bundles **are** materialized for evaluation, but only inside `workspace_local/`
   (internal, gitignored); they are rebuilt locally via `scripts/rebuild_v04_from_public_manifest.py`
@@ -62,4 +66,3 @@ For paper-grade expansion, use this workflow:
 ## Responsible Use
 
 Do not use this benchmark to provide legal, financial, or housing eligibility advice to real applicants. The benchmark is for model evaluation only.
-

@@ -1,4 +1,4 @@
-# v0.4 Release Checklist
+# Release Checklist
 
 Run before tagging any public release. All gate scripts must exit 0.
 
@@ -12,7 +12,7 @@ python3 scripts/check_public_release_readiness.py                # strict: exits
 ```
 
 - [ ] `validate_dataset.py` exits 0 (ids unique, sources resolve, no raw corpus fields).
-- [ ] `verify_qa.py` exits 0 with `failed=0` on v0.2, v0.3, and v0.4.
+- [ ] `verify_qa.py` exits 0 with `failed=0` on v0.2, v0.3, v0.4, and the current v0.5/v0.6 build.
 - [ ] `check_public_release_readiness.py` reports the intended status (`public-ready` for a public tag).
 
 ## 2. Copyright / leakage (must be 0)
@@ -27,7 +27,8 @@ python3 scripts/check_public_release_readiness.py                # strict: exits
 ## 3. Benchmark validity
 
 - [ ] ≥ 8 distinct official announcements cited; no single announcement > 20% of non-table QA.
-- [ ] ≥ 700 verified QA (target 900+); families balanced per `docs/v0.4_public_plan.md`.
+- [ ] ≥ 2,000 verified QA for a full public tag; families reviewed for over-reliance on cloze-style
+      retrieval items.
 - [ ] Context tiers present: 32k / 64k / 128k / 256k / 512k; positions early / middle / late / multi.
 - [ ] No duplicate questions.
 - [ ] Human-review sample drawn and signed off (see `docs/v0.4_batch_report.md` §Human review).
@@ -38,9 +39,24 @@ python3 scripts/check_public_release_readiness.py                # strict: exits
 - [ ] `docs/public_reconstruction.md` lists every fetched URL class and key requirement.
 - [ ] Public target manifest `data/v0.4_announcement_targets_seed.jsonl` resolves to live official URLs.
 
-## 5. Honesty
+## 5. v0.5/v0.6-specific (announcement splits, providers, table cells)
 
-- [ ] Report labels the batch correctly: `dev/seed`, `v0.4-dev expanded`, or `v0.4-public ready`.
-- [ ] Known limitations stated (extraction noise, single-provider (LH only), statute effective-date vs
-      announcement-year mismatch, table coverage = 6 자치구).
+- [ ] `verify_qa.py` v0.5 block passes (cell_ids/table_ids resolve; provider/region/split present).
+- [ ] Split-leakage check passes: no announcement in more than one evaluation split.
+- [ ] `check_public_release_readiness.py --qa data/qa_v0.5_candidates.jsonl` provider/region report
+      reviewed; for a **public** tag it must reach 5+ providers, ≥8 announcement 시·도, and ≤60%
+      single-provider share.
+- [ ] Table cells are internal only (`workspace_local/.../table_cells.jsonl`); public QA carries only
+      `table_ids`/`cell_ids` + short answers.
+- [ ] `data/v0.5_announcement_targets.jsonl` backlog rows use official URLs or `needs_official_url`
+      (no fabricated URLs).
+- [ ] Hidden split policy is release-appropriate: if answers are included in-repo, label it as
+      `test_hidden` metadata rather than a true hidden benchmark; for a leaderboard, publish questions
+      only and keep answers private.
+
+## 6. Honesty
+
+- [ ] Report labels the batch correctly: `dev/seed`, `public-ready`, or `leaderboard-ready`.
+- [ ] Known limitations stated (extraction noise, provider/source imbalance, statute effective-date vs
+      announcement-year mismatch, near-duplicate parametric QA, human-review status).
 - [ ] No overclaiming: if any gate fails, the release is not called public-ready.

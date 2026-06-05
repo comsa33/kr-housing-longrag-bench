@@ -70,3 +70,23 @@ For housing announcement tasks, annotators should cite an official source locato
 
 The public dataset should store only these locators and the short gold answer. Systems under evaluation can fetch or be provided source documents separately under the applicable source terms.
 
+## v0.5 Provider Expansion Policy
+
+v0.5 broadens beyond LH toward multiple public housing providers (SH, GH, iH, 부산도시공사,
+제주개발공사, and other 도시공사/개발공사). Each newly acquired provider/source must, before any QA is
+built from it:
+
+- Resolve to an **official provider portal or official public portal** (not a blog/news/private mirror).
+  Mirrors may be used only as discovery evidence to locate the official source.
+- Be downloadable **without login**. Login-walled sources are excluded.
+- Receive its own audit record (official URL resolves; provider is public or rights explicitly recorded;
+  raw-redistribution decision recorded separately from benchmark use; KOGL type recorded if relied upon).
+- Default to **raw-internal, URL+locator-only release** for official public-agency 입주자모집공고, exactly
+  as for LH. If copyright/license status is unclear, keep raw internal and release locator metadata only;
+  if even that is unclear, exclude the source.
+
+The v0.5 acquisition backlog (official portal URLs verified reachable, plus providers still needing an
+official URL) is recorded in `data/v0.5_announcement_targets.jsonl` with an `acquisition_status` field.
+No fabricated attachment URLs are recorded — only verified official URLs or an explicit
+`needs_official_url` marker.
+

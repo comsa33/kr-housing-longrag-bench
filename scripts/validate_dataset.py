@@ -23,6 +23,32 @@ RAW_FIELD_NAMES = {
     "full_context",
 }
 
+# Scraped JS/HTML residue that must never reach public files (e.g. list-page onclick handlers leaking
+# into a question's display title). The grounding verifier cannot catch these surface-quality artifacts.
+FORBIDDEN_SURFACE = ("getDetailView", "return false", "onclick", "javascript:")
+PUBLIC_SCAN_PATHS = ("data", "docs", "README.md", "DATASET_CARD.md")
+
+
+def assert_no_surface_artifacts() -> None:
+    hits: list[str] = []
+    for rel in PUBLIC_SCAN_PATHS:
+        p = ROOT / rel
+        files = [p] if p.is_file() else [f for f in p.rglob("*") if f.is_file()]
+        for f in files:
+            if "__pycache__" in f.parts:
+                continue
+            try:
+                text = f.read_text(encoding="utf-8")
+            except (UnicodeDecodeError, OSError):
+                continue
+            for tok in FORBIDDEN_SURFACE:
+                if tok in text:
+                    hits.append(f"{f.relative_to(ROOT)}: forbidden surface artifact {tok!r}")
+    if hits:
+        for h in hits[:30]:
+            print(h, file=sys.stderr)
+        raise SystemExit(f"{len(hits)} surface-artifact violation(s) in public files")
+
 
 def load_jsonl(path: Path) -> list[dict]:
     rows: list[dict] = []
@@ -127,6 +153,12 @@ def main() -> int:
         assert_unique(v04_rows, "qa_id", v04_path)
         paths_rows.append((v04_path, v04_rows))
 
+    v05_path = DATA / "qa_v0.5_candidates.jsonl"
+    v05_rows = load_jsonl(v05_path) if v05_path.exists() else []
+    if v05_rows:
+        assert_unique(v05_rows, "qa_id", v05_path)
+        paths_rows.append((v05_path, v05_rows))
+
     for path, rows in paths_rows:
         for row in rows:
             assert_no_raw_fields(row, path)
@@ -138,15 +170,20 @@ def main() -> int:
         check_qa_rows(v03_rows, source_ids, v03_path, require_fields=True)
     if v04_rows:
         check_qa_rows(v04_rows, source_ids, v04_path, require_fields=True)
+    if v05_rows:
+        check_qa_rows(v05_rows, source_ids, v05_path, require_fields=True)
 
     for row in blueprint_rows:
         for source_id in row.get("bundle_sources", []):
             if source_id not in source_ids:
                 raise SystemExit(f"{row['blueprint_id']}: unknown bundle source_id {source_id!r}")
 
+    assert_no_surface_artifacts()
+
     extra = f", {len(v02_rows)} QA v0.2 candidates" if v02_rows else ""
     extra += f", {len(v03_rows)} QA v0.3 candidates" if v03_rows else ""
     extra += f", {len(v04_rows)} QA v0.4 candidates" if v04_rows else ""
+    extra += f", {len(v05_rows)} QA v0.5 candidates" if v05_rows else ""
     print(f"OK: {len(source_rows)} sources, {len(qa_rows)} QA seed items, "
           f"{len(blueprint_rows)} blueprints{extra}")
     return 0

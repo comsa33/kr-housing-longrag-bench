@@ -22,9 +22,19 @@ import qa_v05_common as F
 
 OUT = Q.ROOT / "workspace_local" / "audit" / "qa_v05_det.jsonl"
 DATE_RE = re.compile(r"20\d{2}\s*[.\-년]\s*\d{1,2}\s*[.\-월]\s*\d{1,2}")
+# a "quantity" cell is numeric-only (digits, separators, ranges, unit glyphs) — excludes addresses/phones/codes
+NUMERIC_CELL_RE = re.compile(r"^[\d][\d,.\s~∼\-/㎡%％원만천억세대명호층년월일점배]*$")
 SUPPLY_KW = ["특별공급", "일반공급", "신혼부부", "생애최초", "노부모부양", "다자녀", "신생아", "기관추천", "우선공급", "추첨"]
 ELIG_ROW_KW = ["소득", "자산", "무주택", "거주", "입주자저축", "청약통장", "주택소유", "세대구성원", "재당첨", "나이", "혼인", "월평균", "가구원"]
 COND_RE = re.compile(r"(%|％|이하|이상|미만|초과|해당|본인|구성원|무주택|만원|천원|억원|개월|이내|점|배)")
+
+_HEADER_UNIT_RE = re.compile(r"(만원|천원|억원|원|㎡|％|%|세대|명|호|층|점|년|개월|월|일|배|평)")
+
+
+def UNIT_FROM_HEADER(h: str):
+    m = _HEADER_UNIT_RE.search(h or "")
+    return m.group(1) if m else None
+
 
 items = []
 pattern_count = Counter()   # cap near-duplicate (row_header,col_header) patterns across announcements
@@ -58,19 +68,28 @@ def _unique_pairs(cells):
     return out
 
 
-def gen_table_cell_numeric(per_ann=26):
+def gen_table_cell_numeric(per_ann=12, per_table=3):
     for a in Q.announcement_ids():
         title = Q.ann_meta().get(a, {}).get("title_from_audit") or a
         cells = _unique_pairs(F.ann_cells(a))
         n = 0
+        per_table_count = Counter()
         for c in sorted(cells, key=lambda x: (x["page_id"], x["table_id"], x["row_index"], x["col_index"])):
             if n >= per_ann:
                 break
+            if per_table_count[c["table_id"]] >= per_table:
+                continue
             rh, ch, ct = c["row_header"], c["col_header"], c["cell_text"]
             if not (rh and ch and ct) or rh == ct or ch == ct:
                 continue
-            # require a real measured quantity (value + unit) so addresses/phone/codes are excluded
-            if c.get("normalized_value") is None or c.get("unit") is None or len(ct) > 24 or c["confidence"] < 0.9:
+            # quantity cell: numeric-only content (excludes addresses/phones/codes), with a unit in
+            # the cell OR in a header (e.g. col_header '전용면적(㎡)' × cell '84.97')
+            if c.get("normalized_value") is None or len(ct) > 24 or c["confidence"] < 0.9:
+                continue
+            if not NUMERIC_CELL_RE.match(ct):
+                continue
+            unit_eff = c.get("unit") or (UNIT_FROM_HEADER(ch) or UNIT_FROM_HEADER(rh))
+            if not unit_eff:
                 continue
             if len(rh) > 30 or len(ch) > 30:
                 continue
@@ -93,6 +112,7 @@ def gen_table_cell_numeric(per_ann=26):
             })
             emit(it, True, band="multi")
             pattern_count[pat] += 1
+            per_table_count[c["table_id"]] += 1
             n += 1
 
 

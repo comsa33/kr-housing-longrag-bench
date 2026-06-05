@@ -92,11 +92,15 @@ def check_public_files_for_raw_terms(failures: list[str]) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--qa", default="data/qa_v0.4_candidates.jsonl")
+    parser.add_argument("--qa", default="data/qa_v0.5_candidates.jsonl")
     parser.add_argument("--min-qa", type=int, default=700)
     parser.add_argument("--min-announcements", type=int, default=8)
     parser.add_argument("--max-announcement-share", type=float, default=0.20)
-    parser.add_argument("--allow-dev", action="store_true", help="Report warnings but do not fail v0.3-style dev status.")
+    # provider/region diversity criteria — auto-applied only when QA rows carry a `provider` field (v0.5+)
+    parser.add_argument("--min-providers", type=int, default=5)
+    parser.add_argument("--max-provider-share", type=float, default=0.60)
+    parser.add_argument("--min-sido", type=int, default=8)
+    parser.add_argument("--allow-dev", action="store_true", help="Report failures but exit 0 with dev/seed status.")
     args = parser.parse_args()
 
     failures: list[str] = []
@@ -147,7 +151,7 @@ def main() -> int:
         # collect the announcements cited by this row (dedup across announcement_ids + page_ids)
         row_anns = set(row.get("announcement_ids", []) or [])
         for pid in row.get("page_ids", []) or []:
-            m = re.match(r"(lh-[a-z0-9-]+)-p\d{3}$", pid)
+            m = re.match(r"(.+)-p\d{3}$", pid)
             if m:
                 row_anns.add(m.group(1))
         for a in row_anns:
@@ -185,6 +189,59 @@ def main() -> int:
     else:
         warn("no announcement_ids/page_ids detected; dominance check weak", warnings)
 
+    # provider / region diversity + split leakage + near-duplicate — applied only for v0.5+ rows.
+    # Count only REAL announcement providers (exclude tabular public-data and comparison meta-buckets)
+    # so the metric isn't inflated by MOLIT/HUG or '복수(비교)' rows.
+    def _is_ann_provider(p: str) -> bool:
+        return bool(p) and ("공공데이터" not in p) and (not p.startswith("복수"))
+
+    any_provider = any(r.get("provider") for r in rows)
+    provider_counts = Counter(r["provider"] for r in rows if _is_ann_provider(r.get("provider", "")))
+    sido_set = {r.get("region_sido") for r in rows
+                if _is_ann_provider(r.get("provider", "")) and r.get("region_sido") and r["region_sido"] != "복수"}
+    htype_set = {r.get("housing_type") for r in rows if r.get("housing_type") and r.get("housing_type") != "복수"}
+    n_providers = len(provider_counts)
+    near_dups = 0
+    if any_provider:
+        ann_total = sum(provider_counts.values())
+        if n_providers < args.min_providers:
+            fail(f"announcement-provider diversity {n_providers} < required {args.min_providers}", failures)
+        top_p, top_pc = provider_counts.most_common(1)[0]
+        if top_pc / max(ann_total, 1) > args.max_provider_share:
+            fail(f"provider dominance {top_p} share={top_pc/ann_total:.1%} of announcement QA > {args.max_provider_share:.0%}", failures)
+        if len(sido_set) < args.min_sido:
+            fail(f"announcement 시·도 coverage {len(sido_set)} < required {args.min_sido}", failures)
+        # split leakage: no announcement in >1 evaluation split
+        eval_splits = {"test_public", "test_hidden", "ood_provider", "ood_region", "ood_year"}
+        ann_splits: dict = {}
+        for r in rows:
+            anns = set(r.get("announcement_ids", []) or [])
+            for pid in r.get("page_ids", []) or []:
+                m = re.match(r"(.+)-p\d{3}$", pid)
+                if m:
+                    anns.add(m.group(1))
+            for a in anns:
+                ann_splits.setdefault(a, set()).add(r.get("split"))
+        leaks = [a for a, s in ann_splits.items() if len({x for x in s if x in eval_splits}) > 1]
+        if leaks:
+            fail(f"split leakage: {len(leaks)} announcements in >1 eval split", failures)
+        # near-duplicate questions within a family (token Jaccard >= 0.92) — reported as warning
+        by_fam: dict = {}
+        for r in rows:
+            by_fam.setdefault(r.get("task_type", ""), []).append(set(re.findall(r"[0-9A-Za-z가-힣]+", r.get("question", ""))))
+        for fam, toks in by_fam.items():
+            for i in range(len(toks)):
+                for j in range(i + 1, len(toks)):
+                    a, b = toks[i], toks[j]
+                    if not a or not b:
+                        continue
+                    jac = len(a & b) / len(a | b)
+                    if jac >= 0.92:
+                        near_dups += 1
+                        break
+        if near_dups:
+            warn(f"near-duplicate question pairs (Jaccard>=0.92): ~{near_dups} (parametric table QA expected)", warnings)
+
     check_secret_leakage(failures)
     check_public_files_for_raw_terms(failures)
 
@@ -193,6 +250,10 @@ def main() -> int:
     print(f"qa_count: {len(rows)}")
     print(f"families: {dict(sorted(family_counts.items()))}")
     print(f"distinct_announcements: {distinct_ann}")
+    if provider_counts:
+        print(f"providers: {n_providers} {dict(provider_counts)}")
+        print(f"시도: {len(sido_set)}  housing_types: {len(htype_set)}")
+        print(f"splits: {dict(Counter(r.get('split','') for r in rows))}")
     print(f"bundle_count: {len(bundle_ids)}")
     print(f"warnings: {len(warnings)}")
     for msg in warnings:
