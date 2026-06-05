@@ -25,7 +25,8 @@ RAW_FIELD_NAMES = {
 
 # Scraped JS/HTML residue that must never reach public files (e.g. list-page onclick handlers leaking
 # into a question's display title). The grounding verifier cannot catch these surface-quality artifacts.
-FORBIDDEN_SURFACE = ("getDetailView", "return false", "onclick", "javascript:")
+FORBIDDEN_SURFACE = ("getDetailView", "return false", "onclick", "javascript:",
+                     "serviceKey", "MY 신청현황", "서비스키 복사하기")
 PUBLIC_SCAN_PATHS = ("data", "docs", "README.md", "DATASET_CARD.md")
 
 

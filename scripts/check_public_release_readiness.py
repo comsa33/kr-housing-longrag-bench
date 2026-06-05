@@ -116,6 +116,7 @@ def main() -> int:
     source_rows = load_jsonl(ROOT / "data/source_manifest.jsonl")
     source_ids = {row["source_id"] for row in source_rows}
     bundle_manifest_paths = [
+        ROOT / "workspace_local/processed/bundles-v06/manifest.jsonl",
         ROOT / "workspace_local/processed/bundles-v04/manifest.jsonl",
         ROOT / "workspace_local/processed/bundles/manifest.jsonl",
     ]

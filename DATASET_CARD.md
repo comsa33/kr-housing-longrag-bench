@@ -19,11 +19,21 @@ context-bundle references, and reconstruction code — **no raw documents, row d
 text**. Raw materials and API keys stay internal under `workspace_local/` (gitignored) and are rebuilt
 locally.
 
-Verification: `validate_dataset.py` = 0; `verify_qa.py` = 0 (v0.5 file, current v0.6 build: 2,011/2,011,
-split-leakage OK); `check_public_release_readiness.py` = 0 (**public-ready**); public-surface leakage
-scan = 0. Honest caveats: long-context cloze items are a large share of the set, near-duplicate
-parametric QA pairs are warned but grounded, non-LH context bundles are not yet materialized, and
-human-review sign-off is pending. See `docs/v0.5_batch_report.md`.
+Verification: `validate_dataset.py` = 0; `verify_qa.py` = 0 (2,011/2,011, split-leakage OK);
+`check_public_release_readiness.py` = 0; realism + public-surface scans = 0. See `docs/v0.5_batch_report.md`
+(source expansion) and `docs/v0.6_quality_report.md` (realism / bundles / splits).
+
+**Scope: public-ready seed benchmark, NOT leaderboard-ready.** The v0.6 quality pass naturalized question
+phrasing (answers/predicates/evidence unchanged; cloze 34% → ~8%), materialized multi-provider
+long-context bundles, and defined splits. Release files: `data/qa_v0.6_dev.jsonl`,
+`data/qa_v0.6_test_public.jsonl`, `data/qa_v0.6_test_hidden_questions.jsonl` (answers masked).
+
+Hidden-split policy: the `test_hidden` split is **not a sealed leaderboard hidden set**. Its answers are
+masked in the public questions file but kept in an internal file (`workspace_local/audit/
+qa_v0.6_test_hidden_answers.jsonl`); a true hidden benchmark would serve questions only behind a held-out
+harness. Honest caveats: human-review verdicts are still blank, question phrasing skews analyst-style,
+parametric near-duplicates exist, and some providers contribute few announcements / no table cells. No
+"perfect" or "hallucination-free" claim is made.
 
 ## Data Sources
 

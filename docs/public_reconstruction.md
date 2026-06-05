@@ -22,7 +22,7 @@ are needed, what stays internal, and how to validate the rebuild.
 - Python 3.10+, and `pip install tiktoken olefile pymupdf pypdf pandas beautifulsoup4 lxml openpyxl`.
 - `pdftotext` (poppler) on PATH — used for LH announcement extraction.
 - Local API keys placed in `workspace_local/secrets/`:
-  - `data_go_kr.key` — a [data.go.kr](https://www.data.go.kr) open-API serviceKey
+  - `data_go_kr.key` — a [data.go.kr](https://www.data.go.kr) open-API service key
     (MOLIT 아파트 매매 실거래가 상세, dataset id `15057511`). The open-API key works without IP restriction.
   - `hug_api.key` — a HUG 분양보증 분양이력 API key.
   These are **yours**; the project never distributes keys. Without them, the LH-only families still

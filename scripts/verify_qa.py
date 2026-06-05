@@ -183,7 +183,11 @@ def check_v03(item: dict, ids: frozenset) -> dict:
 # ----------------------------------------------------------------- v0.4 check
 @lru_cache(maxsize=None)
 def all_bundle_ids() -> frozenset:
-    return V4.bundle_ids_v04() | frozenset(b["bundle_id"] for b in V3.bundles())
+    ids = set(V4.bundle_ids_v04()) | {b["bundle_id"] for b in V3.bundles()}
+    v06 = ROOT / "workspace_local" / "processed" / "bundles-v06" / "manifest.jsonl"
+    if v06.exists():
+        ids |= {json.loads(l)["bundle_id"] for l in v06.open(encoding="utf-8") if l.strip()}
+    return frozenset(ids)
 
 
 def _v04_corpus(item: dict) -> list:
@@ -459,8 +463,18 @@ def run_file(path: Path, checker, ids: frozenset, label: str) -> bool:
 
 
 def main() -> int:
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--qa", default=None, help="verify a single QA file with the v0.5/v0.6 checker")
+    args = ap.parse_args()
     AUDIT.mkdir(parents=True, exist_ok=True)
     ids = resolvable_ids()
+    if args.qa:
+        path = ROOT / args.qa
+        label = path.stem.replace(".", "_")
+        ok = run_file(path, check_v05, ids, label)
+        ok_leak = check_split_leakage(path)
+        return 0 if (ok and ok_leak) else 1
     ok2 = run_file(DATA / "qa_v0.2_candidates.jsonl", check_v02, ids, "v02")
     ok3 = run_file(DATA / "qa_v0.3_candidates.jsonl", check_v03, ids, "v03")
     ok4 = run_file(DATA / "qa_v0.4_candidates.jsonl", check_v04, ids, "v04")

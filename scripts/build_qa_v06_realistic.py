@@ -1,0 +1,144 @@
+#!/usr/bin/env python3
+"""v0.6 QA realism pass: naturalize question phrasing while PRESERVING answer/evidence/predicate/ids.
+
+Input : data/qa_v0.5_candidates.jsonl  (2,011 verified QA)
+Output: data/qa_v0.6_realistic_candidates.jsonl
+
+Hard invariants (never changed): qa_id, answer, answer_type, evidence, source_ids, page_ids, row_ids,
+table_ids, cell_ids, gold_predicate, evaluation, split, provider/region/housing_type, bundle fields.
+Only `question` is rewritten; we add `original_question`, `question_style`, `rewrite_rationale`.
+
+The rewrite is DETERMINISTIC and template-based (no LLM free-generation) so the answer cannot drift:
+cloze items are converted to natural "what value follows/precedes this phrase" retrieval questions that
+keep the SAME located value as the answer; a small position-stress subset (all long_distance + a hashed
+slice of long_context) is kept as `diagnostic_probe` cloze. Non-cloze families are already question-form;
+they get applicant/analyst-voice polish + a style tag.
+"""
+from __future__ import annotations
+
+import hashlib
+import json
+import re
+from collections import Counter
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+SRC = ROOT / "data" / "qa_v0.5_candidates.jsonl"
+OUT = ROOT / "data" / "qa_v0.6_realistic_candidates.jsonl"
+
+REAL_USER = {"eligibility_reasoning", "schedule_reasoning", "correction_notice_reasoning",
+             "answerability_detection", "region_comparison", "provider_comparison",
+             "multi_document_comparison"}
+ANALYST = {"table_numeric_reasoning", "cross_source_aggregation", "cross_document_legal_reasoning",
+           "format_robustness"}
+
+CLOZE_RE = re.compile(r"^「(?P<title>.+?)」\(p\.(?P<pno>\d+)\)에서 다음 빈칸에 들어갈 값은\? — \"(?P<stem>.*)\"\s*$")
+
+
+def _hash_pct(qid: str) -> int:
+    return int(hashlib.md5(qid.encode("utf-8")).hexdigest(), 16) % 100
+
+
+def _trim_pre(pre: str) -> str:
+    pre = pre.strip()
+    # drop a dangling unclosed '(' fragment so the descriptor reads cleanly
+    if pre.count("(") > pre.count(")"):
+        pre = pre.rsplit("(", 1)[0].strip()
+    if pre.count("（") > pre.count("）"):
+        pre = pre.rsplit("（", 1)[0].strip()
+    return pre.strip(" ,.·:;")
+
+
+def _trim_post(post: str) -> str:
+    return post.strip().strip(" ,.·:;")[:18]
+
+
+def rewrite_retrieval(item: dict) -> tuple[str, str, str]:
+    """Return (question, style, rationale)."""
+    q = item["question"]
+    m = CLOZE_RE.match(q)
+    if not m:
+        return q, "diagnostic_probe", "cloze form retained (unparsed)"
+    title, pno, stem = m.group("title"), m.group("pno"), m.group("stem")
+    qid = item["qa_id"]
+    # keep position-stress probes as diagnostic cloze: all long_distance + ~14% of long_context
+    keep_cloze = item["task_type"] == "long_distance_retrieval" or _hash_pct(qid) < 14
+    if keep_cloze:
+        nq = (f"[위치 탐침] 「{title}」(p.{pno}) 본문에서 다음 부분의 빈칸에 들어갈 값은 무엇인가? — \"{stem}\"")
+        return nq, "diagnostic_probe", "kept as position/passkey stress probe (long-context locating)"
+    parts = stem.split("____")
+    pre = _trim_pre(parts[0]) if parts else ""
+    post = _trim_post(parts[1]) if len(parts) > 1 else ""
+    if len(pre) >= 3:
+        nq = f"「{title}」(p.{pno}) 공고문에서 \"{pre}\" 다음에 제시된 값은 무엇인가?"
+        rat = "cloze→natural: ask for the value following the preceding phrase (same located value)"
+    elif post:
+        nq = f"「{title}」(p.{pno}) 공고문에서 \"{post}\" 바로 앞에 제시된 값은 무엇인가?"
+        rat = "cloze→natural: ask for the value preceding the following phrase (same located value)"
+    else:
+        nq = f"[위치 탐침] 「{title}」(p.{pno}) 본문에서 다음 부분의 빈칸에 들어갈 값은 무엇인가? — \"{stem}\""
+        return nq, "diagnostic_probe", "kept as probe (no usable anchor for natural phrasing)"
+    return nq, "professional_analyst", rat
+
+
+def rewrite(item: dict) -> tuple[str, str, str]:
+    tt = item["task_type"]
+    q = item["question"]
+    if tt in ("long_context_retrieval", "long_distance_retrieval"):
+        return rewrite_retrieval(item)
+    if tt == "format_robustness":
+        # fix the empty "(동일 데이터, )" slice-descriptor artifact
+        nq = q.replace("(동일 데이터, )", "(동일 데이터)").replace("(동일 데이터,  ", "(동일 데이터, ")
+        return nq, "professional_analyst", "format-robustness probe; cleaned empty slice descriptor"
+    if tt == "eligibility_reasoning":
+        nq = q.replace("기준은 무엇인가?", "기준은 어떻게 되는가?")
+        nq = nq.replace("자격요건 표에서", "공고의 신청자격 기준에서").replace(" 표에서", " 신청자격 기준에서")
+        return nq, "real_user", "applicant-voice phrasing for eligibility criteria (anchors preserved)"
+    if tt == "schedule_reasoning":
+        nq = q.replace("일정(일자/시간)은 무엇인가?", "일정(일자/시간)은 언제인가?")
+        nq = nq.replace("일정 표에서", "청약 일정에서")
+        return nq, "real_user", "applicant-voice phrasing for schedule dates (anchors preserved)"
+    if tt == "answerability_detection":
+        return q, "real_user", "already an 'is this answerable from the given material?' question"
+    if tt == "correction_notice_reasoning":
+        return q, "real_user", "already a practical correction-notice question"
+    if tt in ("region_comparison", "provider_comparison", "multi_document_comparison"):
+        return q, "professional_analyst", "already a comparative analyst question"
+    if tt in ANALYST:
+        return q, "professional_analyst", "already an analytic data/lookup query"
+    return q, "professional_analyst", "no change needed"
+
+
+def main() -> int:
+    rows = [json.loads(l) for l in SRC.open(encoding="utf-8") if l.strip()]
+    out, styles = [], Counter()
+    seen_q = set()
+    n_collision = 0
+    for it in rows:
+        nq, style, rat = rewrite(it)
+        # naturalization can collapse two distinct cloze items (same pre, different value) into one
+        # question -> ambiguous duplicate. Fall back to the original cloze stem, which is unique.
+        if nq in seen_q and it["task_type"] in ("long_context_retrieval", "long_distance_retrieval"):
+            nq = f"[위치 탐침] {it['question']}"
+            style, rat = "diagnostic_probe", "kept as cloze to avoid duplicate after naturalization"
+            n_collision += 1
+        seen_q.add(nq)
+        new = dict(it)  # preserve every field
+        new["original_question"] = it["question"]
+        new["question"] = nq
+        new["question_style"] = style
+        new["rewrite_rationale"] = rat
+        out.append(new)
+        styles[style] += 1
+    OUT.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in out), encoding="utf-8")
+    cloze = sum(1 for r in out if "빈칸" in r["question"] or "____" in r["question"])
+    print(f"=== v0.6 realism rewrite: {len(out)} QA -> {OUT.name} ===")
+    for k, v in styles.most_common():
+        print(f"   {k:22s} {v}  ({100*v/len(out):.1f}%)")
+    print(f"   cloze-phrased: {cloze} ({100*cloze/len(out):.1f}%)")
+    print(f"   real_user+professional_analyst: {100*(styles['real_user']+styles['professional_analyst'])/len(out):.1f}%")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

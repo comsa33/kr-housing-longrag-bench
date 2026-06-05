@@ -13,11 +13,20 @@ HUG 분양이력 tabular data and 3 housing statutes. It includes real table cel
 predicate QA, provider/region comparisons, eligibility/schedule items, answerability checks, and
 announcement-level splits (`dev`/`test_public`/`test_hidden`) with split leakage verified at 0.
 
-Automated gates currently report **public-ready**: `validate_dataset.py` passes, `verify_qa.py` verifies
-2,011/2,011 QA, `check_public_release_readiness.py` exits 0, and public-surface leakage checks are clean.
-Honest caveats remain: long-context cloze items are a large share of the set, near-duplicate parametric
-questions are warned but grounded, non-LH long-context bundles are not yet materialized, and human-review
-sign-off is pending. See `docs/v0.5_batch_report.md` for the v0.6 expansion report.
+A v0.6 quality pass (`data/qa_v0.6_realistic_candidates.jsonl`) naturalizes question phrasing while
+keeping every answer/predicate/evidence byte-identical to the verified source (cloze-phrased questions
+cut from 34% → ~8%; `question_style` ∈ real_user/professional_analyst/diagnostic_probe), materializes
+**multi-provider** long-context bundles (32k–512k; 1,553 bundle-bearing QA, 961 non-LH), and adds a
+release split policy: `data/qa_v0.6_dev.jsonl`, `data/qa_v0.6_test_public.jsonl`, and
+`data/qa_v0.6_test_hidden_questions.jsonl` (answers masked; gold answers kept internal only). See
+`docs/v0.6_quality_report.md`.
+
+**Scope claim — read carefully.** This is a **public-ready seed benchmark** (automated gates pass:
+`validate_dataset.py`, `verify_qa.py` 2,011/2,011, `check_public_release_readiness.py`, realism + surface
+scans). It is **not a leaderboard-ready or sealed-hidden benchmark**: human-review verdicts are still
+blank, the `test_hidden` answers are masked in the public file but present in-repo internally (not served
+by a held-out harness), question phrasing skews analyst-style, and parametric near-duplicates exist. No
+"perfect" or "hallucination-free" claim is made — only what the gates verify.
 
 To **run** the benchmark, reconstruct the internal context locally from official URLs + your own API keys:
 `docs/public_reconstruction.md` and `python3 scripts/rebuild_v04_from_public_manifest.py --check`. Release
