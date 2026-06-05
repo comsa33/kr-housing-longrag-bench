@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/comsa33/kr-housing-longrag-bench/actions/workflows/ci.yml/badge.svg)](https://github.com/comsa33/kr-housing-longrag-bench/actions/workflows/ci.yml)
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](LICENSE)
-[![DOI](https://zenodo.org/badge/DOI/10.5281%2Fzenodo.20559128.svg)](https://doi.org/10.5281/zenodo.20559128)
+[![DOI](https://zenodo.org/badge/DOI/10.5281%2Fzenodo.20563453.svg)](https://doi.org/10.5281/zenodo.20563453)
 
 **A copyright-safe Korean long-context benchmark for testing whether full-context LLMs can replace or
 complement RAG / table-tool pipelines** on real housing announcements (입주자모집공고), public
@@ -176,17 +176,17 @@ permits it. Korean statutes/rules fall under the non-protected categories of Cop
 
 ## Citation
 
-If you use this benchmark, cite the Zenodo-archived v0.6.1 release as:
+If you use this benchmark, cite the Zenodo-archived v0.6.2 release as:
 
 ```bibtex
-@dataset{lee_kr_housing_longrag_bench_v061_2026,
+@dataset{lee_kr_housing_longrag_bench_v062_2026,
   author    = {Lee, Ruo},
   title     = {KR-Housing-LongRAG-Bench},
   year      = {2026},
-  version   = {v0.6.1},
+  version   = {v0.6.2},
   publisher = {Zenodo},
-  doi       = {10.5281/zenodo.20559128},
-  url       = {https://doi.org/10.5281/zenodo.20559128},
+  doi       = {10.5281/zenodo.20563453},
+  url       = {https://doi.org/10.5281/zenodo.20563453},
   note      = {Public-ready seed benchmark for Korean housing long-context, RAG, and table reasoning evaluation}
 }
 ```
