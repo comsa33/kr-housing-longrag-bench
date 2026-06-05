@@ -45,7 +45,7 @@ def nums(s: str) -> list:
 def score(item: dict, pred: str) -> bool:
     metric = item.get("evaluation", {}).get("metric", "")
     ans = item.get("answer", "")
-    if not norm(pred):
+    if not pred or not norm(pred):  # missing / None / empty / whitespace-only -> incorrect
         return False
     if metric == "boolean_and_reason":
         return any(m in pred for m in UNANS)

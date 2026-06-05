@@ -278,7 +278,18 @@ class OllamaProvider(BaseProvider):
         return "Optionally set OLLAMA_BASE_URL (default http://localhost:11434). Start a local server: `ollama serve`."
 
     def _init_client(self):
-        self._client = self.base_url()  # nothing to construct; verified on first call
+        # Fail fast at startup if the server is unreachable (a setup error) so we don't log one
+        # failure per prompt. Transient per-request errors during the run raise RuntimeError instead
+        # (caught by the per-item handler in main()).
+        self._client = self.base_url()
+        try:
+            urllib.request.urlopen(self.base_url(), timeout=5)
+        except urllib.error.HTTPError:
+            pass  # server responded (reachable) even if the root path is non-200
+        except urllib.error.URLError as exc:  # pragma: no cover - needs a live server
+            raise SystemExit(
+                f"[ollama] cannot reach server at {self.base_url()}: {exc}. Start it with `ollama serve`."
+            )
 
     def _generate(self, prompt):
         body = json.dumps(
@@ -296,7 +307,8 @@ class OllamaProvider(BaseProvider):
             with urllib.request.urlopen(req, timeout=120) as r:
                 data = json.loads(r.read().decode("utf-8"))
         except urllib.error.URLError as exc:  # pragma: no cover - needs a live server
-            raise SystemExit(
+            # per-request failure: RuntimeError so main()'s per-item handler logs it and continues
+            raise RuntimeError(
                 f"[ollama] request to {self.base_url()} failed: {exc}. Is `ollama serve` running and the model pulled?"
             )
         return str(data.get("response", "")).strip()
@@ -329,7 +341,7 @@ def resolve_out_path(args) -> Path:
         out = out.resolve()
         # Enforce: predictions only under workspace_local/ (gitignored).
         wl = (ROOT / "workspace_local").resolve()
-        if wl not in out.parents and out != wl:
+        if not out.is_relative_to(wl):
             raise SystemExit(
                 f"--out must be under workspace_local/ (predictions are internal). Got: {out}"
             )
@@ -434,7 +446,7 @@ def main(argv=None) -> int:
     written, errors = 0, 0
 
     mode = "w" if not args.resume else "a"
-    with out_path.open(mode, encoding="utf-8") as out_f, log_path.open("a", encoding="utf-8") as log_f:
+    with out_path.open(mode, encoding="utf-8") as out_f, log_path.open(mode, encoding="utf-8") as log_f:
         log_f.write(f"# run start {started} provider={args.provider} model={args.model} "
                     f"split={args.split} mock={args.mock} todo={len(todo)} (skipped_resume={len(records) - len(todo)})\n")
         for i, r in enumerate(todo, 1):
