@@ -63,7 +63,9 @@ overall**; dense simply adds 2 retrieval-driven misses on top of more read failu
 
 The 3 dense gold-page misses@5 are `krhlrb_v05_0543`, `krhlrb_v05_0545`, `krhlrb_v05_0546`: all target page
 `…-p001`, but dense ranked it 6th/6th/7th and instead surfaced repetitive sibling pages (p002 / p002 /
-p004) whose announcement boilerplate is embedding-similar to the question.
+p004) whose announcement boilerplate is embedding-similar to the question. A follow-up shows these misses
+are a **chunk-duplication artifact**: capping chunks per page (`--per-page-max 1`) recovers all 3 (dense
+hit@5 86.4% → 100%) — see `docs/rag_page_diversity_diagnostics_v07.md`.
 
 ## 4. Why BM25 wins here (important caveat)
 

@@ -58,6 +58,8 @@ def main() -> int:
                     help="ranking method for hit@k; dense/hybrid need OPENAI_API_KEY and the optional "
                          "baseline deps (uv sync --extra baseline)")
     ap.add_argument("--ks", default="1,3,5,10")
+    ap.add_argument("--per-page-max", type=int, default=0,
+                    help="cap chunks per page in the ranking (page-diverse retrieval); 0 = off")
     ap.add_argument("--cross-ref", default="gpt-4o-mini,gpt-5.4",
                     help="internal prediction model ids to split errors into retrieval-miss vs read-miss")
     args = ap.parse_args()
@@ -81,22 +83,13 @@ def main() -> int:
         if bid not in chunks_cache:
             bf = BUNDLES / f"{bid}.txt"
             chunks_cache[bid] = rb.split_chunks(bf.read_text(encoding="utf-8"), args.chunk_chars) if bf.exists() else []
-            if chunks_cache[bid]:
-                if args.retriever in ("bm25", "hybrid"):
-                    bm25_cache[bid] = rb.BM25([t for _, t in chunks_cache[bid]])
-                if args.retriever in ("dense", "hybrid"):
-                    dense_cache[bid] = rb.DenseIndex([t for _, t in chunks_cache[bid]])
         chunks = chunks_cache[bid]
         if not chunks:
             print(f"  WARN: no bundle pages for {bid}; skipping {r['qa_id']}")
             continue
-        n = len(chunks)  # full ranked chunk indices for the chosen retriever
-        if args.retriever == "bm25":
-            ranking = bm25_cache[bid].top_k(r["question"], n)
-        elif args.retriever == "dense":
-            ranking = dense_cache[bid].top_k(r["question"], n)
-        else:  # hybrid: RRF of BM25 + dense
-            ranking = rb.rrf([bm25_cache[bid].top_k(r["question"], n), dense_cache[bid].top_k(r["question"], n)])
+        # full ranking for the retriever (indexes built lazily/cached in rb.rank_chunks), then page-diverse
+        full = rb.rank_chunks(args.retriever, r, chunks, bid, bm25_cache, dense_cache)
+        ranking = rb.diversify(full, [pid for pid, _ in chunks], args.per_page_max)
         gold_pages = set(r.get("page_ids") or [])
         gold_rank = None
         for rank, idx in enumerate(ranking, 1):
@@ -104,17 +97,21 @@ def main() -> int:
                 gold_rank = rank
                 break
         toks_at = {k: sum(toklen(chunks[i][1]) for i in ranking[:k]) for k in ks}
+        top5_pages = [chunks[i][0] for i in ranking[:5]]
         rows.append({"qa_id": r["qa_id"], "bundle": bid, "n_chunks": len(chunks),
-                     "gold_rank": gold_rank, "toks_at": toks_at})
+                     "gold_rank": gold_rank, "toks_at": toks_at,
+                     "dup5": len(top5_pages) - len(set(top5_pages))})
 
     if not rows:
         print("no items had bundle text; nothing to diagnose")
         return 1
     n = len(rows)
-    print(f"== RAG retrieval diagnostics [{args.retriever}] ({args.split}, tiers={sorted(tiers)}, {n} items, "
-          f"chunk_chars={args.chunk_chars}) ==")
+    pp = f", per_page_max={args.per_page_max}" if args.per_page_max else ""
+    print(f"== RAG retrieval diagnostics [{args.retriever}{pp}] ({args.split}, tiers={sorted(tiers)}, "
+          f"{n} items, chunk_chars={args.chunk_chars}) ==")
     print(f"avg chunks/bundle: {sum(x['n_chunks'] for x in rows) / n:.1f}; "
-          f"gold-page found in bundle: {sum(1 for x in rows if x['gold_rank'])}/{n}")
+          f"gold-page found in bundle: {sum(1 for x in rows if x['gold_rank'])}/{n}; "
+          f"avg same-page duplicate chunks in top-5: {sum(x['dup5'] for x in rows) / n:.2f}")
     print("\nk   hit@k(gold page in top-k)   avg retrieved tokens")
     for k in ks:
         hit = sum(1 for x in rows if x["gold_rank"] and x["gold_rank"] <= k)
@@ -130,7 +127,13 @@ def main() -> int:
     for x in miss:
         print(f"  {x['qa_id']}  gold_rank={x['gold_rank']}")
 
-    # cross-reference retrieval hit@5 with answer correctness from internal BM25 predictions
+    # cross-reference retrieval hit@5 with answer correctness from internal prediction files
+    if args.per_page_max:
+        # page-diverse retrieval has no matching predictions: the existing answer files were generated
+        # from STANDARD (non-diverse) prompts, so cross-referencing them would mislabel correctness.
+        print(f"\n[cross-ref] skipped because per_page_max={args.per_page_max} retrieval does not "
+              "correspond to existing non-diverse prediction files.")
+        return 0
     models = [m.strip() for m in args.cross_ref.split(",") if m.strip()]
     # Cross-ref must use the SELECTED split's gold + prediction files (not a hardcoded test_public),
     # otherwise a non-default --split scores against the wrong files and reports misleading all-zeros.
