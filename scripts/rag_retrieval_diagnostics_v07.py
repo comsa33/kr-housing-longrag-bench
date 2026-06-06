@@ -54,9 +54,12 @@ def main() -> int:
     ap.add_argument("--tiers", default="32k,64k")
     ap.add_argument("--max-items", type=int, default=40)
     ap.add_argument("--chunk-chars", type=int, default=1200)
+    ap.add_argument("--retriever", choices=["bm25", "dense", "hybrid"], default="bm25",
+                    help="ranking method for hit@k; dense/hybrid need OPENAI_API_KEY and the optional "
+                         "baseline deps (uv sync --extra baseline)")
     ap.add_argument("--ks", default="1,3,5,10")
     ap.add_argument("--cross-ref", default="gpt-4o-mini,gpt-5.4",
-                    help="internal BM25 prediction model ids to split errors into retrieval-miss vs read-miss")
+                    help="internal prediction model ids to split errors into retrieval-miss vs read-miss")
     args = ap.parse_args()
 
     ks = [int(x) for x in args.ks.split(",") if x.strip()]
@@ -71,6 +74,7 @@ def main() -> int:
 
     chunks_cache: dict = {}
     bm25_cache: dict = {}
+    dense_cache: dict = {}
     rows = []  # per-item diagnostics
     for r in pool:
         bid = r["bundle_id"]
@@ -78,12 +82,21 @@ def main() -> int:
             bf = BUNDLES / f"{bid}.txt"
             chunks_cache[bid] = rb.split_chunks(bf.read_text(encoding="utf-8"), args.chunk_chars) if bf.exists() else []
             if chunks_cache[bid]:
-                bm25_cache[bid] = rb.BM25([t for _, t in chunks_cache[bid]])
+                if args.retriever in ("bm25", "hybrid"):
+                    bm25_cache[bid] = rb.BM25([t for _, t in chunks_cache[bid]])
+                if args.retriever in ("dense", "hybrid"):
+                    dense_cache[bid] = rb.DenseIndex([t for _, t in chunks_cache[bid]])
         chunks = chunks_cache[bid]
         if not chunks:
             print(f"  WARN: no bundle pages for {bid}; skipping {r['qa_id']}")
             continue
-        ranking = bm25_cache[bid].top_k(r["question"], len(chunks))  # full ranked chunk indices
+        n = len(chunks)  # full ranked chunk indices for the chosen retriever
+        if args.retriever == "bm25":
+            ranking = bm25_cache[bid].top_k(r["question"], n)
+        elif args.retriever == "dense":
+            ranking = dense_cache[bid].top_k(r["question"], n)
+        else:  # hybrid: RRF of BM25 + dense
+            ranking = rb.rrf([bm25_cache[bid].top_k(r["question"], n), dense_cache[bid].top_k(r["question"], n)])
         gold_pages = set(r.get("page_ids") or [])
         gold_rank = None
         for rank, idx in enumerate(ranking, 1):
@@ -98,7 +111,7 @@ def main() -> int:
         print("no items had bundle text; nothing to diagnose")
         return 1
     n = len(rows)
-    print(f"== RAG retrieval diagnostics ({args.split}, tiers={sorted(tiers)}, {n} items, "
+    print(f"== RAG retrieval diagnostics [{args.retriever}] ({args.split}, tiers={sorted(tiers)}, {n} items, "
           f"chunk_chars={args.chunk_chars}) ==")
     print(f"avg chunks/bundle: {sum(x['n_chunks'] for x in rows) / n:.1f}; "
           f"gold-page found in bundle: {sum(1 for x in rows if x['gold_rank'])}/{n}")
@@ -131,7 +144,7 @@ def main() -> int:
                     gold[it["qa_id"]] = it
     by_id = {x["qa_id"]: x for x in rows}
     for m in models:
-        pf = BASELINES / f"rag_bm25_openai_{m}_{args.split}.jsonl"
+        pf = BASELINES / f"rag_{args.retriever}_openai_{m}_{args.split}.jsonl"
         if not gold:
             print(f"\n[cross-ref {m}] gold answers for split={args.split} unavailable ({gold_path.name}); skipped")
             continue
@@ -154,8 +167,10 @@ def main() -> int:
         print(f"\n[cross-ref {m}] retrieval hit@5 vs answer correctness:")
         print(f"  retrieved gold (hit@5):  correct {cells['hit_correct']}  wrong {cells['hit_wrong']}")
         print(f"  missed gold  (miss@5):   correct {cells['miss_correct']}  wrong {cells['miss_wrong']}")
-        print(f"  -> read-miss (retrieved but wrong): {cells['hit_wrong']};  "
-              f"retrieval-miss (gold not retrieved): {cells['miss_correct'] + cells['miss_wrong']}")
+        misses = cells["miss_correct"] + cells["miss_wrong"]
+        print(f"  -> answer errors: read failures (gold retrieved but wrong) {cells['hit_wrong']}; "
+              f"gold-page misses@5 {misses} (of which wrong {cells['miss_wrong']}, "
+              f"still-correct {cells['miss_correct']})")
     return 0
 
 

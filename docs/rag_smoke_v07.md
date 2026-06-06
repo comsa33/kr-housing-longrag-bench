@@ -66,6 +66,10 @@ What it shows (on this slice):
   read-miss (gold page retrieved but answered wrong), not a retrieval-miss — see
   `docs/rag_retrieval_diagnostics_v07.md`. Note these questions name the page, so retrieval is easy on
   this slice (not a realistic retrieval stress test).
+- **BM25 beats dense/hybrid here**: because the questions quote document text, lexical BM25 ranks the gold
+  page first (hit@3 = 100%) while dense embeddings underperform (3 misses@5); answer accuracy follows
+  retrieval quality (gpt-5.4: bm25 81.8% > hybrid 68.2% > dense 45.5%) — see
+  `docs/dense_hybrid_rag_smoke_v07.md`.
 
 ## 4. Cost
 
