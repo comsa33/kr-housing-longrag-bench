@@ -62,6 +62,10 @@ What it shows (on this slice):
   pulls neighbouring context too — so it is a minimal-context point, not a ceiling.
 - Cluster-weighted numbers are high (~85–97%) because these 22 items are near-duplicate retrieval
   templates (few clusters); for this tiny slice **plain accuracy is the more informative metric**.
+- **Retrieval is not the bottleneck here**: BM25 gold-page hit@3 = 100%, and every RAG error is a
+  read-miss (gold page retrieved but answered wrong), not a retrieval-miss — see
+  `docs/rag_retrieval_diagnostics_v07.md`. Note these questions name the page, so retrieval is easy on
+  this slice (not a realistic retrieval stress test).
 
 ## 4. Cost
 
