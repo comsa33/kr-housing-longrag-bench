@@ -73,6 +73,50 @@ class BM25:
         return [i for _, i in scores[:k]]
 
 
+EMBED_MODEL = "text-embedding-3-small"
+
+
+def embed_texts(texts: list) -> list:
+    """OpenAI embeddings (lazy import; needs OPENAI_API_KEY). Batched."""
+    import openai  # lazy
+
+    client = openai.OpenAI()
+    out: list = []
+    for i in range(0, len(texts), 256):
+        resp = client.embeddings.create(model=EMBED_MODEL, input=texts[i:i + 256])
+        out.extend(d.embedding for d in resp.data)
+    return out
+
+
+def _cosine(a: list, b: list) -> float:
+    dot = sum(x * y for x, y in zip(a, b))
+    na = math.sqrt(sum(x * x for x in a))
+    nb = math.sqrt(sum(y * y for y in b))
+    return dot / (na * nb) if na and nb else 0.0
+
+
+class DenseIndex:
+    """Dense retrieval over chunk embeddings (cosine similarity)."""
+
+    def __init__(self, docs: list):
+        self.vecs = embed_texts(docs)
+
+    def top_k(self, query: str, k: int) -> list:
+        qv = embed_texts([query])[0]
+        sims = [(_cosine(qv, v), i) for i, v in enumerate(self.vecs)]
+        sims.sort(key=lambda x: (-x[0], x[1]))
+        return [i for _, i in sims[:k]]
+
+
+def rrf(rankings: list, k: int = 60) -> list:
+    """Reciprocal-rank fusion of several full rankings (list of ranked index lists)."""
+    scores: dict = collections.defaultdict(float)
+    for ranking in rankings:
+        for rank, idx in enumerate(ranking, 1):
+            scores[idx] += 1.0 / (k + rank)
+    return sorted(scores, key=lambda i: (-scores[i], i))
+
+
 def split_pages(text: str) -> list:
     """-> list of (page_id, page_text) split on the bundle's page markers."""
     out = []
@@ -118,10 +162,36 @@ def rag_prompt(rec: dict, passages: list) -> str:
     )
 
 
+def retrieve(retriever: str, rec: dict, chunks: list, k: int, bid: str,
+             bm25_cache: dict, dense_cache: dict) -> list:
+    """Return the picked passages (page_id, text) for the given retriever, in reading order.
+
+    bm25/dense/hybrid rank the bundle's chunks (indexes cached per bundle); hybrid is reciprocal-rank
+    fusion of BM25 + dense. oracle returns the gold-page chunks. dense/hybrid call embed_texts (paid)."""
+    if retriever == "oracle":
+        gold = set(rec.get("page_ids") or [])
+        return [(pid, txt) for pid, txt in chunks if pid in gold]
+    q = rec["question"]
+    if retriever in ("bm25", "hybrid") and bid not in bm25_cache:
+        bm25_cache[bid] = BM25([txt for _, txt in chunks])
+    if retriever in ("dense", "hybrid") and bid not in dense_cache:
+        dense_cache[bid] = DenseIndex([txt for _, txt in chunks])
+    if retriever == "bm25":
+        idx = bm25_cache[bid].top_k(q, k)
+    elif retriever == "dense":
+        idx = dense_cache[bid].top_k(q, k)
+    else:  # hybrid: RRF over full BM25 + dense rankings
+        n = len(chunks)
+        idx = rrf([bm25_cache[bid].top_k(q, n), dense_cache[bid].top_k(q, n)])[:k]
+    return [chunks[i] for i in sorted(idx)]
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--retriever", choices=["bm25", "oracle"], required=True)
-    ap.add_argument("--k", type=int, default=5, help="top-k passages for bm25 (oracle uses gold-page chunks)")
+    ap.add_argument("--retriever", choices=["bm25", "dense", "hybrid", "oracle"], required=True)
+    ap.add_argument("--k", type=int, default=5,
+                    help="top-k passages for bm25/dense/hybrid (oracle uses gold-page chunks); "
+                         "dense/hybrid need OPENAI_API_KEY for embeddings")
     ap.add_argument("--chunk-chars", type=int, default=1200, help="passage size for sub-page chunking")
     ap.add_argument("--split", default="test_public", choices=["test_public", "dev"])
     ap.add_argument("--tiers", default="32k,64k")
@@ -147,6 +217,7 @@ def main() -> int:
     out.parent.mkdir(parents=True, exist_ok=True)
     chunks_cache: dict = {}
     bm25_cache: dict = {}
+    dense_cache: dict = {}
     written_recs: list = []
     no_passage = 0
     with out.open("w", encoding="utf-8") as f:
@@ -159,14 +230,7 @@ def main() -> int:
             if not chunks:
                 print(f"  WARN: no bundle pages for {bid}; skipping {r['qa_id']}")
                 continue
-            if args.retriever == "oracle":
-                gold = set(r.get("page_ids") or [])
-                picked = [(pid, txt) for pid, txt in chunks if pid in gold]
-            else:
-                if bid not in bm25_cache:
-                    bm25_cache[bid] = BM25([txt for _, txt in chunks])
-                idx = bm25_cache[bid].top_k(r["question"], args.k)
-                picked = [chunks[i] for i in sorted(idx)]
+            picked = retrieve(args.retriever, r, chunks, args.k, bid, bm25_cache, dense_cache)
             if not picked:
                 no_passage += 1
                 print(f"  WARN: no passage retrieved ({args.retriever}) for {r['qa_id']}; skipping")
