@@ -6,8 +6,9 @@ final benchmark results. No real model results are reported here unless an expli
 and recorded under `workspace_local/audit/baselines/`. This is a research-preview scaffold, not a
 leaderboard, not human-validated, not sealed-hidden, and makes no perfect / hallucination-free claim.
 
-As of this draft, only **offline smoke tests** (`--dry-run`, `--mock`) have been run — no paid API calls.
-The results tables below are intentionally left empty pending real runs.
+As of 2026-06-06, the first **real (paid) locator-only runs** on `test_public` are recorded in §4 (OpenAI
+gpt-4o-mini / gpt-4o / gpt-5.4); the runner is otherwise exercised via `--dry-run` / `--mock`. No full
+`dev` or hidden-split paid runs have been made, and no hidden answers or keys are published.
 
 ## 1. What the runner does
 
@@ -70,23 +71,47 @@ python3 scripts/run_llm_baseline_v07.py --provider openai --model gpt-4o-mini --
 python3 scripts/eval_harness_v06.py --pred workspace_local/audit/baselines/openai_gpt-4o-mini_dev.jsonl --splits dev
 ```
 
+Reasoning models (OpenAI `gpt-5*`, `o1`/`o3`/`o4*`): the adapter automatically sends
+`max_completion_tokens` instead of `max_tokens` and omits `temperature` (these models reject the legacy
+params), so the CLI `--temperature` value is **ignored** for them. Use a **larger** `--max-output-tokens`
+(e.g. 4000) so reasoning tokens do not starve the answer. For Azure (where `--model` is a deployment name
+the auto-detector cannot classify), force the mode with `--reasoning on|off`:
+
+```bash
+python3 scripts/run_llm_baseline_v07.py --provider openai --model gpt-5.4 --split test_public \
+    --max-output-tokens 4000 --sleep-seconds 0.1
+```
+
 Outputs per run (all internal):
 `workspace_local/audit/baselines/<provider>_<model>_<split>.jsonl` (predictions),
 `…​.meta.json` (provider, model, split, prompt_file, started/finished_at, limit, temperature,
 max_output_tokens, counts, command args), `…​.log` (per-item errors).
 
-## 4. Results (pending real runs)
+## 4. Results — locator-only baseline (test_public, 2026-06-06)
 
-Per `docs/baseline_protocol_v06.md`, report plain **and cluster-weighted** accuracy, cut by split /
-task_type / context_tier / evidence_position / question_style, alongside the trivial baselines
-(oracle/dummy/echo/random from `scripts/run_baseline_stub_v06.py`).
+First real runs (OpenAI, **locator-only / closed-book**: prompts carry no document text). 105/105
+predictions written, 0 errors each; scored by `eval_harness_v06.py --splits test_public`. Predictions and
+metadata are INTERNAL under `workspace_local/audit/baselines/`.
 
 | Provider | Model | Split | Mode | Plain acc | Cluster-weighted | Date | Cost |
-|---|---|---|---|---|---|---|---|
-| _(pending)_ | | | locator-only | | | | |
+|---|---|---|---|---:|---:|---|---|
+| openai | gpt-4o-mini | test_public (105) | locator-only | 3.8% (4/105) | 0.2% | 2026-06-06 | ~cents |
+| openai | gpt-4o | test_public (105) | locator-only | 3.8% (4/105) | 0.2% | 2026-06-06 | ~cents |
+| openai | gpt-5.4 | test_public (105) | locator-only | **6.7% (7/105)** | 0.3% | 2026-06-06 | ~cents |
 
-> No numbers are filled in: only `--dry-run` / `--mock` smoke tests have been run. Fill this table only
-> from real recorded runs under `workspace_local/audit/baselines/`.
+Token basis (measured): test_public ≈ 31k input + ~9k output tokens per model; gpt-5.4 used
+`max_completion_tokens` with ~0 reasoning tokens on these prompts, so total cost across all three runs was
+a few cents (exact per-model price varies — confirm on the provider pricing page).
+
+**What this shows.** In the locator-only setting the model sees *where* the evidence is, not the text, so a
+well-behaved model correctly refuses ("제공된 자료만으로는 확정할 수 없음") instead of hallucinating. Only the
+4 `answerability_detection` items are answerable without content, so **≈3.8% is effectively the ceiling**:
+gpt-4o-mini == gpt-4o (3.8%); gpt-5.4 reaches 6.7% by getting a few retrieval items right, but the score is
+dominated by the closed-book setting, not model strength. **Model comparison is therefore not meaningful on
+locator-only** — it is a true lower bound and a no-hallucination check, not a capability ranking. Real model
+differentiation requires the INTERNAL full-context (class A) mode (`make_prompt_v06.py --inline-context`,
+which embeds bundle text) — a separate, explicitly-requested run. Compare against the trivial floors from
+`scripts/run_baseline_stub_v06.py` (oracle/dummy/echo/random).
 
 ## 5. Caveats
 

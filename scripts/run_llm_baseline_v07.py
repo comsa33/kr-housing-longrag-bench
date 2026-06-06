@@ -110,11 +110,15 @@ def build_prompt(rec: dict) -> str:
 class BaseProvider:
     name = "base"
 
-    def __init__(self, model: str, temperature: float, max_output_tokens: int, mock: bool = False):
+    def __init__(self, model: str, temperature: float, max_output_tokens: int, mock: bool = False,
+                 reasoning: bool | None = None):
         self.model = model
         self.temperature = temperature
         self.max_output_tokens = max_output_tokens
         self.mock = mock
+        # None = auto-detect reasoning model from the name; True/False = force (for Azure, where the
+        # deployment name may not reveal the underlying model).
+        self.reasoning = reasoning
         self._client = None
 
     def required_env(self) -> list[str]:
@@ -148,6 +152,30 @@ class BaseProvider:
         raise NotImplementedError
 
 
+def _openai_reasoning_model(model: str) -> bool:
+    """Newer OpenAI 'reasoning' models (gpt-5*, o1/o3/o4*) require `max_completion_tokens` (and reject
+    `max_tokens`); many also reject a non-default `temperature`, so we omit it for them."""
+    m = model.lower()
+    return m.startswith("gpt-5") or m.startswith("o1") or m.startswith("o3") or m.startswith("o4")
+
+
+def _openai_chat_kwargs(model: str, prompt: str, temperature: float, max_output_tokens: int,
+                        reasoning: bool | None = None) -> dict:
+    """Shared OpenAI/Azure chat.completions kwargs, switching params for reasoning models.
+
+    reasoning: None = auto-detect from the model name; True/False = force. Use the explicit form for
+    Azure, where --model is an arbitrary deployment name the name heuristic cannot classify (e.g. a
+    deployment named `prod-baseline` backed by a gpt-5/o-series model)."""
+    is_reasoning = _openai_reasoning_model(model) if reasoning is None else reasoning
+    kw = {"model": model, "messages": [{"role": "user", "content": prompt}]}
+    if is_reasoning:
+        kw["max_completion_tokens"] = max_output_tokens  # reasoning model; temperature left at default
+    else:
+        kw["max_tokens"] = max_output_tokens
+        kw["temperature"] = temperature
+    return kw
+
+
 class OpenAIProvider(BaseProvider):
     name = "openai"
 
@@ -164,10 +192,7 @@ class OpenAIProvider(BaseProvider):
 
     def _generate(self, prompt):
         resp = self._client.chat.completions.create(
-            model=self.model,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=self.temperature,
-            max_tokens=self.max_output_tokens,
+            **_openai_chat_kwargs(self.model, prompt, self.temperature, self.max_output_tokens, self.reasoning)
         )
         return (resp.choices[0].message.content or "").strip()
 
@@ -194,11 +219,9 @@ class AzureOpenAIProvider(BaseProvider):
         )
 
     def _generate(self, prompt):
+        # model = Azure deployment name; reasoning detection is best-effort on the deployment name.
         resp = self._client.chat.completions.create(
-            model=self.model,  # deployment name
-            messages=[{"role": "user", "content": prompt}],
-            temperature=self.temperature,
-            max_tokens=self.max_output_tokens,
+            **_openai_chat_kwargs(self.model, prompt, self.temperature, self.max_output_tokens, self.reasoning)
         )
         return (resp.choices[0].message.content or "").strip()
 
@@ -323,9 +346,13 @@ PROVIDER_CLASSES = {
 }
 
 
+_REASONING_OVERRIDE = {"auto": None, "on": True, "off": False}
+
+
 def make_provider(args) -> BaseProvider:
     cls = PROVIDER_CLASSES[args.provider]
-    return cls(args.model, args.temperature, args.max_output_tokens, mock=args.mock)
+    return cls(args.model, args.temperature, args.max_output_tokens, mock=args.mock,
+               reasoning=_REASONING_OVERRIDE[getattr(args, "reasoning", "auto")])
 
 
 # --------------------------------------------------------------------------- io helpers
@@ -391,6 +418,9 @@ def parse_args(argv=None):
     ap.add_argument("--mock", action="store_true", help="run the loop with a deterministic fake response (offline)")
     ap.add_argument("--temperature", type=float, default=0.0)
     ap.add_argument("--max-output-tokens", type=int, default=512)
+    ap.add_argument("--reasoning", choices=["auto", "on", "off"], default="auto",
+                    help="OpenAI/Azure token-param mode: auto = detect reasoning models (gpt-5*/o-series) "
+                         "by name; on/off = force (use for Azure deployments whose name hides the model).")
     ap.add_argument("--resume", action="store_true", help="skip qa_ids already present in the output file")
     ap.add_argument("--sleep-seconds", type=float, default=0.0, help="pause between calls (rate limiting)")
     ap.add_argument(
