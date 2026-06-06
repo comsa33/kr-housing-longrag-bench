@@ -26,7 +26,6 @@ import build_rag_smoke_v07 as rb  # noqa: E402  (chunker + BM25)
 import eval_harness_v06 as eh      # noqa: E402  (canonical scorer)
 
 QA = ROOT / "data" / "qa_v0.6_realistic_candidates.jsonl"
-GOLD_PUBLIC = ROOT / "data" / "qa_v0.6_test_public.jsonl"
 BUNDLES = ROOT / "workspace_local" / "processed" / "bundles-v06"
 BASELINES = ROOT / "workspace_local" / "audit" / "baselines"
 
@@ -41,7 +40,8 @@ except Exception:  # pragma: no cover - tiktoken optional
 
 
 def select(split: str, tiers: set, max_items: int) -> list:
-    rows = [json.loads(l) for l in QA.open(encoding="utf-8") if l.strip()]
+    with QA.open(encoding="utf-8") as f:
+        rows = [json.loads(l) for l in f if l.strip()]
     pool = [r for r in rows
             if r.get("split") == split and r.get("bundle_id") and r.get("context_tier") in tiers]
     pool.sort(key=lambda r: r["qa_id"])
@@ -75,9 +75,14 @@ def main() -> int:
     for r in pool:
         bid = r["bundle_id"]
         if bid not in chunks_cache:
-            chunks_cache[bid] = rb.split_chunks((BUNDLES / f"{bid}.txt").read_text(encoding="utf-8"), args.chunk_chars)
-            bm25_cache[bid] = rb.BM25([t for _, t in chunks_cache[bid]])
+            bf = BUNDLES / f"{bid}.txt"
+            chunks_cache[bid] = rb.split_chunks(bf.read_text(encoding="utf-8"), args.chunk_chars) if bf.exists() else []
+            if chunks_cache[bid]:
+                bm25_cache[bid] = rb.BM25([t for _, t in chunks_cache[bid]])
         chunks = chunks_cache[bid]
+        if not chunks:
+            print(f"  WARN: no bundle pages for {bid}; skipping {r['qa_id']}")
+            continue
         ranking = bm25_cache[bid].top_k(r["question"], len(chunks))  # full ranked chunk indices
         gold_pages = set(r.get("page_ids") or [])
         gold_rank = None
@@ -89,6 +94,9 @@ def main() -> int:
         rows.append({"qa_id": r["qa_id"], "bundle": bid, "n_chunks": len(chunks),
                      "gold_rank": gold_rank, "toks_at": toks_at})
 
+    if not rows:
+        print("no items had bundle text; nothing to diagnose")
+        return 1
     n = len(rows)
     print(f"== RAG retrieval diagnostics ({args.split}, tiers={sorted(tiers)}, {n} items, "
           f"chunk_chars={args.chunk_chars}) ==")
@@ -111,15 +119,31 @@ def main() -> int:
 
     # cross-reference retrieval hit@5 with answer correctness from internal BM25 predictions
     models = [m.strip() for m in args.cross_ref.split(",") if m.strip()]
-    gold = {json.loads(l)["qa_id"]: json.loads(l) for l in GOLD_PUBLIC.open(encoding="utf-8") if l.strip()}
+    # Cross-ref must use the SELECTED split's gold + prediction files (not a hardcoded test_public),
+    # otherwise a non-default --split scores against the wrong files and reports misleading all-zeros.
+    gold_path = ROOT / "data" / f"qa_v0.6_{args.split}.jsonl"
+    gold = {}
+    if gold_path.is_file():
+        with gold_path.open(encoding="utf-8") as f:
+            for line in f:
+                if line.strip():
+                    it = json.loads(line)
+                    gold[it["qa_id"]] = it
     by_id = {x["qa_id"]: x for x in rows}
     for m in models:
-        pf = BASELINES / f"rag_bm25_openai_{m}_test_public.jsonl"
+        pf = BASELINES / f"rag_bm25_openai_{m}_{args.split}.jsonl"
+        if not gold:
+            print(f"\n[cross-ref {m}] gold answers for split={args.split} unavailable ({gold_path.name}); skipped")
+            continue
         if not pf.is_file():
             print(f"\n[cross-ref {m}] prediction file absent ({pf.relative_to(ROOT)}); skipped")
             continue
-        preds = {json.loads(l)["qa_id"]: json.loads(l)["prediction"]
-                 for l in pf.open(encoding="utf-8") if l.strip()}
+        preds = {}
+        with pf.open(encoding="utf-8") as f:
+            for line in f:
+                if line.strip():
+                    it = json.loads(line)
+                    preds[it["qa_id"]] = it["prediction"]
         cells = {"hit_correct": 0, "hit_wrong": 0, "miss_correct": 0, "miss_wrong": 0}
         for qid, d in by_id.items():
             if qid not in preds or qid not in gold:
