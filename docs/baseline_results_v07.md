@@ -117,7 +117,9 @@ which embeds bundle text) — a separate, explicitly-requested run. Compare agai
 `scripts/run_baseline_stub_v06.py` (oracle/dummy/echo/random).
 
 A first **full-context smoke** on a 22-item slice (same `qa_id`s) shows the expected lift — gpt-4o-mini
-0% → 59.1%, gpt-5.4 4.5% → 86.4% — see `docs/full_context_smoke_v07.md`.
+0% → 59.1%, gpt-5.4 4.5% → 86.4% — see `docs/full_context_smoke_v07.md`. A **RAG (class B) smoke** on the
+same slice shows BM25 retrieval recovering most of that lift at ~1/9 the context (gpt-5.4: 81.8% RAG vs
+86.4% full-context) — see `docs/rag_smoke_v07.md`.
 
 ## 5. Caveats
 
