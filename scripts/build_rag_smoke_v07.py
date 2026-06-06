@@ -136,12 +136,12 @@ def diversify(ranking: list, chunk_pages: list, per_page_max: int) -> list:
     Pulls a lower-ranked gold-page chunk up when the top is dominated by repetitive sibling pages."""
     if not per_page_max or per_page_max <= 0:
         return ranking
-    seen: dict = {}
+    seen: dict = collections.defaultdict(int)
     out = []
     for idx in ranking:
         p = chunk_pages[idx]
-        if seen.get(p, 0) < per_page_max:
-            seen[p] = seen.get(p, 0) + 1
+        if seen[p] < per_page_max:
+            seen[p] += 1
             out.append(idx)
     return out
 
@@ -205,7 +205,9 @@ def rank_chunks(retriever: str, rec: dict, chunks: list, bid: str,
         return bm25_cache[bid].top_k(q, n)
     if retriever == "dense":
         return dense_cache[bid].top_k(q, n)
-    return rrf([bm25_cache[bid].top_k(q, n), dense_cache[bid].top_k(q, n)])  # hybrid
+    if retriever == "hybrid":
+        return rrf([bm25_cache[bid].top_k(q, n), dense_cache[bid].top_k(q, n)])
+    raise ValueError(f"unsupported retriever for ranking: {retriever!r}")
 
 
 def retrieve(retriever: str, rec: dict, chunks: list, k: int, bid: str,
@@ -237,8 +239,11 @@ def main() -> int:
     ap.add_argument("--out", default=None, help="output JSONL (must be under workspace_local/)")
     args = ap.parse_args()
 
+    # provenance: page-diverse runs get a `_pp<N>` suffix so they never overwrite the standard files.
+    variant_label = f"page_diverse_pp{args.per_page_max}" if args.per_page_max else "standard"
+    suffix = f"pp{args.per_page_max}_" if args.per_page_max else ""
     out = Path(args.out).resolve() if args.out else \
-        ROOT / "workspace_local" / "audit" / "baselines" / f"rag_{args.retriever}_smoke_prompts.jsonl"
+        ROOT / "workspace_local" / "audit" / "baselines" / f"rag_{args.retriever}_{suffix}smoke_prompts.jsonl"
     if not out.is_relative_to((ROOT / "workspace_local").resolve()):
         raise SystemExit(f"--out must be under workspace_local/ (embeds bundle text). Got: {out}")
 
@@ -275,7 +280,8 @@ def main() -> int:
                 continue
             rec = {"qa_id": r["qa_id"], "split": r["split"], "task_type": r["task_type"],
                    "context_tier": r["context_tier"], "bundle_id": bid, "answer_type": r.get("answer_type"),
-                   "retriever": args.retriever, "n_passages": len(picked),
+                   "retriever": args.retriever, "per_page_max": args.per_page_max,
+                   "retrieval_variant": variant_label, "n_passages": len(picked),
                    "prompt": rag_prompt(r, picked)}
             f.write(json.dumps(rec, ensure_ascii=False) + "\n")
             written_recs.append(rec)

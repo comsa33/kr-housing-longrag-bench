@@ -30,11 +30,11 @@ Retrieved token length at k=5 is essentially unchanged (~2.8k; the cap swaps whi
 not how many).
 
 > The dense/hybrid numbers above come from a **single embedding pass** (per_page_max 0 and 1 share the
-> same embeddings, so the 0→1 comparison is exact). The OpenAI embedding service is **not perfectly
-> deterministic across separate calls**: re-fetching embeddings can shift dense/hybrid hit@3 by about ±1
-> item at rank ties (e.g. dense hit@3 was 59.1% here and 63.6% on a separate fetch). The page-diversity
-> **improvement** — recovering all 3 dense misses and reaching hit@5 = 100% — is robust to that noise;
-> bm25 is fully deterministic.
+> same embeddings, so the 0→1 comparison is exact). **Separate embedding fetches can show rank-boundary
+> drift**: re-fetching embeddings shifted dense/hybrid hit@3 by about ±1 item where similarities are near
+> ties (e.g. dense hit@3 was 59.1% here and 63.6% on a separate fetch). The page-diversity **improvement**
+> — recovering all 3 dense misses and reaching hit@5 = 100% — is robust to that drift; bm25 is fully
+> deterministic.
 
 ## 3. Does page diversity fix dense retrieval misses?
 
@@ -75,9 +75,10 @@ Measuring whether the retrieval fix translates into higher answers is a separate
 - Retrieval-diagnostics only; **no answer-accuracy claims**, no paid answer generation. hit@k is an
   imperfect proxy (answers can appear on non-gold pages; retrieving the gold page does not guarantee the
   model reads the right span).
-- Smoke slice (22 items, one task family, 3 bundles, 32k/64k). **Not a general dense-vs-BM25 conclusion** —
-  this slice's questions quote verbatim document text, favouring lexical BM25; page diversity narrows the
-  retrieval gap but does not establish dense superiority anywhere.
+- This result is **specific to this 22-item smoke slice and the current ~1,200-char chunker**; a different
+  chunk size or chunking strategy could change the duplication pattern. **Not a general dense-vs-BM25
+  conclusion** — this slice's questions quote verbatim document text, favouring lexical BM25; page
+  diversity narrows the retrieval gap but does not establish dense superiority anywhere.
 - `--per-page-max 1` is a blunt cap; smarter de-duplication (MMR, page-level pooling) is out of scope.
   `gpt-5.4` references elsewhere are model ids, not a ranking claim.
 

@@ -127,7 +127,13 @@ def main() -> int:
     for x in miss:
         print(f"  {x['qa_id']}  gold_rank={x['gold_rank']}")
 
-    # cross-reference retrieval hit@5 with answer correctness from internal BM25 predictions
+    # cross-reference retrieval hit@5 with answer correctness from internal prediction files
+    if args.per_page_max:
+        # page-diverse retrieval has no matching predictions: the existing answer files were generated
+        # from STANDARD (non-diverse) prompts, so cross-referencing them would mislabel correctness.
+        print(f"\n[cross-ref] skipped because per_page_max={args.per_page_max} retrieval does not "
+              "correspond to existing non-diverse prediction files.")
+        return 0
     models = [m.strip() for m in args.cross_ref.split(",") if m.strip()]
     # Cross-ref must use the SELECTED split's gold + prediction files (not a hardcoded test_public),
     # otherwise a non-default --split scores against the wrong files and reports misleading all-zeros.
