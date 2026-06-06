@@ -254,13 +254,19 @@ The boundary is detailed in `docs/repository_scope_policy.md`.
 
 ## 9. Immediate Next Tasks
 
-Recommended order after the current `develop` baseline work:
+The roadmap + scope docs (this PR, `feature/v07-release-docs-and-scope`) are done. Recommended order
+**after that PR is merged into `develop`**:
 
-1. Keep all v0.7 work on `develop`; do not touch `main` until a release decision is made.
-2. Create `feature/v07-release-docs-and-scope`.
-3. Update public-facing docs so v0.7 baseline work is discoverable but clearly labelled research-preview.
-4. Confirm `docs/repository_scope_policy.md` is referenced from README, roadmap, and worker handoff docs.
-5. Confirm no internal artifacts are tracked.
-6. Run public-safe validation gates.
-7. After docs are clean, decide whether to tag `v0.7` or keep collecting baseline evidence.
-8. Schedule human review later when reviewers are available.
+1. Merge the roadmap/scope-docs PR into `develop` after maintainer approval; keep `main` untouched until a
+   release decision is made.
+2. Verify no internal artifacts are tracked (`git ls-files workspace_local/` shows only placeholders; no
+   prompts/predictions/bundle text/keys).
+3. Decide whether `v0.7` should be tagged now or whether one more small baseline experiment is needed
+   first (e.g. a maintainer-approved page-diverse answer remeasurement on a fixed smoke slice).
+4. If preparing a `v0.7` release, create a new feature branch such as `feature/v07-release-packaging`.
+5. On that branch, update `README.md`, `DATASET_CARD.md`, and `docs/baseline_results_v07.md` for public
+   release wording (research-preview labels kept; no leaderboard/human-validated/ranking claims).
+6. Run the release gates in `docs/release_checklist.md`.
+7. Only then decide on the `v0.7` tag and any Hugging Face / Zenodo metadata updates (versions, citation,
+   license, and caveats must agree across surfaces before a release is called done).
+8. Schedule human review (v0.8) later when reviewers are available.
