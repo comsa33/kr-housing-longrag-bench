@@ -468,7 +468,7 @@ def main(argv=None) -> int:
             prompt = select_prompt(r)
             if isinstance(r.get("prompt"), str) and r["prompt"].strip():
                 # pre-built full-context prompt embeds internal bundle text — do NOT echo it to logs
-                preview = f"[full-context prompt: {len(prompt)} chars — INTERNAL, preview redacted]"
+                preview = f"[internal prebuilt prompt: {len(prompt)} chars — INTERNAL, preview redacted]"
             else:
                 preview = prompt.replace("\n", " ")[:160] + "…"
             print(f"  [{i}] qa_id={r.get('qa_id')} task={r.get('task_type')} prompt~= {preview}")

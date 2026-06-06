@@ -7,7 +7,8 @@ locator-only (floor) vs RAG vs full-context on identical qa_ids.
 
 Retrievers (--retriever):
   bm25    pure-python Okapi BM25 over the bundle's pages; top-k pages by the question (real retrieval).
-  oracle  the bundle page(s) whose page_id matches the QA's gold page_ids (retrieval ceiling).
+  oracle  the bundle page(s) whose page_id matches the QA's gold page_ids (gold-page minimal context,
+          NOT a ceiling — a wider retriever can score higher by pulling neighbouring context).
 
 The bundle is split into pages on its `[공고 ... -pNNN (p.N)]` markers; the page_id in the marker matches
 the gold page_ids. BM25 uses no third-party deps (word tokens + Korean char bigrams).
