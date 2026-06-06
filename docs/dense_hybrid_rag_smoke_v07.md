@@ -75,11 +75,11 @@ These `long_context_retrieval` questions **quote verbatim document text** (e.g. 
 전용면적 / 세대 / 공급 …), are pulled toward topically-similar-but-wrong pages, so the gold page lands lower
 (median rank 3, 3 misses@5). Hybrid recovers BM25's hit@5 = 100% but not its top-1/3 precision.
 
-**So this slice favors lexical retrieval and is not evidence that dense is weak in general.** Dense/hybrid
-are expected to help where the question does **not** quote the document (paraphrased / `real_user` /
-cross-source questions). A follow-up on a 69-item **non-quote** slice tests exactly this — and finds BM25
-*still* leads (everyone drops without quotes, but dense does not overtake), see
-`docs/rag_non_quote_retrieval_diagnostics_v07.md`.
+**So this slice favors lexical retrieval and is not evidence that dense is weak in general.** A natural
+hypothesis is that dense/hybrid would help where the question does **not** quote the document (paraphrased
+/ `real_user` / cross-source questions). That hypothesis was tested on a 69-item **non-quote** slice
+(`docs/rag_non_quote_retrieval_diagnostics_v07.md`): removing verbatim quotes drops every retriever, but
+**BM25 still leads** (dense does not overtake) — so the quoting is only part of the story.
 
 ## 5. Cost
 
@@ -108,7 +108,8 @@ python3 scripts/build_rag_smoke_v07.py --retriever hybrid --k 5 --out $B/rag_hyb
   non-gold neighbour chunks for **hybrid** (4 of 22 prompts; hit@k still 50/77.3/100). Answers were **not**
   re-measured under dot-product (no paid reruns), so the hybrid answer numbers correspond to the cosine
   ordering; the qualitative ordering (bm25 > hybrid > dense) is unaffected.
-- The BM25-wins result is **slice-specific** (verbatim-quote questions); do not generalize it to "dense is
-  worse" without a paraphrased-question slice.
+- The BM25-wins result is **slice-specific** (verbatim-quote questions); a paraphrased / non-quote slice was
+  evaluated separately (`docs/rag_non_quote_retrieval_diagnostics_v07.md`) and BM25 still led, but neither
+  slice is a general "dense is worse" claim.
 - `contains_all` scoring can over-credit partial matches; dense is a single off-the-shelf embedding model
   (no reranker/fine-tuning).
