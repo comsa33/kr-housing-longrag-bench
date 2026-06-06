@@ -46,6 +46,7 @@ Then read:
 - `AGENTS.md`
 - `docs/agent_workflow.md`
 - `docs/v1_roadmap.md`
+- `docs/repository_scope_policy.md`
 - `docs/release_checklist.md`
 
 If working on evaluation or baselines, also read:

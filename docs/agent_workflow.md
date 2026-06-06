@@ -59,7 +59,8 @@ Then classify the task:
 
 Read the relevant docs before editing:
 
-- General: `AGENTS.md`, `docs/v1_roadmap.md`, `docs/release_checklist.md`
+- General: `AGENTS.md`, `docs/v1_roadmap.md`, `docs/repository_scope_policy.md`,
+  `docs/release_checklist.md`
 - Baselines: `docs/baseline_protocol_v06.md`, `docs/quickstart_v06.md`
 - Source expansion: `docs/source_selection_and_license_audit.md`, `docs/public_reconstruction.md`
 - Release packaging: `README.md`, `DATASET_CARD.md`, `CITATION.cff`, HF package under
@@ -106,6 +107,7 @@ Public-safe files may include:
 - structured predicates;
 - provider/region/type metadata;
 - validation and scoring scripts;
+- minimal baseline scaffolds that write outputs under `workspace_local/`;
 - documentation and citation metadata.
 
 Internal-only files must remain under `workspace_local/`:
@@ -127,6 +129,12 @@ python3 scripts/validate_dataset.py
 ```
 
 If public data files changed, also run the full verification suite in `AGENTS.md`.
+
+If baseline or experiment scripts changed, confirm they still obey `docs/repository_scope_policy.md`:
+
+- public code may define commands and scoring;
+- full prompts, predictions, raw context, provider logs, and hidden answers must remain internal;
+- paid answer generation requires explicit maintainer approval.
 
 If the `uv` environment is available, run local hooks before committing:
 
@@ -188,7 +196,8 @@ Use this when handing work to Claude Code or another worker:
 ```text
 You are working on KR-Housing-LongRAG-Bench.
 
-Start by reading AGENTS.md, docs/agent_workflow.md, docs/v1_roadmap.md, and docs/release_checklist.md.
+Start by reading AGENTS.md, docs/agent_workflow.md, docs/v1_roadmap.md,
+docs/repository_scope_policy.md, and docs/release_checklist.md.
 Run git status -sb, git branch --show-current, and git log --oneline --decorate -5 before editing.
 
 Current task:
@@ -203,6 +212,8 @@ Non-negotiables:
 - Do not publish hidden gold answers.
 - Do not claim leaderboard-ready, sealed hidden, human-validated, perfect, or hallucination-free.
 - Preserve legacy v0.2-v0.5 artifacts unless you can prove the validators no longer need them.
+- Keep the public benchmark repo separate in spirit from paid/private experiment artifacts; follow
+  docs/repository_scope_policy.md.
 
 Required verification before reporting:
 <commands>

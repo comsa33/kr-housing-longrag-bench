@@ -4,7 +4,8 @@ Status date: 2026-06-06
 
 This roadmap supersedes the older v0.5-centered expansion roadmap for post-`v0.6.3` work. The dataset is
 already public as a seed benchmark. The remaining work is to turn it into a stable, paper-grade, and
-eventually leaderboard-ready benchmark.
+eventually leaderboard-ready benchmark. Repository/package boundaries are governed by
+`docs/repository_scope_policy.md`.
 
 ## 0. Current Baseline: v0.6.3
 
@@ -25,8 +26,21 @@ It is not yet:
 - human-validated;
 - sealed-hidden;
 - leaderboard-ready;
-- supported by real model baseline tables;
+- supported by release-grade model baseline tables;
 - large enough for a strong v1.0 benchmark paper claim.
+
+Post-`v0.6.3` development on `develop` has added a v0.7 baseline scaffold and smoke diagnostics:
+
+- provider-agnostic baseline runner for OpenAI, Azure OpenAI, Anthropic, Gemini, and Ollama;
+- locator-only, full-context, BM25 RAG, dense RAG, hybrid RAG, and oracle-page smoke protocols;
+- retrieval diagnostics for read failures vs retrieval misses;
+- page-diversity diagnostics showing dense misses on the 22-item quote slice were partly chunk-duplication
+  artifacts;
+- non-quote retrieval diagnostics showing that removing verbatim quotes hurts every retriever but BM25 still
+  leads on that 69-item slice.
+
+These are **research-preview diagnostics**, not release-grade benchmark tables. They should inform the next
+baseline design but should not be advertised as leaderboard results.
 
 ## 1. Target v1.0 Claim
 
@@ -54,13 +68,25 @@ Avoid these claims:
 | `v0.9` | Source/QA expansion and context-bundle balancing | paper-candidate dataset |
 | `v1.0` | Stable schema, sealed hidden protocol, baseline paper tables | paper-grade benchmark |
 
-## 3. v0.7: Baseline Experiments
+## 3. v0.7: Baseline Experiments and Packaging
 
 Goal: make the benchmark empirically useful, not just downloadable.
 
-Minimum deliverables:
+Completed on `develop`:
 
-- Baseline result document: `docs/baseline_results_v07.md`.
+- `scripts/run_llm_baseline_v07.py`: provider-agnostic runner with public-safe output policy.
+- `docs/baseline_results_v07.md`: locator-only baseline protocol and first closed-book floor numbers.
+- `docs/full_context_smoke_v07.md`: 22-item full-context smoke showing document access changes the task from
+  closed-book floor to usable accuracy.
+- `docs/rag_smoke_v07.md`: BM25/oracle RAG smoke on the same 22 items.
+- `docs/dense_hybrid_rag_smoke_v07.md`: BM25/dense/hybrid comparison and answer-error decomposition.
+- `docs/rag_page_diversity_diagnostics_v07.md`: page-diversity retrieval diagnostics.
+- `docs/rag_non_quote_retrieval_diagnostics_v07.md`: non-quote retrieval diagnostics.
+
+Remaining v0.7 deliverables before tagging a public `v0.7` release:
+
+- Expand `docs/baseline_results_v07.md` from the current smoke-level draft into a release-grade result
+  document covering the command examples and result cuts below.
 - Prediction files under `workspace_local/audit/baselines/` for any run that uses gold/internal context.
 - Public-safe command examples for:
   - full-context LLM;
@@ -79,10 +105,26 @@ Minimum deliverables:
 
 Acceptance criteria:
 
-- At least 3 non-trivial baselines beyond oracle/dummy/echo/random.
+- At least 3 non-trivial baselines beyond oracle/dummy/echo/random are documented as smoke or release-grade.
 - Every baseline produces `{qa_id, prediction}` JSONL and is scored by `scripts/eval_harness_v06.py`.
 - Costs, model names, context limits, retrieval settings, and run date are recorded.
 - No hidden answers are published.
+- Public docs clearly separate:
+  - dataset/evaluation artifacts suitable for `main`, Hugging Face, and Zenodo;
+  - internal prompt/prediction artifacts under `workspace_local/`;
+  - experimental diagnostics that should stay on `develop` until released.
+
+Recommended next v0.7 work:
+
+1. Package the v0.7 baseline scaffold for public readability:
+   - update `README.md`, `DATASET_CARD.md`, and `docs/baseline_results_v07.md`;
+   - summarize smoke results without overclaiming;
+   - keep all full prompts, predictions, bundle text, and provider logs internal.
+2. Decide whether to run a small paid page-diverse answer remeasurement:
+   - only after explicit maintainer approval;
+   - run on a fixed smoke slice;
+   - report cost, model ids, and date.
+3. Defer broad/full test_public answer runs until the smoke protocol is stable.
 
 ## 4. v0.8: Human Review and Repair
 
@@ -188,15 +230,37 @@ The current hidden split is masked in public split files but not a sealed leader
 
 This can be deferred until after v0.7 baselines, but v1.0 should not claim leaderboard readiness without it.
 
-## 8. Immediate Next Tasks
+## 8. Repository Scope and Split Decision
 
-Recommended order after `v0.6.3`:
+Current decision: keep this as a **single benchmark repository** through v0.7 unless experiment artifacts
+start crowding the public package. This is standard for a dataset/benchmark seed: public data files,
+dataset card, validators, scoring scripts, and minimal baseline scaffolds can live together.
 
-1. Create and push `develop`.
-2. Keep this workflow and roadmap on `develop`.
-3. Start `feature/baseline-results`.
-4. Run at least one cheap non-trivial baseline end to end.
-5. Document the baseline result table.
-6. Design sealed-hidden operation, but do not block baseline work on it.
-7. Schedule human review later when reviewers are available.
+Do **not** split just because the repo contains baseline scripts. Split only when at least one condition is
+true:
 
+- provider-specific experiment code grows beyond minimal reproducible baselines;
+- paid-run orchestration, caches, notebooks, or private submission handling become a substantial subsystem;
+- hidden/leaderboard operation needs infrastructure that must not ship with the public dataset package;
+- release consumers cannot tell which files are dataset artifacts vs internal experiment machinery.
+
+If splitting becomes necessary, use:
+
+- `kr-housing-longrag-bench`: public dataset, schema, validation, scoring, minimal baseline commands;
+- `kr-housing-longrag-experiments` or `kr-housing-longrag-baselines`: paid runs, large result tables,
+  notebooks, retriever tuning, sealed-hidden operations, and private prediction archives.
+
+The boundary is detailed in `docs/repository_scope_policy.md`.
+
+## 9. Immediate Next Tasks
+
+Recommended order after the current `develop` baseline work:
+
+1. Keep all v0.7 work on `develop`; do not touch `main` until a release decision is made.
+2. Create `feature/v07-release-docs-and-scope`.
+3. Update public-facing docs so v0.7 baseline work is discoverable but clearly labelled research-preview.
+4. Confirm `docs/repository_scope_policy.md` is referenced from README, roadmap, and worker handoff docs.
+5. Confirm no internal artifacts are tracked.
+6. Run public-safe validation gates.
+7. After docs are clean, decide whether to tag `v0.7` or keep collecting baseline evidence.
+8. Schedule human review later when reviewers are available.
