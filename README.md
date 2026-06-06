@@ -166,6 +166,7 @@ Docs:
 - `docs/v0.6_quality_report.md`: realism / bundles / splits / verification report
 - `docs/release_checklist.md`: pre-tag gate checklist
 - `docs/source_selection_and_license_audit.md`: license and source policy
+- `docs/repository_scope_policy.md`: what belongs in this benchmark repo vs future experiment repos
 - `docs/agent_workflow.md`: Codex / Claude Code branch, verification, and handoff workflow
 - `docs/v1_roadmap.md`: post-v0.6.3 roadmap from baseline experiments to v1.0
 - `prompts/worker_corpus_build_prompt.md`: worker prompt for acquisition/license/extraction/annotation
