@@ -65,8 +65,9 @@ def _has_verbatim_quote(question: str, bundle_norm: str) -> bool:
     that appears verbatim in the bundle text — i.e. a lexical-favourable 'quote' question."""
     for rx in _QUOTE_RES:
         for s in rx.findall(question):
-            if _norm(s) and _norm(s) in bundle_norm:
-                return True
+            s_norm = _norm(s)  # require the NORMALIZED quote to still meet the length floor, so a
+            if len(s_norm) >= MIN_QUOTE_LEN and s_norm in bundle_norm:  # whitespace-padded short quote
+                return True                                            # isn't a trivial false positive
     return False
 
 
@@ -78,6 +79,8 @@ def select_non_quote(split: str, max_items: int) -> list:
         rows = [json.loads(l) for l in f if l.strip()]
     pages_cache: dict = {}
     norm_cache: dict = {}
+    missing_bundles: set = set()
+    dropped_missing = 0
     out = []
     for r in rows:
         if r.get("split") != split or not r.get("bundle_id") or not r.get("page_ids"):
@@ -87,14 +90,27 @@ def select_non_quote(split: str, max_items: int) -> list:
         bid = r["bundle_id"]
         if bid not in pages_cache:
             bf = BUNDLES / f"{bid}.txt"
-            text = bf.read_text(encoding="utf-8") if bf.exists() else ""
-            pages_cache[bid] = {p for p, _ in rb.split_pages(text)} if text else set()
-            norm_cache[bid] = _norm(text)
+            if bf.exists():
+                text = bf.read_text(encoding="utf-8")
+                pages_cache[bid] = {p for p, _ in rb.split_pages(text)}
+                norm_cache[bid] = _norm(text)
+            else:  # a SELECTED bundle is missing -> remember it so we can warn (don't shrink silently)
+                pages_cache[bid] = set()
+                norm_cache[bid] = ""
+                missing_bundles.add(bid)
+        if bid in missing_bundles:
+            dropped_missing += 1
+            continue
         if not (set(r["page_ids"]) & pages_cache[bid]):        # gold page must be retrievable in the bundle
             continue
         if _has_verbatim_quote(r["question"], norm_cache[bid]):  # drop verbatim-quote questions
             continue
         out.append(r)
+    if missing_bundles:
+        print(f"  WARNING: {len(missing_bundles)} selected bundle file(s) missing under "
+              f"{BUNDLES.relative_to(ROOT)} -> {dropped_missing} qualifying QA dropped; the non_quote slice "
+              f"is INCOMPLETE and NOT reproducible until the bundles are rebuilt. Missing: "
+              f"{', '.join(sorted(missing_bundles))}")
     out.sort(key=lambda r: r["qa_id"])
     return out[:max_items]
 
