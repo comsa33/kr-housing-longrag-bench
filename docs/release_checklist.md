@@ -126,5 +126,6 @@ QA)**. See `docs/v0.7_release_plan.md` and `docs/repository_scope_policy.md`.
       DOI `10.5281/zenodo.20570856`, recorded in `CITATION.cff` / `README.md` / `DATASET_CARD.md`.
       **Hugging Face: not updated** until separately approved. Versions, citation, license, DOI state, and
       caveats must agree across GitHub / Zenodo (and HF once uploaded).
-- [ ] `main` untouched and **no tag created in the metadata PR**; the `v0.7` tag is created only after
-      `develop` → `main` is explicitly approved.
+- [ ] **No new tag/release is created or rewritten by this DOI-sync PR**; the existing `v0.7` tag and
+      GitHub release remain unchanged. `data/`, `scripts/`, `workspace_local/`, QA files, and baseline
+      results are unchanged.
