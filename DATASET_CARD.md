@@ -102,24 +102,24 @@ Do not use this benchmark to provide legal, financial, or housing eligibility ad
 
 ## Citation
 
-If you use this benchmark, cite it via the Zenodo **concept DOI** (always resolves to the latest version):
+If you use this benchmark, cite the **v0.7 release** by its Zenodo versioned DOI (or use the concept DOI to
+always cite the latest version):
 
 ```bibtex
-@dataset{lee_kr_housing_longrag_bench_2026,
+@dataset{lee_kr_housing_longrag_bench_v07_2026,
   author    = {Lee, Ruo},
   title     = {KR-Housing-LongRAG-Bench},
   year      = {2026},
   version   = {v0.7 (research-preview; dataset build v0.6)},
   publisher = {Zenodo},
-  doi       = {10.5281/zenodo.20559127},
-  url       = {https://doi.org/10.5281/zenodo.20559127},
-  note      = {Research-preview release (baseline scaffold + smoke diagnostics) over the unchanged v0.6 dataset build; the v0.6 data is archived as v0.6.3 (versioned DOI 10.5281/zenodo.20563604). A v0.7-specific Zenodo versioned DOI, if minted, will be added at release.}
+  doi       = {10.5281/zenodo.20570856},
+  url       = {https://doi.org/10.5281/zenodo.20570856},
+  note      = {Research-preview release (baseline scaffold + smoke diagnostics) over the unchanged v0.6 dataset build; the v0.6 data is archived as v0.6.3 (versioned DOI 10.5281/zenodo.20563604).}
 }
 ```
 
-DOI state (honest): the concept DOI `10.5281/zenodo.20559127` resolves to the latest version; the v0.6
-dataset build is archived as v0.6.3 (versioned DOI `10.5281/zenodo.20563604`). The `v0.7` research-preview
-release reuses that v0.6 data — a v0.7-specific Zenodo versioned DOI is **not yet minted** and will be
-added only if/when a v0.7 Zenodo deposit is created.
+DOI state: the v0.7 versioned DOI is `10.5281/zenodo.20570856` (Zenodo, 2026-06-06); the concept DOI
+`10.5281/zenodo.20559127` always resolves to the latest version; the v0.6 dataset build is archived as
+v0.6.3 (versioned DOI `10.5281/zenodo.20563604`), and the `v0.7` release reuses that v0.6 data.
 
 Machine-readable citation metadata is provided in `CITATION.cff`.
