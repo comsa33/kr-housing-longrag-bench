@@ -6,8 +6,9 @@ final benchmark results. No real model results are reported here unless an expli
 and recorded under `workspace_local/audit/baselines/`. This is a research-preview scaffold, not a
 leaderboard, not human-validated, not sealed-hidden, and makes no perfect / hallucination-free claim.
 
-As of this draft, only **offline smoke tests** (`--dry-run`, `--mock`) have been run — no paid API calls.
-The results tables below are intentionally left empty pending real runs.
+As of 2026-06-06, the first **real (paid) locator-only runs** on `test_public` are recorded in §4 (OpenAI
+gpt-4o-mini / gpt-4o / gpt-5.4); the runner is otherwise exercised via `--dry-run` / `--mock`. No full
+`dev` or hidden-split paid runs have been made, and no hidden answers or keys are published.
 
 ## 1. What the runner does
 
@@ -72,7 +73,9 @@ python3 scripts/eval_harness_v06.py --pred workspace_local/audit/baselines/opena
 
 Reasoning models (OpenAI `gpt-5*`, `o1`/`o3`/`o4*`): the adapter automatically sends
 `max_completion_tokens` instead of `max_tokens` and omits `temperature` (these models reject the legacy
-params). Use a **larger** `--max-output-tokens` (e.g. 4000) so reasoning tokens do not starve the answer:
+params), so the CLI `--temperature` value is **ignored** for them. Use a **larger** `--max-output-tokens`
+(e.g. 4000) so reasoning tokens do not starve the answer. For Azure (where `--model` is a deployment name
+the auto-detector cannot classify), force the mode with `--reasoning on|off`:
 
 ```bash
 python3 scripts/run_llm_baseline_v07.py --provider openai --model gpt-5.4 --split test_public \
