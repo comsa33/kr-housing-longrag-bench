@@ -8,13 +8,26 @@ abstract: >-
   HUG 분양이력), and housing statutes. The public release contains QA labels,
   evidence locators, deterministic predicates, answerability labels, split and
   provider/region metadata, and long-context-bundle references — no raw source
-  documents, no leaked answers, and no API keys.
+  documents, no leaked answers, and no API keys. The v0.7 release is a research preview that adds a
+  provider-agnostic baseline runner, full-context / RAG smoke docs, retrieval diagnostics, and a
+  repository scope policy on top of the unchanged v0.6 dataset build (2,011 QA); it is not
+  leaderboard-ready, human-validated, sealed-hidden, or a final model ranking.
 type: dataset
-version: v0.6.3
-date-released: "2026-06-05"
+version: v0.7
+date-released: "2026-06-06"
 license: CC-BY-4.0
 repository-code: "https://github.com/comsa33/kr-housing-longrag-bench"
-doi: "10.5281/zenodo.20563604"
+# Concept DOI (always resolves to the latest version). The v0.7 research-preview release reuses the v0.6
+# dataset build, whose archived deposit is the v0.6.3 versioned DOI below; a v0.7-specific Zenodo
+# versioned DOI, if minted, will be added at release time.
+doi: "10.5281/zenodo.20559127"
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.20559127"
+    description: "Concept DOI (all versions; resolves to the latest)."
+  - type: doi
+    value: "10.5281/zenodo.20563604"
+    description: "Versioned DOI for the v0.6.3 dataset-build archive (the v0.7 research preview reuses this v0.6 data)."
 authors:
   - family-names: Lee
     given-names: Ruo

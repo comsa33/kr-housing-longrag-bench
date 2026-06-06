@@ -10,7 +10,10 @@ This seed benchmark is designed for research on Korean long-context document und
 
 ## Dataset Status
 
-Release: `v0.6.3`; dataset build: `v0.6` (lineage: `v0.1-seed` → `v0.2` → `v0.3-dev` → `v0.4-public` → `v0.5-dev` → `v0.6` source-expansion → `v0.6` quality)
+Release: `v0.7` (research-preview); dataset build: `v0.6` (2,011 QA, **unchanged**; prior data release
+`v0.6.3`). Lineage: `v0.1-seed` → `v0.2` → `v0.3-dev` → `v0.4-public` → `v0.5-dev` → `v0.6`
+source-expansion → `v0.6` quality → `v0.7` research-preview (baseline scaffold + smoke diagnostics; no
+data change).
 
 Canonical v0.6 files: `data/qa_v0.6_realistic_candidates.jsonl` (full set, realism + cluster + bundle
 metadata) and the release splits `data/qa_v0.6_dev.jsonl` / `data/qa_v0.6_test_public.jsonl` /
@@ -33,12 +36,13 @@ Usage: `docs/quickstart_v06.md` (load → build prompts → score → baselines)
 (full-context vs RAG vs table/tool protocol), `docs/dataset_statistics_v06.md` (count tables). Scoring:
 `python3 scripts/eval_harness_v06.py --pred <predictions>.jsonl` (plain + cluster-weighted accuracy).
 
-Develop / v0.7 research preview: the current public release remains **`v0.6.3`** (the data above). The
-`develop` branch additionally carries a **v0.7 baseline scaffold and retrieval diagnostics** (index:
-`docs/baseline_results_v07.md`). Those are **smoke-scale research-preview diagnostics, not release-grade
-benchmark tables** — not leaderboard-ready, not human-validated, not a final model ranking — and they do
-not change this dataset. Full prompts, predictions, bundle text, and provider logs stay internal under
-`workspace_local/` (`docs/repository_scope_policy.md`).
+v0.7 research-preview release: the `v0.7` release adds a provider-agnostic **baseline runner**,
+**full-context / RAG smoke docs**, **retrieval diagnostics**, and a **repository scope policy** (index:
+`docs/baseline_results_v07.md`) on top of the **same v0.6 dataset build (2,011 QA, unchanged)**. Those are
+**smoke-scale research-preview diagnostics, not release-grade benchmark tables** — not leaderboard-ready,
+not human-validated, not sealed-hidden, not a final model ranking — and they do not change this dataset.
+No raw source documents, full prompts, predictions, bundle text, hidden gold, provider logs, or keys are
+published; those stay internal under `workspace_local/` (`docs/repository_scope_policy.md`).
 
 **Scope: public-ready seed benchmark, NOT leaderboard-ready.** The v0.6 quality pass naturalized question
 phrasing (answers/predicates/evidence unchanged; cloze 34% → ~8%), materialized multi-provider
@@ -98,21 +102,24 @@ Do not use this benchmark to provide legal, financial, or housing eligibility ad
 
 ## Citation
 
-If you use this benchmark, cite the Zenodo-archived v0.6.3 release as:
+If you use this benchmark, cite it via the Zenodo **concept DOI** (always resolves to the latest version):
 
 ```bibtex
-@dataset{lee_kr_housing_longrag_bench_v063_2026,
+@dataset{lee_kr_housing_longrag_bench_2026,
   author    = {Lee, Ruo},
   title     = {KR-Housing-LongRAG-Bench},
   year      = {2026},
-  version   = {v0.6.3},
+  version   = {v0.7 (research-preview; dataset build v0.6)},
   publisher = {Zenodo},
-  doi       = {10.5281/zenodo.20563604},
-  url       = {https://doi.org/10.5281/zenodo.20563604},
-  note      = {Public-ready seed benchmark for Korean housing long-context, RAG, and table reasoning evaluation}
+  doi       = {10.5281/zenodo.20559127},
+  url       = {https://doi.org/10.5281/zenodo.20559127},
+  note      = {Research-preview release (baseline scaffold + smoke diagnostics) over the unchanged v0.6 dataset build; the v0.6 data is archived as v0.6.3 (versioned DOI 10.5281/zenodo.20563604). A v0.7-specific Zenodo versioned DOI, if minted, will be added at release.}
 }
 ```
 
-Concept DOI for all versions: `10.5281/zenodo.20559127`.
+DOI state (honest): the concept DOI `10.5281/zenodo.20559127` resolves to the latest version; the v0.6
+dataset build is archived as v0.6.3 (versioned DOI `10.5281/zenodo.20563604`). The `v0.7` research-preview
+release reuses that v0.6 data — a v0.7-specific Zenodo versioned DOI is **not yet minted** and will be
+added only if/when a v0.7 Zenodo deposit is created.
 
 Machine-readable citation metadata is provided in `CITATION.cff`.

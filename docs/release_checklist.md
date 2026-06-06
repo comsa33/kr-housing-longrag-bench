@@ -99,10 +99,10 @@ python3 scripts/verify_qa.py --qa data/qa_v0.6_realistic_candidates.jsonl
       announcement-year mismatch, near-duplicate parametric QA, human-review status).
 - [ ] No overclaiming: if any gate fails, the release is not called public-ready.
 
-## 8. v0.7 research-preview pre-release (baseline scaffold + diagnostics)
+## 8. v0.7 research-preview release (baseline scaffold + diagnostics)
 
-Use this before deciding whether to tag a `v0.7` research-preview release. See `docs/v0.7_release_plan.md`
-and `docs/repository_scope_policy.md`.
+Decision made: tag `v0.7` as a research-preview release over the **unchanged v0.6 dataset build (2,011
+QA)**. See `docs/v0.7_release_plan.md` and `docs/repository_scope_policy.md`.
 
 - [ ] All v0.7 baseline/diagnostic docs are labelled **research-preview** and link from
       `docs/baseline_results_v07.md` (the v0.7 index).
@@ -111,12 +111,18 @@ and `docs/repository_scope_policy.md`.
       `workspace_local/raw/.gitkeep`, `workspace_local/secrets/README.txt`); no prompts, predictions,
       bundle text, raw files, keys, hidden gold, or provider logs are tracked (also confirmed by the
       readiness gate's secret/raw scans).
-- [ ] `README.md` and `DATASET_CARD.md` agree: current public release is `v0.6.3`; v0.7 is a
-      develop-only research preview (not leaderboard-ready / human-validated / sealed-hidden / final
-      ranking / paper-grade).
-- [ ] No general dense-vs-BM25 or model-ranking claim is made from smoke slices; costs/model-ids/dates
-      are recorded for any paid run.
-- [ ] Hugging Face and Zenodo are **not** updated until an actual `v0.7` tag/release decision is made
-      (versions, citation, license, and caveats must agree across GitHub/HF/Zenodo before a release is
-      called done).
-- [ ] `main` untouched and no tag created during packaging preparation.
+- [ ] `README.md`, `DATASET_CARD.md`, and `CITATION.cff` agree: **release version `v0.7`
+      (research-preview)** over **dataset build `v0.6` (2,011 QA, unchanged; prior data release
+      `v0.6.3`)**; not leaderboard-ready / human-validated / sealed-hidden / final ranking / paper-grade.
+- [ ] DOI state is honest and consistent across surfaces: concept DOI `10.5281/zenodo.20559127` (latest)
+      is the citation DOI; the v0.6 data is archived as v0.6.3 (versioned DOI `10.5281/zenodo.20563604`);
+      **no fabricated v0.7 DOI** — a v0.7 versioned DOI is added only if/when a v0.7 Zenodo deposit is
+      minted.
+- [ ] No general dense-vs-BM25 or model-ranking claim is made from smoke slices; baseline results are
+      labelled smoke-scale / research-preview; costs/model-ids/dates are recorded for any prior paid run.
+- [ ] No raw source documents and no hidden gold are published.
+- [ ] Hugging Face and Zenodo are updated **only after** the `v0.7` GitHub tag/release (see
+      `docs/v0.7_release_plan.md` §3); versions, citation, license, DOI state, and caveats must agree
+      across GitHub / HF / Zenodo before the release is called done.
+- [ ] `main` untouched and **no tag created in the metadata PR**; the `v0.7` tag is created only after
+      `develop` → `main` is explicitly approved.

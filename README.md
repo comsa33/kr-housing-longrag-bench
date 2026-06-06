@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/comsa33/kr-housing-longrag-bench/actions/workflows/ci.yml/badge.svg)](https://github.com/comsa33/kr-housing-longrag-bench/actions/workflows/ci.yml)
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](LICENSE)
-[![DOI](https://zenodo.org/badge/DOI/10.5281%2Fzenodo.20563604.svg)](https://doi.org/10.5281/zenodo.20563604)
+[![DOI](https://zenodo.org/badge/DOI/10.5281%2Fzenodo.20559127.svg)](https://doi.org/10.5281/zenodo.20559127)
 
 **A copyright-safe Korean long-context benchmark for testing whether full-context LLMs can replace or
 complement RAG / table-tool pipelines** on real housing announcements (입주자모집공고), public
@@ -11,7 +11,10 @@ tabular data (MOLIT 실거래 / HUG 분양이력), and housing statutes.
 - **What it is:** 2,011 verified QA over 41 official announcements (10 providers) + public tabular data +
   3 statutes, with evidence locators, deterministic predicates, answerability labels, and
   long-context-bundle references — **no raw PDFs/HWPs, no API keys**.
-- **Current release:** `v0.6.3` (dataset build `v0.6`) — **public-ready seed benchmark, NOT leaderboard-ready** (see caveats below).
+- **Current release:** `v0.7` (research-preview) over **dataset build `v0.6` (2,011 QA, unchanged)** —
+  **public-ready seed benchmark, NOT leaderboard-ready** (see caveats below). v0.7 adds a baseline runner,
+  full-context / RAG smoke docs, retrieval diagnostics, and a repository scope policy; the data is the
+  same v0.6 build (prior data release `v0.6.3`).
 - **Canonical file:** `data/qa_v0.6_realistic_candidates.jsonl`. Splits: `data/qa_v0.6_dev.jsonl` (1,618),
   `data/qa_v0.6_test_public.jsonl` (105), `data/qa_v0.6_test_hidden_questions.jsonl` (288, answers masked).
 - **Quickstart:** [`docs/quickstart_v06.md`](docs/quickstart_v06.md) · **Stats:**
@@ -23,7 +26,7 @@ tabular data (MOLIT 실거래 / HUG 분양이력), and housing statutes.
 
 This is a seed package, not a finished large-scale benchmark. It is structured so the dataset can grow into a paper-grade benchmark without redistributing copyrighted PDFs/HWPs.
 
-## Current Release: v0.6.3 / Dataset Build: v0.6 (2,011 QA)
+## Current Release: v0.7 research-preview / Dataset Build: v0.6 (2,011 QA, unchanged)
 
 **Canonical set: `data/qa_v0.6_realistic_candidates.jsonl` — 2,011 verified QA** across 13 task families,
 built over **41 official announcements** from 10 providers (LH, SH, GH, iH, JPDC, 부산도시공사,
@@ -94,14 +97,16 @@ uv run pre-commit run --all-files
 The `uv` environment is for development, Hugging Face smoke tests, and local hooks. Public scoring and
 validation remain runnable with plain `python3`.
 
-## v0.7 on develop (research preview)
+## v0.7 research-preview release
 
-The current **public release is still `v0.6.3`** (the dataset above). The `develop` branch carries a
-**v0.7 baseline scaffold and retrieval diagnostics** built on the same v0.6.3 data. These are
-**research-preview** materials — they are **not** leaderboard-ready, human-validated, sealed-hidden, a
-final model ranking, or paper-grade. They run on small fixed smoke slices and are **not** a general
-dense-vs-BM25 conclusion. No paid-run outputs, full prompts, bundle text, predictions, or hidden answers
-are published; those stay internal under `workspace_local/` (see `docs/repository_scope_policy.md`).
+The `v0.7` release is a **research preview** built on the **same v0.6 dataset build (2,011 QA, unchanged;
+prior data release `v0.6.3`)**. It adds a provider-agnostic **baseline runner**, **full-context / RAG smoke
+docs**, **retrieval diagnostics**, and a **repository scope policy** — it does **not** change the dataset.
+These materials are **not** leaderboard-ready, human-validated, sealed-hidden, a final model ranking, or
+paper-grade. They run on small fixed smoke slices and are **not** a general dense-vs-BM25 conclusion. No
+raw source documents, paid-run outputs, full prompts, bundle text, predictions, provider logs, hidden gold,
+or keys are published; those stay internal under `workspace_local/` (see
+`docs/repository_scope_policy.md`).
 
 Baseline / scaffold docs — index: [`docs/baseline_results_v07.md`](docs/baseline_results_v07.md):
 
@@ -217,22 +222,25 @@ permits it. Korean statutes/rules fall under the non-protected categories of Cop
 
 ## Citation
 
-If you use this benchmark, cite the Zenodo-archived v0.6.3 release as:
+If you use this benchmark, cite it via the Zenodo **concept DOI** (always resolves to the latest version):
 
 ```bibtex
-@dataset{lee_kr_housing_longrag_bench_v063_2026,
+@dataset{lee_kr_housing_longrag_bench_2026,
   author    = {Lee, Ruo},
   title     = {KR-Housing-LongRAG-Bench},
   year      = {2026},
-  version   = {v0.6.3},
+  version   = {v0.7 (research-preview; dataset build v0.6)},
   publisher = {Zenodo},
-  doi       = {10.5281/zenodo.20563604},
-  url       = {https://doi.org/10.5281/zenodo.20563604},
-  note      = {Public-ready seed benchmark for Korean housing long-context, RAG, and table reasoning evaluation}
+  doi       = {10.5281/zenodo.20559127},
+  url       = {https://doi.org/10.5281/zenodo.20559127},
+  note      = {Research-preview release (baseline scaffold + smoke diagnostics) over the unchanged v0.6 dataset build; the v0.6 data is archived as v0.6.3 (versioned DOI 10.5281/zenodo.20563604). A v0.7-specific Zenodo versioned DOI, if minted, will be added at release.}
 }
 ```
 
-Concept DOI for all versions: `10.5281/zenodo.20559127`.
+DOI state (honest): the **concept DOI `10.5281/zenodo.20559127`** resolves to the latest version; the
+**v0.6 dataset build** is archived as **v0.6.3, versioned DOI `10.5281/zenodo.20563604`**. The `v0.7`
+research-preview release reuses that v0.6 data — a v0.7-specific Zenodo versioned DOI is **not yet minted**
+and will be added only if/when a v0.7 Zenodo deposit is created.
 
 The machine-readable citation metadata is also available in [`CITATION.cff`](CITATION.cff). GitHub's
 "Cite this repository" button uses that file automatically.
