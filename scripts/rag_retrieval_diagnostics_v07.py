@@ -55,7 +55,8 @@ def main() -> int:
     ap.add_argument("--max-items", type=int, default=40)
     ap.add_argument("--chunk-chars", type=int, default=1200)
     ap.add_argument("--retriever", choices=["bm25", "dense", "hybrid"], default="bm25",
-                    help="ranking method for hit@k (dense/hybrid need OPENAI_API_KEY for embeddings)")
+                    help="ranking method for hit@k; dense/hybrid need OPENAI_API_KEY and the optional "
+                         "baseline deps (uv sync --extra baseline)")
     ap.add_argument("--ks", default="1,3,5,10")
     ap.add_argument("--cross-ref", default="gpt-4o-mini,gpt-5.4",
                     help="internal prediction model ids to split errors into retrieval-miss vs read-miss")
@@ -166,8 +167,10 @@ def main() -> int:
         print(f"\n[cross-ref {m}] retrieval hit@5 vs answer correctness:")
         print(f"  retrieved gold (hit@5):  correct {cells['hit_correct']}  wrong {cells['hit_wrong']}")
         print(f"  missed gold  (miss@5):   correct {cells['miss_correct']}  wrong {cells['miss_wrong']}")
-        print(f"  -> read-miss (retrieved but wrong): {cells['hit_wrong']};  "
-              f"retrieval-miss (gold not retrieved): {cells['miss_correct'] + cells['miss_wrong']}")
+        misses = cells["miss_correct"] + cells["miss_wrong"]
+        print(f"  -> answer errors: read failures (gold retrieved but wrong) {cells['hit_wrong']}; "
+              f"gold-page misses@5 {misses} (of which wrong {cells['miss_wrong']}, "
+              f"still-correct {cells['miss_correct']})")
     return 0
 
 

@@ -74,13 +74,28 @@ class BM25:
 
 
 EMBED_MODEL = "text-embedding-3-small"
+_OPENAI_CLIENT = None
+
+
+def get_openai_client():
+    """Return a cached OpenAI client (constructed once, reused across embed calls). Fails with a clear
+    message if the optional baseline dependencies are missing (instead of a raw ImportError)."""
+    global _OPENAI_CLIENT
+    if _OPENAI_CLIENT is None:
+        try:
+            import openai  # lazy
+        except ImportError as exc:
+            raise SystemExit(
+                "dense/hybrid retrieval requires the optional baseline dependencies. "
+                "Run: uv sync --extra baseline  (and set OPENAI_API_KEY)."
+            ) from exc
+        _OPENAI_CLIENT = openai.OpenAI()  # reads OPENAI_API_KEY from the environment
+    return _OPENAI_CLIENT
 
 
 def embed_texts(texts: list) -> list:
-    """OpenAI embeddings (lazy import; needs OPENAI_API_KEY). Batched."""
-    import openai  # lazy
-
-    client = openai.OpenAI()
+    """OpenAI embeddings (needs OPENAI_API_KEY + baseline deps). Batched; reuses the cached client."""
+    client = get_openai_client()
     out: list = []
     for i in range(0, len(texts), 256):
         resp = client.embeddings.create(model=EMBED_MODEL, input=texts[i:i + 256])
@@ -88,22 +103,21 @@ def embed_texts(texts: list) -> list:
     return out
 
 
-def _cosine(a: list, b: list) -> float:
-    dot = sum(x * y for x, y in zip(a, b))
-    na = math.sqrt(sum(x * x for x in a))
-    nb = math.sqrt(sum(y * y for y in b))
-    return dot / (na * nb) if na and nb else 0.0
+def _embedding_similarity(a: list, b: list) -> float:
+    """Dot-product similarity. text-embedding-3-small returns unit-normalized vectors, so for this fixed
+    embedding model the dot product is equivalent to cosine similarity (and is cheaper / deterministic)."""
+    return sum(x * y for x, y in zip(a, b))
 
 
 class DenseIndex:
-    """Dense retrieval over chunk embeddings (cosine similarity)."""
+    """Dense retrieval over chunk embeddings (dot-product similarity; see _embedding_similarity)."""
 
     def __init__(self, docs: list):
         self.vecs = embed_texts(docs)
 
     def top_k(self, query: str, k: int) -> list:
         qv = embed_texts([query])[0]
-        sims = [(_cosine(qv, v), i) for i, v in enumerate(self.vecs)]
+        sims = [(_embedding_similarity(qv, v), i) for i, v in enumerate(self.vecs)]
         sims.sort(key=lambda x: (-x[0], x[1]))
         return [i for _, i in sims[:k]]
 
@@ -188,10 +202,12 @@ def retrieve(retriever: str, rec: dict, chunks: list, k: int, bid: str,
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--retriever", choices=["bm25", "dense", "hybrid", "oracle"], required=True)
+    ap.add_argument("--retriever", choices=["bm25", "dense", "hybrid", "oracle"], required=True,
+                    help="bm25/oracle need no extra deps; dense/hybrid need OPENAI_API_KEY and the "
+                         "optional baseline deps (uv sync --extra baseline)")
     ap.add_argument("--k", type=int, default=5,
                     help="top-k passages for bm25/dense/hybrid (oracle uses gold-page chunks); "
-                         "dense/hybrid need OPENAI_API_KEY for embeddings")
+                         "dense/hybrid embeddings need OPENAI_API_KEY + uv sync --extra baseline")
     ap.add_argument("--chunk-chars", type=int, default=1200, help="passage size for sub-page chunking")
     ap.add_argument("--split", default="test_public", choices=["test_public", "dev"])
     ap.add_argument("--tiers", default="32k,64k")

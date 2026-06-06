@@ -11,7 +11,9 @@ Same page-aware ~1,200-char chunking as the RAG smoke. Retrievers (`scripts/buil
 --retriever …`, `scripts/rag_retrieval_diagnostics_v07.py --retriever …`):
 
 - `bm25` — pure-python Okapi BM25 (word tokens + Korean char bigrams).
-- `dense` — OpenAI `text-embedding-3-small` over the chunks, cosine similarity (lazy SDK; needs the key).
+- `dense` — OpenAI `text-embedding-3-small` over the chunks, **dot-product** similarity (these embeddings
+  are unit-normalized, so dot product is equivalent to cosine for this fixed model; lazy SDK, needs the key
+  + `uv sync --extra baseline`).
 - `hybrid` — reciprocal-rank fusion (RRF, k=60) of the BM25 and dense rankings.
 
 ## 2. Retrieval quality (gold-page hit@k, same 22)
@@ -36,14 +38,32 @@ Same page-aware ~1,200-char chunking as the RAG smoke. Retrievers (`scripts/buil
 | oracle page | 9/22 = 40.9% | 18/22 = 81.8% |
 | full-context | 13/22 = 59.1% | 19/22 = 86.4% |
 
-Retrieval quality **predicts** answer accuracy: better retrieval → better answers. For gpt-5.4,
-`full-context (86.4%) > bm25 = oracle (81.8%) > hybrid (68.2%) > dense (45.5%) ≫ locator (4.5%)`. bm25 ≈
-oracle because bm25 retrieves the gold page essentially perfectly (hit@3 = 100%), so it has the same
-sufficient context as the gold page.
+Retrieval quality **explains much of the answer-accuracy trend, but read failures remain substantial**.
+For gpt-5.4, `full-context (86.4%) > bm25 = oracle (81.8%) > hybrid (68.2%) > dense (45.5%) ≫ locator
+(4.5%)`. bm25 ≈ oracle because bm25 retrieves the gold page essentially perfectly (hit@3 = 100%), so it has
+the same sufficient context as the gold page.
 
-Error decomposition (hit@5 vs answer correctness): bm25 and hybrid have **0 retrieval-misses** (all errors
-are read-misses); **dense has 3 retrieval-misses** (gold page not in top-5) that turn into wrong answers —
-which is exactly why dense scores lowest.
+Error decomposition (gpt-5.4, hit@5 vs answer correctness):
+
+| retriever | hit_correct | hit_wrong (read failure) | miss_correct | miss_wrong |
+|---|---:|---:|---:|---:|
+| bm25 | 18 | 4 | 0 | 0 |
+| hybrid | 15 | 7 | 0 | 0 |
+| dense | 9 | 10 | 1 | 2 |
+
+dense had **3 gold-page misses@5, but only 2 became wrong answers** — the 3rd (`miss_correct = 1`) was
+still answered correctly from another retrieved page. bm25 and hybrid had 0 gold-page misses, so all their
+errors are **read failures** (gold page retrieved but the model answered wrong). Read failures dominate
+every retriever (bm25 still has 4), so **read failures — not retrieval — are the larger error source
+overall**; dense simply adds 2 retrieval-driven misses on top of more read failures.
+
+> **Gold-page hit@k is an imperfect proxy.** Answers can appear on non-gold pages (dense's 1 `miss_correct`
+> above is exactly that case), and retrieving the gold page does not guarantee the model reads the right
+> span (hence the large read-failure counts). Treat hit@k as a retrieval signal, not a guarantee.
+
+The 3 dense gold-page misses@5 are `krhlrb_v05_0543`, `krhlrb_v05_0545`, `krhlrb_v05_0546`: all target page
+`…-p001`, but dense ranked it 6th/6th/7th and instead surfaced repetitive sibling pages (p002 / p002 /
+p004) whose announcement boilerplate is embedding-similar to the question.
 
 ## 4. Why BM25 wins here (important caveat)
 
@@ -79,6 +99,11 @@ python3 scripts/build_rag_smoke_v07.py --retriever hybrid --k 5 --out $B/rag_hyb
 
 - Smoke only (22 items, one task family, 3 bundles); not generalizable; no leaderboard / human-validated /
   sealed-hidden / hallucination-free / final-ranking claim. `gpt-5.4` is the only gpt-5-line model.
+- Reported answer scores were measured under the prior cosine implementation. Switching dense similarity
+  to dot-product leaves the **dense** ranking byte-identical (hit@k unchanged) and shifts only a few
+  non-gold neighbour chunks for **hybrid** (4 of 22 prompts; hit@k still 50/77.3/100). Answers were **not**
+  re-measured under dot-product (no paid reruns), so the hybrid answer numbers correspond to the cosine
+  ordering; the qualitative ordering (bm25 > hybrid > dense) is unaffected.
 - The BM25-wins result is **slice-specific** (verbatim-quote questions); do not generalize it to "dense is
   worse" without a paraphrased-question slice.
 - `contains_all` scoring can over-credit partial matches; dense is a single off-the-shelf embedding model
