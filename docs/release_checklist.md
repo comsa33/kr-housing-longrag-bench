@@ -114,15 +114,17 @@ QA)**. See `docs/v0.7_release_plan.md` and `docs/repository_scope_policy.md`.
 - [ ] `README.md`, `DATASET_CARD.md`, and `CITATION.cff` agree: **release version `v0.7`
       (research-preview)** over **dataset build `v0.6` (2,011 QA, unchanged; prior data release
       `v0.6.3`)**; not leaderboard-ready / human-validated / sealed-hidden / final ranking / paper-grade.
-- [ ] DOI state is honest and consistent across surfaces: concept DOI `10.5281/zenodo.20559127` (latest)
-      is the citation DOI; the v0.6 data is archived as v0.6.3 (versioned DOI `10.5281/zenodo.20563604`);
-      **no fabricated v0.7 DOI** — a v0.7 versioned DOI is added only if/when a v0.7 Zenodo deposit is
-      minted.
+- [ ] DOI state is honest and consistent across surfaces: the **v0.7 versioned DOI is
+      `10.5281/zenodo.20570856`** (minted by Zenodo 2026-06-06); the concept DOI `10.5281/zenodo.20559127`
+      (latest) and the v0.6.3 data-build archive DOI `10.5281/zenodo.20563604` are also recorded; no
+      fabricated DOIs.
 - [ ] No general dense-vs-BM25 or model-ranking claim is made from smoke slices; baseline results are
       labelled smoke-scale / research-preview; costs/model-ids/dates are recorded for any prior paid run.
 - [ ] No raw source documents and no hidden gold are published.
 - [ ] Hugging Face and Zenodo are updated **only after** the `v0.7` GitHub tag/release (see
-      `docs/v0.7_release_plan.md` §3); versions, citation, license, DOI state, and caveats must agree
-      across GitHub / HF / Zenodo before the release is called done.
+      `docs/v0.7_release_plan.md` §3). **Zenodo: done** — the v0.7 GitHub release auto-minted versioned
+      DOI `10.5281/zenodo.20570856`, recorded in `CITATION.cff` / `README.md` / `DATASET_CARD.md`.
+      **Hugging Face: not updated** until separately approved. Versions, citation, license, DOI state, and
+      caveats must agree across GitHub / Zenodo (and HF once uploaded).
 - [ ] `main` untouched and **no tag created in the metadata PR**; the `v0.7` tag is created only after
       `develop` → `main` is explicitly approved.
