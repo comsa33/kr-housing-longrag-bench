@@ -16,7 +16,9 @@ chunker/BM25 (scripts/build_rag_smoke_v07.py) and the harness scorer (scripts/ev
 from __future__ import annotations
 
 import argparse
+import collections
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -48,9 +50,77 @@ def select(split: str, tiers: set, max_items: int) -> list:
     return pool[:max_items]
 
 
+# ---- non-quote slice -------------------------------------------------------------------------------
+NON_QUOTE_STYLES = {"real_user", "professional_analyst"}   # excludes diagnostic_probe
+MIN_QUOTE_LEN = 5
+_QUOTE_RES = [re.compile(r'"([^"]{%d,})"' % MIN_QUOTE_LEN), re.compile(r'“([^”]{%d,})”' % MIN_QUOTE_LEN)]
+
+
+def _norm(s: str) -> str:
+    return re.sub(r"\s+", "", s)
+
+
+def _has_verbatim_quote(question: str, bundle_norm: str) -> bool:
+    """True if the question contains a content quote (>= MIN_QUOTE_LEN chars, excluding the 「」 title)
+    that appears verbatim in the bundle text — i.e. a lexical-favourable 'quote' question."""
+    for rx in _QUOTE_RES:
+        for s in rx.findall(question):
+            s_norm = _norm(s)  # require the NORMALIZED quote to still meet the length floor, so a
+            if len(s_norm) >= MIN_QUOTE_LEN and s_norm in bundle_norm:  # whitespace-padded short quote
+                return True                                            # isn't a trivial false positive
+    return False
+
+
+def select_non_quote(split: str, max_items: int) -> list:
+    """Bundled questions that do NOT quote verbatim document text: bundle_id + a gold page_id present in
+    the bundle, question_style in real_user/professional_analyst, and no verbatim content quote found in
+    the bundle. Any tier/task_type qualifies (gold-page retrieval must be evaluable)."""
+    with QA.open(encoding="utf-8") as f:
+        rows = [json.loads(l) for l in f if l.strip()]
+    pages_cache: dict = {}
+    norm_cache: dict = {}
+    missing_bundles: set = set()
+    dropped_missing = 0
+    out = []
+    for r in rows:
+        if r.get("split") != split or not r.get("bundle_id") or not r.get("page_ids"):
+            continue
+        if r.get("question_style") not in NON_QUOTE_STYLES:
+            continue
+        bid = r["bundle_id"]
+        if bid not in pages_cache:
+            bf = BUNDLES / f"{bid}.txt"
+            if bf.exists():
+                text = bf.read_text(encoding="utf-8")
+                pages_cache[bid] = {p for p, _ in rb.split_pages(text)}
+                norm_cache[bid] = _norm(text)
+            else:  # a SELECTED bundle is missing -> remember it so we can warn (don't shrink silently)
+                pages_cache[bid] = set()
+                norm_cache[bid] = ""
+                missing_bundles.add(bid)
+        if bid in missing_bundles:
+            dropped_missing += 1
+            continue
+        if not (set(r["page_ids"]) & pages_cache[bid]):        # gold page must be retrievable in the bundle
+            continue
+        if _has_verbatim_quote(r["question"], norm_cache[bid]):  # drop verbatim-quote questions
+            continue
+        out.append(r)
+    if missing_bundles:
+        print(f"  WARNING: {len(missing_bundles)} selected bundle file(s) missing under "
+              f"{BUNDLES.relative_to(ROOT)} -> {dropped_missing} qualifying QA dropped; the non_quote slice "
+              f"is INCOMPLETE and NOT reproducible until the bundles are rebuilt. Missing: "
+              f"{', '.join(sorted(missing_bundles))}")
+    out.sort(key=lambda r: r["qa_id"])
+    return out[:max_items]
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--split", default="test_public")
+    ap.add_argument("--slice", choices=["tier", "non_quote"], default="tier",
+                    help="tier = bundled items in --tiers; non_quote = bundled real_user/analyst items whose "
+                         "question does not quote verbatim document text (any tier)")
     ap.add_argument("--tiers", default="32k,64k")
     ap.add_argument("--max-items", type=int, default=40)
     ap.add_argument("--chunk-chars", type=int, default=1200)
@@ -66,10 +136,16 @@ def main() -> int:
 
     ks = [int(x) for x in args.ks.split(",") if x.strip()]
     tiers = {t.strip() for t in args.tiers.split(",") if t.strip()}
-    pool = select(args.split, tiers, args.max_items)
+    if args.slice == "non_quote":
+        pool = select_non_quote(args.split, args.max_items)
+    else:
+        pool = select(args.split, tiers, args.max_items)
     if not pool:
         print("no QA matched the selection")
         return 1
+    print(f"slice={args.slice} split={args.split}: {len(pool)} QA; "
+          f"task_type={dict(collections.Counter(r.get('task_type') for r in pool))}; "
+          f"question_style={dict(collections.Counter(r.get('question_style') for r in pool))}")
     if not BUNDLES.exists() or not any(BUNDLES.glob("*.txt")):
         print(f"internal bundle text under {BUNDLES.relative_to(ROOT)} is absent — rebuild bundles locally")
         return 1
@@ -128,11 +204,12 @@ def main() -> int:
         print(f"  {x['qa_id']}  gold_rank={x['gold_rank']}")
 
     # cross-reference retrieval hit@5 with answer correctness from internal prediction files
-    if args.per_page_max:
-        # page-diverse retrieval has no matching predictions: the existing answer files were generated
-        # from STANDARD (non-diverse) prompts, so cross-referencing them would mislabel correctness.
-        print(f"\n[cross-ref] skipped because per_page_max={args.per_page_max} retrieval does not "
-              "correspond to existing non-diverse prediction files.")
+    if args.per_page_max or args.slice != "tier":
+        # No matching predictions exist for page-diverse retrieval (answers were generated from STANDARD
+        # prompts) or for the non_quote slice (no answers were ever generated for it). Cross-referencing
+        # the existing files would mislabel correctness, so skip — this stays a retrieval-only diagnostic.
+        why = f"per_page_max={args.per_page_max}" if args.per_page_max else f"slice={args.slice}"
+        print(f"\n[cross-ref] skipped because {why} retrieval does not correspond to existing prediction files.")
         return 0
     models = [m.strip() for m in args.cross_ref.split(",") if m.strip()]
     # Cross-ref must use the SELECTED split's gold + prediction files (not a hardcoded test_public),
