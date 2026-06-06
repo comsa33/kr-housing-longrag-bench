@@ -77,7 +77,9 @@ These `long_context_retrieval` questions **quote verbatim document text** (e.g. 
 
 **So this slice favors lexical retrieval and is not evidence that dense is weak in general.** Dense/hybrid
 are expected to help where the question does **not** quote the document (paraphrased / `real_user` /
-cross-source questions). Evaluating that needs a different slice — a recommended next step.
+cross-source questions). A follow-up on a 69-item **non-quote** slice tests exactly this — and finds BM25
+*still* leads (everyone drops without quotes, but dense does not overtake), see
+`docs/rag_non_quote_retrieval_diagnostics_v07.md`.
 
 ## 5. Cost
 
