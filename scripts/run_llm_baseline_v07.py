@@ -106,6 +106,15 @@ def build_prompt(rec: dict) -> str:
     )
 
 
+def select_prompt(rec: dict) -> str:
+    """Use a pre-built `prompt` if the record carries one (e.g. INTERNAL full-context prompts that embed
+    bundle text, built by scripts/build_full_context_smoke_v07.py); otherwise build the locator-only
+    prompt. The runner never embeds bundle text itself — full-context prompts are produced offline and
+    kept under workspace_local/."""
+    p = rec.get("prompt")
+    return p if isinstance(p, str) and p.strip() else build_prompt(rec)
+
+
 # --------------------------------------------------------------------------- provider adapters
 class BaseProvider:
     name = "base"
@@ -456,9 +465,13 @@ def main(argv=None) -> int:
         print(f"temperature={args.temperature} max_output_tokens={args.max_output_tokens} "
               f"limit={args.limit} planned_requests={len(records)}")
         for i, r in enumerate(records, 1):
-            prompt = build_prompt(r)
-            preview = prompt.replace("\n", " ")[:160]
-            print(f"  [{i}] qa_id={r.get('qa_id')} task={r.get('task_type')} prompt~= {preview}…")
+            prompt = select_prompt(r)
+            if isinstance(r.get("prompt"), str) and r["prompt"].strip():
+                # pre-built full-context prompt embeds internal bundle text — do NOT echo it to logs
+                preview = f"[full-context prompt: {len(prompt)} chars — INTERNAL, preview redacted]"
+            else:
+                preview = prompt.replace("\n", " ")[:160] + "…"
+            print(f"  [{i}] qa_id={r.get('qa_id')} task={r.get('task_type')} prompt~= {preview}")
         print("== no SDK imported, no API called, no files written ==")
         return 0
 
@@ -481,7 +494,7 @@ def main(argv=None) -> int:
                     f"split={args.split} mock={args.mock} todo={len(todo)} (skipped_resume={len(records) - len(todo)})\n")
         for i, r in enumerate(todo, 1):
             qid = r.get("qa_id")
-            prompt = build_prompt(r)
+            prompt = select_prompt(r)
             try:
                 pred = provider.generate(prompt)
             except SystemExit:

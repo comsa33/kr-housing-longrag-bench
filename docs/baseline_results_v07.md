@@ -116,6 +116,9 @@ differentiation requires the INTERNAL full-context (class A) mode (`make_prompt_
 which embeds bundle text) — a separate, explicitly-requested run. Compare against the trivial floors from
 `scripts/run_baseline_stub_v06.py` (oracle/dummy/echo/random).
 
+A first **full-context smoke** on a 22-item slice (same `qa_id`s) shows the expected lift — gpt-4o-mini
+0% → 59.1%, gpt-5.4 4.5% → 86.4% — see `docs/full_context_smoke_v07.md`.
+
 ## 5. Caveats
 
 - **Cost.** Real runs hit paid APIs. Start with `--limit` and `--sleep-seconds`; the full `dev` split is
