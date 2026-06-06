@@ -13,6 +13,9 @@ Predictions: JSONL with {"qa_id": ..., "prediction": "..."}. Use --self-test to 
   boolean_and_reason -> prediction contains an 'unanswerable' marker
   contains_all/exact_match/term_recall/span/other -> normalized gold answer is contained in prediction
 Missing or empty predictions are always scored as incorrect.
+Subset scoring: --ids-file restricts to qa_ids in a file (one per line, or any JSONL with a qa_id field);
+--pred-only restricts to the qa_ids present in --pred (reproduces same-subset results, e.g. the
+full-context smoke, without unrun items diluting the score).
 
 Reports plain accuracy and CLUSTER-WEIGHTED accuracy (each near-dup cluster contributes ~1, not N),
 broken down by split / task_type / question_style.
@@ -61,11 +64,36 @@ def load(path: Path) -> list:
     return [json.loads(l) for l in path.open(encoding="utf-8") if l.strip()] if path.exists() else []
 
 
+def read_ids(path: Path) -> set:
+    """Read a qa_id set from a file: one qa_id per line, OR a JSONL with a `qa_id` field (so a
+    predictions file or the smoke prompts file can be reused directly). Non-JSON lines are taken
+    verbatim as qa_ids."""
+    ids = set()
+    for line in path.open(encoding="utf-8"):
+        line = line.strip()
+        if not line:
+            continue
+        if line[0] == "{":
+            try:
+                qid = json.loads(line).get("qa_id")
+                if qid:
+                    ids.add(qid)
+                continue
+            except json.JSONDecodeError:
+                pass
+        ids.add(line)
+    return ids
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--pred", default=None, help="JSONL of {qa_id, prediction}")
     ap.add_argument("--splits", default="dev,test_public,test_hidden")
     ap.add_argument("--self-test", action="store_true", help="use gold answer as the prediction (sanity)")
+    ap.add_argument("--ids-file", default=None,
+                    help="restrict scoring to qa_ids in this file (one per line, or any JSONL with a qa_id field)")
+    ap.add_argument("--pred-only", action="store_true",
+                    help="restrict scoring to the qa_ids present in --pred (reproducible subset scoring)")
     args = ap.parse_args()
 
     splits = [s.strip() for s in args.splits.split(",") if s.strip()]
@@ -95,6 +123,30 @@ def main() -> int:
         print("provide --pred FILE or --self-test")
         return 2
 
+    # optional subset restriction (reproducible subset scoring, e.g. the full-context smoke) ----------
+    restrict = None
+    if args.ids_file:
+        idpath = Path(args.ids_file)
+        if not idpath.is_absolute():
+            idpath = ROOT / args.ids_file
+        if not idpath.exists():
+            print(f"--ids-file not found: {args.ids_file}")
+            return 1
+        restrict = read_ids(idpath)
+    if args.pred_only:
+        if args.self_test:
+            print("--pred-only requires --pred (not --self-test)")
+            return 2
+        restrict = (restrict & set(preds)) if restrict is not None else set(preds)
+    subset_note = ""
+    if restrict is not None:
+        kept = {q: it for q, it in gold.items() if q in restrict}
+        if not kept:
+            print(f"no gold qa_ids matched the requested subset ({len(restrict)} ids)")
+            return 1
+        subset_note = f"  [subset: {len(kept)} of {len(gold)} gold items]"
+        gold = kept
+
     by = defaultdict(lambda: [0.0, 0.0, 0.0, 0.0])  # key -> [raw_correct, raw_total, w_correct, w_total]
 
     def add(key, ok, w):
@@ -116,7 +168,7 @@ def main() -> int:
 
     mode = "self-test (gold-as-prediction)" if args.self_test else f"predictions={args.pred}"
     print(f"== v0.6 eval harness — {mode} ==")
-    print(f"gold items: {len(gold)} over loaded splits {loaded_splits}; predictions missing: {missing}")
+    print(f"gold items: {len(gold)} over loaded splits {loaded_splits}; predictions missing: {missing}{subset_note}")
     if missing_splits:
         print(f"gold unavailable for requested splits {missing_splits} (expected for clean checkout hidden split)")
     print(line("ALL"))

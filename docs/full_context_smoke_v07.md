@@ -62,9 +62,20 @@ What it shows:
 - Spot-checked answers are genuine reads (e.g. gpt-5.4 returns `59㎡` / `390세대` / `74㎡` lifted from the
   embedded announcement), not format guesses.
 
-> `eval_harness_v06.py --pred <fullctx file>` can also be run, but it scores against the full 105-item
-> `test_public` gold, so the 83 unrun items count as incorrect and dilute the number — use the same-22
-> subset above for the comparison.
+Reproduce via the official harness — `--pred-only` scores only the qa_ids present in the prediction file
+(the same-22 subset), so unrun items do not dilute it:
+
+```bash
+B=workspace_local/audit/baselines
+python3 scripts/eval_harness_v06.py --pred $B/fullctx_openai_gpt-4o-mini_test_public.jsonl --pred-only --splits test_public
+python3 scripts/eval_harness_v06.py --pred $B/fullctx_openai_gpt-5.4_test_public.jsonl   --pred-only --splits test_public
+# same 22 ids, locator-only side (use --ids-file with any qa_id list or JSONL carrying qa_id):
+python3 scripts/eval_harness_v06.py --pred $B/openai_gpt-5.4_test_public.jsonl --ids-file $B/full_context_smoke_prompts.jsonl --splits test_public
+```
+
+Each prints `[subset: 22 of 105 gold items]` and reproduces the table above (e.g. gpt-5.4 full-context
+19/22 = 86.4%). Without `--pred-only`/`--ids-file` the harness scores the full 105-item split, so the
+unrun items count as incorrect and dilute the number.
 
 ## 4. Cost
 
