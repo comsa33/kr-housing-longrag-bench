@@ -99,16 +99,19 @@ metadata are INTERNAL under `workspace_local/audit/baselines/`.
 | openai | gpt-4o | test_public (105) | locator-only | 3.8% (4/105) | 0.2% | 2026-06-06 | ~cents |
 | openai | gpt-5.4 | test_public (105) | locator-only | **6.7% (7/105)** | 0.3% | 2026-06-06 | ~cents |
 
+Model labels are the exact OpenAI model ids supplied to the API on the run date (e.g. `gpt-5.4`), recorded
+for reproducibility — **not** a general or public benchmark ranking claim about those models.
+
 Token basis (measured): test_public ≈ 31k input + ~9k output tokens per model; gpt-5.4 used
 `max_completion_tokens` with ~0 reasoning tokens on these prompts, so total cost across all three runs was
 a few cents (exact per-model price varies — confirm on the provider pricing page).
 
 **What this shows.** In the locator-only setting the model sees *where* the evidence is, not the text, so a
 well-behaved model correctly refuses ("제공된 자료만으로는 확정할 수 없음") instead of hallucinating. Only the
-4 `answerability_detection` items are answerable without content, so **≈3.8% is effectively the ceiling**:
+4 `answerability_detection` items are answerable without content, so **≈3.8% is the expected refusal baseline**:
 gpt-4o-mini == gpt-4o (3.8%); gpt-5.4 reaches 6.7% by getting a few retrieval items right, but the score is
 dominated by the closed-book setting, not model strength. **Model comparison is therefore not meaningful on
-locator-only** — it is a true lower bound and a no-hallucination check, not a capability ranking. Real model
+locator-only** — it is a true lower bound and a refusal sanity check, not a capability ranking. Real model
 differentiation requires the INTERNAL full-context (class A) mode (`make_prompt_v06.py --inline-context`,
 which embeds bundle text) — a separate, explicitly-requested run. Compare against the trivial floors from
 `scripts/run_baseline_stub_v06.py` (oracle/dummy/echo/random).
