@@ -10,6 +10,32 @@ As of 2026-06-06, the first **real (paid) locator-only runs** on `test_public` a
 gpt-4o-mini / gpt-4o / gpt-5.4); the runner is otherwise exercised via `--dry-run` / `--mock`. No full
 `dev` or hidden-split paid runs have been made, and no hidden answers or keys are published.
 
+## 0. v0.7 baseline document index
+
+This is the entry point for all v0.7 baseline/diagnostic work. Each sibling doc is a small **smoke** on a
+small fixed slice — none is a release-grade benchmark table or a general dense-vs-BM25 / model-ranking claim.
+
+**Paid answer runs already executed** (predictions internal; OpenAI; same-22 unless noted):
+
+- locator-only baseline (§4 below) — gpt-4o-mini / gpt-4o / gpt-5.4 on `test_public`.
+- [`full_context_smoke_v07.md`](full_context_smoke_v07.md) — 22-item full-context; gpt-4o-mini / gpt-5.4.
+- [`rag_smoke_v07.md`](rag_smoke_v07.md) — BM25 / oracle-page RAG on the same 22; gpt-4o-mini / gpt-5.4.
+- [`dense_hybrid_rag_smoke_v07.md`](dense_hybrid_rag_smoke_v07.md) — BM25 vs dense vs hybrid answers + error decomposition.
+
+**Retrieval-only diagnostics** (embeddings for dense/hybrid; **no answer generation**):
+
+- [`rag_page_diversity_diagnostics_v07.md`](rag_page_diversity_diagnostics_v07.md) — `--per-page-max` recovers dense gold-page misses.
+- [`rag_non_quote_retrieval_diagnostics_v07.md`](rag_non_quote_retrieval_diagnostics_v07.md) — non-quote slice; BM25 still leads.
+
+**Internal-only** (gitignored, never published): full prompts, predictions, metadata, and bundle text under
+`workspace_local/audit/baselines/` and `workspace_local/processed/bundles-v06/`; API keys under
+`workspace_local/secrets/`.
+
+**Non-claims / caveats:** research-preview only — not leaderboard-ready, not human-validated, not
+sealed-hidden, no final model ranking, no paper-grade claim; smoke-scale slices; `contains_all` scoring can
+over-credit partial matches; OpenAI embeddings can show ±1-item rank-boundary drift across fetches. Scope:
+[`repository_scope_policy.md`](repository_scope_policy.md).
+
 ## 1. What the runner does
 
 `scripts/run_llm_baseline_v07.py` reads the PUBLIC locator-only prompt file

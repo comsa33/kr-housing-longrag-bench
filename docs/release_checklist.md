@@ -98,3 +98,23 @@ python3 scripts/verify_qa.py --qa data/qa_v0.6_realistic_candidates.jsonl
 - [ ] Known limitations stated (extraction noise, provider/source imbalance, statute effective-date vs
       announcement-year mismatch, near-duplicate parametric QA, human-review status).
 - [ ] No overclaiming: if any gate fails, the release is not called public-ready.
+
+## 8. v0.7 research-preview pre-release (baseline scaffold + diagnostics)
+
+Use this before deciding whether to tag a `v0.7` research-preview release. See `docs/v0.7_release_plan.md`
+and `docs/repository_scope_policy.md`.
+
+- [ ] All v0.7 baseline/diagnostic docs are labelled **research-preview** and link from
+      `docs/baseline_results_v07.md` (the v0.7 index).
+- [ ] No internal artifacts tracked: `git ls-files workspace_local/` shows only placeholders /
+      `secrets/README.txt`; no prompts, predictions, bundle text, raw files, keys, hidden gold, or
+      provider logs are tracked (also confirmed by the readiness gate's secret/raw scans).
+- [ ] `README.md` and `DATASET_CARD.md` agree: current public release is `v0.6.3`; v0.7 is a
+      develop-only research preview (not leaderboard-ready / human-validated / sealed-hidden / final
+      ranking / paper-grade).
+- [ ] No general dense-vs-BM25 or model-ranking claim is made from smoke slices; costs/model-ids/dates
+      are recorded for any paid run.
+- [ ] Hugging Face and Zenodo are **not** updated until an actual `v0.7` tag/release decision is made
+      (versions, citation, license, and caveats must agree across GitHub/HF/Zenodo before a release is
+      called done).
+- [ ] `main` untouched and no tag created during packaging preparation.
