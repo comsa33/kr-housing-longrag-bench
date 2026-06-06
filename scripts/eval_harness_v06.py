@@ -69,19 +69,20 @@ def read_ids(path: Path) -> set:
     predictions file or the smoke prompts file can be reused directly). Non-JSON lines are taken
     verbatim as qa_ids."""
     ids = set()
-    for line in path.open(encoding="utf-8"):
-        line = line.strip()
-        if not line:
-            continue
-        if line[0] == "{":
-            try:
-                qid = json.loads(line).get("qa_id")
-                if qid:
-                    ids.add(qid)
+    with path.open(encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
                 continue
-            except json.JSONDecodeError:
-                pass
-        ids.add(line)
+            if line[0] == "{":
+                try:
+                    qid = json.loads(line).get("qa_id")
+                    if qid is not None:
+                        ids.add(str(qid))  # gold keys are strings; normalize int/other ids
+                    continue
+                except json.JSONDecodeError:
+                    pass
+            ids.add(line)
     return ids
 
 
@@ -129,14 +130,17 @@ def main() -> int:
         idpath = Path(args.ids_file)
         if not idpath.is_absolute():
             idpath = ROOT / args.ids_file
-        if not idpath.exists():
-            print(f"--ids-file not found: {args.ids_file}")
+        if not idpath.is_file():
+            print(f"--ids-file not found or not a file: {args.ids_file}")
             return 1
         restrict = read_ids(idpath)
     if args.pred_only:
         if args.self_test:
             print("--pred-only requires --pred (not --self-test)")
             return 2
+        if not preds:
+            print(f"--pred-only set but no predictions were loaded from --pred={args.pred}")
+            return 1
         restrict = (restrict & set(preds)) if restrict is not None else set(preds)
     subset_note = ""
     if restrict is not None:
