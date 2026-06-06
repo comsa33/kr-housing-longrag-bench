@@ -52,7 +52,8 @@ def main() -> int:
         raise SystemExit(f"--out must be under workspace_local/ (embeds bundle text). Got: {out}")
 
     tiers = {t.strip() for t in args.tiers.split(",") if t.strip()}
-    rows = [json.loads(l) for l in QA.open(encoding="utf-8") if l.strip()]
+    with QA.open(encoding="utf-8") as qf:
+        rows = [json.loads(l) for l in qf if l.strip()]
     pool = [r for r in rows
             if r.get("split") == args.split and r.get("bundle_id") and r.get("context_tier") in tiers]
     pool.sort(key=lambda r: r["qa_id"])  # deterministic
@@ -62,7 +63,7 @@ def main() -> int:
 
     out.parent.mkdir(parents=True, exist_ok=True)
     cache: dict = {}
-    written = 0
+    written_recs: list = []
     with out.open("w", encoding="utf-8") as f:
         for r in pool:
             bid = r["bundle_id"]
@@ -78,13 +79,28 @@ def main() -> int:
                    "question_style": r.get("question_style"),
                    "prompt": full_context_prompt(r, text)}
             f.write(json.dumps(rec, ensure_ascii=False) + "\n")
-            written += 1
+            written_recs.append(rec)
 
+    # Fail loudly if the internal bundle text is absent (e.g. a clean checkout without the corpus), so a
+    # silent empty prompt file does not let the runner produce 0 predictions "as if" the smoke succeeded.
+    if not written_recs:
+        out.unlink(missing_ok=True)
+        try:
+            bundles_disp = BUNDLES.relative_to(ROOT)
+        except ValueError:
+            bundles_disp = BUNDLES
+        raise SystemExit(
+            f"no full-context prompts written — internal bundle text under {bundles_disp} is absent. "
+            "Rebuild the bundles locally; this smoke cannot run without the internal corpus."
+        )
+
+    # Summary is computed over the rows ACTUALLY written (not `pool`), so skipped items are not reported.
     print(f"=== full-context smoke selection ({args.split}, tiers={sorted(tiers)}) ===")
-    print(f"selected {written} items over {len({r['bundle_id'] for r in pool})} bundles -> {out.relative_to(ROOT)} (INTERNAL)")
-    print(f"tier:   {dict(collections.Counter(r['context_tier'] for r in pool))}")
-    print(f"task:   {dict(collections.Counter(r['task_type'] for r in pool))}")
-    print("qa_ids: " + ",".join(r["qa_id"] for r in pool))
+    print(f"selected {len(written_recs)} items over {len({r['bundle_id'] for r in written_recs})} bundles "
+          f"-> {out.relative_to(ROOT)} (INTERNAL)")
+    print(f"tier:   {dict(collections.Counter(r['context_tier'] for r in written_recs))}")
+    print(f"task:   {dict(collections.Counter(r['task_type'] for r in written_recs))}")
+    print("qa_ids: " + ",".join(r["qa_id"] for r in written_recs))
     return 0
 
 
