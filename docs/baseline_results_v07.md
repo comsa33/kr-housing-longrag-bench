@@ -10,6 +10,37 @@ As of 2026-06-06, the first **real (paid) locator-only runs** on `test_public` a
 gpt-4o-mini / gpt-4o / gpt-5.4); the runner is otherwise exercised via `--dry-run` / `--mock`. No full
 `dev` or hidden-split paid runs have been made, and no hidden answers or keys are published.
 
+## 0. v0.7 baseline document index
+
+This is the entry point for all v0.7 baseline/diagnostic work. Each sibling doc is a small **smoke** on a
+small fixed slice — none is a release-grade benchmark table or a general dense-vs-BM25 / model-ranking claim.
+
+The **same-22** slice means the fixed 22 bundled `test_public` QA selected by
+`scripts/build_full_context_smoke_v07.py` (32k / 64k tiers, `long_context_retrieval`, 3 bundles), used for
+the full-context and RAG smoke comparisons. It is a small fixed convenience slice, not a representative or
+release-grade sample.
+
+**Paid answer runs already executed** (predictions internal; OpenAI; same-22 unless noted):
+
+- locator-only baseline (§4 below) — gpt-4o-mini / gpt-4o / gpt-5.4 on `test_public`.
+- [`full_context_smoke_v07.md`](full_context_smoke_v07.md) — 22-item full-context; gpt-4o-mini / gpt-5.4.
+- [`rag_smoke_v07.md`](rag_smoke_v07.md) — BM25 / oracle-page RAG on the same 22; gpt-4o-mini / gpt-5.4.
+- [`dense_hybrid_rag_smoke_v07.md`](dense_hybrid_rag_smoke_v07.md) — BM25 vs dense vs hybrid answers + error decomposition.
+
+**Retrieval-only diagnostics** (embeddings for dense/hybrid; **no answer generation**):
+
+- [`rag_page_diversity_diagnostics_v07.md`](rag_page_diversity_diagnostics_v07.md) — `--per-page-max` recovers dense gold-page misses.
+- [`rag_non_quote_retrieval_diagnostics_v07.md`](rag_non_quote_retrieval_diagnostics_v07.md) — non-quote slice; BM25 still leads.
+
+**Internal-only** (gitignored, never published): full prompts, predictions, metadata, and bundle text under
+`workspace_local/audit/baselines/` and `workspace_local/processed/bundles-v06/`; API keys under
+`workspace_local/secrets/`.
+
+**Non-claims / caveats:** research-preview only — not leaderboard-ready, not human-validated, not
+sealed-hidden, no final model ranking, no paper-grade claim; smoke-scale slices; `contains_all` scoring can
+over-credit partial matches; OpenAI embeddings can show ±1-item rank-boundary drift across fetches. Scope:
+[`repository_scope_policy.md`](repository_scope_policy.md).
+
 ## 1. What the runner does
 
 `scripts/run_llm_baseline_v07.py` reads the PUBLIC locator-only prompt file
@@ -99,8 +130,11 @@ metadata are INTERNAL under `workspace_local/audit/baselines/`.
 | openai | gpt-4o | test_public (105) | locator-only | 3.8% (4/105) | 0.2% | 2026-06-06 | ~cents |
 | openai | gpt-5.4 | test_public (105) | locator-only | **6.7% (7/105)** | 0.3% | 2026-06-06 | ~cents |
 
-Model labels are the exact OpenAI model ids supplied to the API on the run date (e.g. `gpt-5.4`), recorded
-for reproducibility — **not** a general or public benchmark ranking claim about those models.
+Model labels are recorded exactly as supplied to the provider API or deployment at run time (e.g.
+`gpt-5.4`, recorded in the run `.meta.json` on 2026-06-06) — **not** a general or public benchmark ranking
+claim about those models, and **not** an assertion that any given label is a publicly available OpenAI
+model for all external users. Availability may differ for external users; reproduction should use an
+available model and record the exact model/deployment label and date.
 
 Token basis (measured): test_public ≈ 31k input + ~9k output tokens per model; gpt-5.4 used
 `max_completion_tokens` with ~0 reasoning tokens on these prompts, so total cost across all three runs was

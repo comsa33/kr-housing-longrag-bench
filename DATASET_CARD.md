@@ -33,6 +33,13 @@ Usage: `docs/quickstart_v06.md` (load → build prompts → score → baselines)
 (full-context vs RAG vs table/tool protocol), `docs/dataset_statistics_v06.md` (count tables). Scoring:
 `python3 scripts/eval_harness_v06.py --pred <predictions>.jsonl` (plain + cluster-weighted accuracy).
 
+Develop / v0.7 research preview: the current public release remains **`v0.6.3`** (the data above). The
+`develop` branch additionally carries a **v0.7 baseline scaffold and retrieval diagnostics** (index:
+`docs/baseline_results_v07.md`). Those are **smoke-scale research-preview diagnostics, not release-grade
+benchmark tables** — not leaderboard-ready, not human-validated, not a final model ranking — and they do
+not change this dataset. Full prompts, predictions, bundle text, and provider logs stay internal under
+`workspace_local/` (`docs/repository_scope_policy.md`).
+
 **Scope: public-ready seed benchmark, NOT leaderboard-ready.** The v0.6 quality pass naturalized question
 phrasing (answers/predicates/evidence unchanged; cloze 34% → ~8%), materialized multi-provider
 long-context bundles, and defined splits. Release files: `data/qa_v0.6_dev.jsonl`,

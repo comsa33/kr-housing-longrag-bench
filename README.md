@@ -94,6 +94,29 @@ uv run pre-commit run --all-files
 The `uv` environment is for development, Hugging Face smoke tests, and local hooks. Public scoring and
 validation remain runnable with plain `python3`.
 
+## v0.7 on develop (research preview)
+
+The current **public release is still `v0.6.3`** (the dataset above). The `develop` branch carries a
+**v0.7 baseline scaffold and retrieval diagnostics** built on the same v0.6.3 data. These are
+**research-preview** materials — they are **not** leaderboard-ready, human-validated, sealed-hidden, a
+final model ranking, or paper-grade. They run on small fixed smoke slices and are **not** a general
+dense-vs-BM25 conclusion. No paid-run outputs, full prompts, bundle text, predictions, or hidden answers
+are published; those stay internal under `workspace_local/` (see `docs/repository_scope_policy.md`).
+
+Baseline / scaffold docs — index: [`docs/baseline_results_v07.md`](docs/baseline_results_v07.md):
+
+- [`docs/baseline_results_v07.md`](docs/baseline_results_v07.md) — locator-only (closed-book) baseline + v0.7 index
+- [`docs/full_context_smoke_v07.md`](docs/full_context_smoke_v07.md) — full-context smoke (document access vs closed-book floor)
+- [`docs/rag_smoke_v07.md`](docs/rag_smoke_v07.md) — BM25 / oracle-page RAG smoke
+- [`docs/dense_hybrid_rag_smoke_v07.md`](docs/dense_hybrid_rag_smoke_v07.md) — BM25 vs dense vs hybrid retrieval comparison
+- [`docs/rag_page_diversity_diagnostics_v07.md`](docs/rag_page_diversity_diagnostics_v07.md) — page-diversity retrieval diagnostics
+- [`docs/rag_non_quote_retrieval_diagnostics_v07.md`](docs/rag_non_quote_retrieval_diagnostics_v07.md) — non-quote retrieval diagnostics
+
+Runner: `scripts/run_llm_baseline_v07.py` (provider-agnostic; outputs internal). Roadmap, scope, and
+release plan: [`docs/v1_roadmap.md`](docs/v1_roadmap.md),
+[`docs/repository_scope_policy.md`](docs/repository_scope_policy.md),
+[`docs/v0.7_release_plan.md`](docs/v0.7_release_plan.md).
+
 ## Research Framing
 
 Main question:
