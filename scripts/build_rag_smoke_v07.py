@@ -76,6 +76,10 @@ def split_pages(text: str) -> list:
     """-> list of (page_id, page_text) split on the bundle's page markers."""
     out = []
     ms = list(PAGE_RE.finditer(text))
+    if not ms:
+        # no page markers: treat the whole bundle as one page so BM25 still works (oracle won't match
+        # this synthetic page_id, which is correct — it has no gold page to point at).
+        return [("unknown-p001", text.strip())] if text.strip() else []
     for i, m in enumerate(ms):
         start = m.end()
         end = ms[i + 1].start() if i + 1 < len(ms) else len(text)
@@ -91,7 +95,8 @@ def split_chunks(text: str, max_chars: int = 1200) -> list:
         cur = ""
         for ln in ptext.split("\n"):
             if cur and len(cur) + len(ln) + 1 > max_chars:
-                chunks.append((pid, cur.strip()))
+                if cur.strip():
+                    chunks.append((pid, cur.strip()))
                 cur = ln
             else:
                 cur = f"{cur}\n{ln}" if cur else ln
