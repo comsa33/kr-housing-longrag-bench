@@ -12,7 +12,7 @@ Run before tagging any public release. All gate scripts must exit 0.
 - [ ] `.pre-commit-config.yaml` present; `uv run pre-commit run --all-files` passes when the dev
       environment is installed.
 - [ ] `.gitignore` ignores all of `workspace_local/*` (incl. future subdirs like `tools/`) except the
-      `.gitkeep` / `secrets/README.txt` placeholders.
+      `.gitkeep` / `workspace_local/secrets/README.txt` placeholders.
 - [ ] README first screen is external-user-oriented (what / version / canonical files / quickstart /
       eval / license / citation / caveats) and links the v0.6 docs.
 
@@ -106,9 +106,11 @@ and `docs/repository_scope_policy.md`.
 
 - [ ] All v0.7 baseline/diagnostic docs are labelled **research-preview** and link from
       `docs/baseline_results_v07.md` (the v0.7 index).
-- [ ] No internal artifacts tracked: `git ls-files workspace_local/` shows only placeholders /
-      `secrets/README.txt`; no prompts, predictions, bundle text, raw files, keys, hidden gold, or
-      provider logs are tracked (also confirmed by the readiness gate's secret/raw scans).
+- [ ] No internal artifacts tracked: `git ls-files workspace_local/` shows only the four tracked
+      placeholders (`workspace_local/audit/.gitkeep`, `workspace_local/processed/.gitkeep`,
+      `workspace_local/raw/.gitkeep`, `workspace_local/secrets/README.txt`); no prompts, predictions,
+      bundle text, raw files, keys, hidden gold, or provider logs are tracked (also confirmed by the
+      readiness gate's secret/raw scans).
 - [ ] `README.md` and `DATASET_CARD.md` agree: current public release is `v0.6.3`; v0.7 is a
       develop-only research preview (not leaderboard-ready / human-validated / sealed-hidden / final
       ranking / paper-grade).

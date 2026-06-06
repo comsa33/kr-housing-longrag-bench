@@ -15,6 +15,11 @@ gpt-4o-mini / gpt-4o / gpt-5.4); the runner is otherwise exercised via `--dry-ru
 This is the entry point for all v0.7 baseline/diagnostic work. Each sibling doc is a small **smoke** on a
 small fixed slice — none is a release-grade benchmark table or a general dense-vs-BM25 / model-ranking claim.
 
+The **same-22** slice means the fixed 22 bundled `test_public` QA selected by
+`scripts/build_full_context_smoke_v07.py` (32k / 64k tiers, `long_context_retrieval`, 3 bundles), used for
+the full-context and RAG smoke comparisons. It is a small fixed convenience slice, not a representative or
+release-grade sample.
+
 **Paid answer runs already executed** (predictions internal; OpenAI; same-22 unless noted):
 
 - locator-only baseline (§4 below) — gpt-4o-mini / gpt-4o / gpt-5.4 on `test_public`.
@@ -125,8 +130,11 @@ metadata are INTERNAL under `workspace_local/audit/baselines/`.
 | openai | gpt-4o | test_public (105) | locator-only | 3.8% (4/105) | 0.2% | 2026-06-06 | ~cents |
 | openai | gpt-5.4 | test_public (105) | locator-only | **6.7% (7/105)** | 0.3% | 2026-06-06 | ~cents |
 
-Model labels are the exact OpenAI model ids supplied to the API on the run date (e.g. `gpt-5.4`), recorded
-for reproducibility — **not** a general or public benchmark ranking claim about those models.
+Model labels are recorded exactly as supplied to the provider API or deployment at run time (e.g.
+`gpt-5.4`, recorded in the run `.meta.json` on 2026-06-06) — **not** a general or public benchmark ranking
+claim about those models, and **not** an assertion that any given label is a publicly available OpenAI
+model for all external users. Availability may differ for external users; reproduction should use an
+available model and record the exact model/deployment label and date.
 
 Token basis (measured): test_public ≈ 31k input + ~9k output tokens per model; gpt-5.4 used
 `max_completion_tokens` with ~0 reasoning tokens on these prompts, so total cost across all three runs was
