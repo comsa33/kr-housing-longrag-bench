@@ -148,6 +148,24 @@ class BaseProvider:
         raise NotImplementedError
 
 
+def _openai_reasoning_model(model: str) -> bool:
+    """Newer OpenAI 'reasoning' models (gpt-5*, o1/o3/o4*) require `max_completion_tokens` (and reject
+    `max_tokens`); many also reject a non-default `temperature`, so we omit it for them."""
+    m = model.lower()
+    return m.startswith("gpt-5") or m.startswith("o1") or m.startswith("o3") or m.startswith("o4")
+
+
+def _openai_chat_kwargs(model: str, prompt: str, temperature: float, max_output_tokens: int) -> dict:
+    """Shared OpenAI/Azure chat.completions kwargs, switching params for reasoning models."""
+    kw = {"model": model, "messages": [{"role": "user", "content": prompt}]}
+    if _openai_reasoning_model(model):
+        kw["max_completion_tokens"] = max_output_tokens  # reasoning model; temperature left at default
+    else:
+        kw["max_tokens"] = max_output_tokens
+        kw["temperature"] = temperature
+    return kw
+
+
 class OpenAIProvider(BaseProvider):
     name = "openai"
 
@@ -164,10 +182,7 @@ class OpenAIProvider(BaseProvider):
 
     def _generate(self, prompt):
         resp = self._client.chat.completions.create(
-            model=self.model,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=self.temperature,
-            max_tokens=self.max_output_tokens,
+            **_openai_chat_kwargs(self.model, prompt, self.temperature, self.max_output_tokens)
         )
         return (resp.choices[0].message.content or "").strip()
 
@@ -194,11 +209,9 @@ class AzureOpenAIProvider(BaseProvider):
         )
 
     def _generate(self, prompt):
+        # model = Azure deployment name; reasoning detection is best-effort on the deployment name.
         resp = self._client.chat.completions.create(
-            model=self.model,  # deployment name
-            messages=[{"role": "user", "content": prompt}],
-            temperature=self.temperature,
-            max_tokens=self.max_output_tokens,
+            **_openai_chat_kwargs(self.model, prompt, self.temperature, self.max_output_tokens)
         )
         return (resp.choices[0].message.content or "").strip()
 
