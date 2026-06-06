@@ -131,6 +131,21 @@ def rrf(rankings: list, k: int = 60) -> list:
     return sorted(scores, key=lambda i: (-scores[i], i))
 
 
+def diversify(ranking: list, chunk_pages: list, per_page_max: int) -> list:
+    """Cap how many chunks per page survive, preserving rank order. `per_page_max` <= 0 is a no-op.
+    Pulls a lower-ranked gold-page chunk up when the top is dominated by repetitive sibling pages."""
+    if not per_page_max or per_page_max <= 0:
+        return ranking
+    seen: dict = {}
+    out = []
+    for idx in ranking:
+        p = chunk_pages[idx]
+        if seen.get(p, 0) < per_page_max:
+            seen[p] = seen.get(p, 0) + 1
+            out.append(idx)
+    return out
+
+
 def split_pages(text: str) -> list:
     """-> list of (page_id, page_text) split on the bundle's page markers."""
     out = []
@@ -176,27 +191,32 @@ def rag_prompt(rec: dict, passages: list) -> str:
     )
 
 
-def retrieve(retriever: str, rec: dict, chunks: list, k: int, bid: str,
-             bm25_cache: dict, dense_cache: dict) -> list:
-    """Return the picked passages (page_id, text) for the given retriever, in reading order.
-
-    bm25/dense/hybrid rank the bundle's chunks (indexes cached per bundle); hybrid is reciprocal-rank
-    fusion of BM25 + dense. oracle returns the gold-page chunks. dense/hybrid call embed_texts (paid)."""
-    if retriever == "oracle":
-        gold = set(rec.get("page_ids") or [])
-        return [(pid, txt) for pid, txt in chunks if pid in gold]
+def rank_chunks(retriever: str, rec: dict, chunks: list, bid: str,
+                bm25_cache: dict, dense_cache: dict) -> list:
+    """Full ranked chunk-index list for bm25/dense/hybrid (indexes cached per bundle; hybrid = RRF of
+    BM25 + dense). dense/hybrid call embed_texts (paid)."""
     q = rec["question"]
     if retriever in ("bm25", "hybrid") and bid not in bm25_cache:
         bm25_cache[bid] = BM25([txt for _, txt in chunks])
     if retriever in ("dense", "hybrid") and bid not in dense_cache:
         dense_cache[bid] = DenseIndex([txt for _, txt in chunks])
+    n = len(chunks)
     if retriever == "bm25":
-        idx = bm25_cache[bid].top_k(q, k)
-    elif retriever == "dense":
-        idx = dense_cache[bid].top_k(q, k)
-    else:  # hybrid: RRF over full BM25 + dense rankings
-        n = len(chunks)
-        idx = rrf([bm25_cache[bid].top_k(q, n), dense_cache[bid].top_k(q, n)])[:k]
+        return bm25_cache[bid].top_k(q, n)
+    if retriever == "dense":
+        return dense_cache[bid].top_k(q, n)
+    return rrf([bm25_cache[bid].top_k(q, n), dense_cache[bid].top_k(q, n)])  # hybrid
+
+
+def retrieve(retriever: str, rec: dict, chunks: list, k: int, bid: str,
+             bm25_cache: dict, dense_cache: dict, per_page_max: int = 0) -> list:
+    """Return the picked passages (page_id, text) in reading order. `per_page_max` > 0 caps chunks per
+    page (page-diverse retrieval). oracle returns the gold-page chunks (unaffected by per_page_max)."""
+    if retriever == "oracle":
+        gold = set(rec.get("page_ids") or [])
+        return [(pid, txt) for pid, txt in chunks if pid in gold]
+    full = rank_chunks(retriever, rec, chunks, bid, bm25_cache, dense_cache)
+    idx = diversify(full, [pid for pid, _ in chunks], per_page_max)[:k]
     return [chunks[i] for i in sorted(idx)]
 
 
@@ -209,6 +229,8 @@ def main() -> int:
                     help="top-k passages for bm25/dense/hybrid (oracle uses gold-page chunks); "
                          "dense/hybrid embeddings need OPENAI_API_KEY + uv sync --extra baseline")
     ap.add_argument("--chunk-chars", type=int, default=1200, help="passage size for sub-page chunking")
+    ap.add_argument("--per-page-max", type=int, default=0,
+                    help="cap chunks per page in the top-k (page-diverse retrieval); 0 = off")
     ap.add_argument("--split", default="test_public", choices=["test_public", "dev"])
     ap.add_argument("--tiers", default="32k,64k")
     ap.add_argument("--max-items", type=int, default=40)
@@ -246,7 +268,7 @@ def main() -> int:
             if not chunks:
                 print(f"  WARN: no bundle pages for {bid}; skipping {r['qa_id']}")
                 continue
-            picked = retrieve(args.retriever, r, chunks, args.k, bid, bm25_cache, dense_cache)
+            picked = retrieve(args.retriever, r, chunks, args.k, bid, bm25_cache, dense_cache, args.per_page_max)
             if not picked:
                 no_passage += 1
                 print(f"  WARN: no passage retrieved ({args.retriever}) for {r['qa_id']}; skipping")
