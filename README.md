@@ -8,17 +8,17 @@
 complement RAG / table-tool pipelines** on real housing announcements (입주자모집공고), public
 tabular data (MOLIT 실거래 / HUG 분양이력), and housing statutes.
 
-- **What it is:** 2,011 verified QA over 41 official announcements (10 providers) + public tabular data +
+- **What it is:** 1,997 verified QA over 41 official announcements (10 providers) + public tabular data +
   3 statutes, with evidence locators, deterministic predicates, answerability labels, and
   long-context-bundle references — **no raw PDFs/HWPs, no API keys**.
-- **Current release:** `v0.7` (research-preview) over **dataset build `v0.6` (2,011 QA, unchanged)** —
-  **public-ready seed benchmark, NOT leaderboard-ready** (see caveats below). v0.7 adds a baseline runner,
-  full-context / RAG smoke docs, retrieval diagnostics, and a repository scope policy; the data is the
-  same v0.6 build (prior data release `v0.6.3`).
-- **Canonical file:** `data/qa_v0.6_realistic_candidates.jsonl`. Splits: `data/qa_v0.6_dev.jsonl` (1,618),
-  `data/qa_v0.6_test_public.jsonl` (105), `data/qa_v0.6_test_hidden_questions.jsonl` (288, answers masked).
+- **Current release:** `v0.8` (human-review repair build; **1,997 QA**) — **public-ready seed benchmark,
+  NOT leaderboard-ready** (see caveats below). v0.8 regenerates all positional-cloze questions into natural
+  source-grounded questions, fixes location/answer errors, and removes 14 unrepairable items; it supersedes
+  the v0.6 build (the v0.7 "v0.6 unchanged" description no longer applies). See `CHANGELOG.md`.
+- **Canonical file:** `data/qa_v0.6_realistic_candidates.jsonl`. Splits: `data/qa_v0.6_dev.jsonl` (1,608),
+  `data/qa_v0.6_test_public.jsonl` (104), `data/qa_v0.6_test_hidden_questions.jsonl` (285, answers masked).
 - **Quickstart:** [`docs/quickstart_v06.md`](docs/quickstart_v06.md) · **Stats:**
-  [`docs/dataset_statistics_v06.md`](docs/dataset_statistics_v06.md) · **Baselines:**
+  [`docs/dataset_statistics_v08.md`](docs/dataset_statistics_v08.md) · **Baselines:**
   [`docs/baseline_protocol_v06.md`](docs/baseline_protocol_v06.md) · **License:** [`LICENSE`](LICENSE) ·
   **Cite:** [`CITATION.cff`](CITATION.cff)
 - **Development workflow:** [`AGENTS.md`](AGENTS.md) · [`docs/agent_workflow.md`](docs/agent_workflow.md) ·
@@ -26,9 +26,9 @@ tabular data (MOLIT 실거래 / HUG 분양이력), and housing statutes.
 
 This is a seed package, not a finished large-scale benchmark. It is structured so the dataset can grow into a paper-grade benchmark without redistributing copyrighted PDFs/HWPs.
 
-## Current Release: v0.7 research-preview / Dataset Build: v0.6 (2,011 QA, unchanged)
+## Current Release: v0.8 (human-review repair build; 1,997 QA)
 
-**Canonical set: `data/qa_v0.6_realistic_candidates.jsonl` — 2,011 verified QA** across 13 task families,
+**Canonical set: `data/qa_v0.6_realistic_candidates.jsonl` — 1,997 verified QA** across 12 task families,
 built over **41 official announcements** from 10 providers (LH, SH, GH, iH, JPDC, 부산도시공사,
 광주광역시도시공사, 대구도시개발공사, 대전도시공사, 충북개발공사), plus MOLIT 실거래 / HUG 분양이력
 tabular data and 3 housing statutes. It includes real table cell-grid QA, public-data predicate QA,
@@ -36,20 +36,20 @@ provider/region comparisons, eligibility/schedule items, answerability checks, a
 splits (`dev`/`test_public`/`test_hidden`) with split leakage verified at 0.
 (`data/qa_v0.5_candidates.jsonl` is the pre-realism input build — same qa_ids/answers.)
 
-The v0.6 quality pass naturalizes question phrasing while keeping every answer/predicate/evidence
-byte-identical to the verified source (cloze-phrased questions cut from 34% → ~8%; `question_style` ∈
-real_user/professional_analyst/diagnostic_probe), materializes **multi-provider** long-context bundles
-(32k–512k; 1,553 bundle-bearing QA, 961 non-LH), clusters parametric near-duplicates (2,011 → 286
-clusters) for cluster-weighted scoring, and defines a release split policy. Public release splits:
-`data/qa_v0.6_dev.jsonl` (1,618), `data/qa_v0.6_test_public.jsonl` (105), and
-`data/qa_v0.6_test_hidden_questions.jsonl` (288, answers masked).
-See `docs/v0.6_quality_report.md` and `docs/dataset_statistics_v06.md`.
+The v0.8 human-review build regenerated all positional-cloze ("X 다음 값" / [위치 탐침]) questions into
+natural source-grounded questions or removed them (cloze-phrased 34% → ~0%; `question_style` now ∈
+real_user/professional_analyst, real_user+analyst 100%), and fixed location/answer errors — on top of the
+v0.6 quality pass that materializes **multi-provider** long-context bundles (32k–512k), clusters parametric
+near-duplicates (1,997 → 282 clusters) for cluster-weighted scoring, and defines a release split policy.
+Public release splits: `data/qa_v0.6_dev.jsonl` (1,608), `data/qa_v0.6_test_public.jsonl` (104), and
+`data/qa_v0.6_test_hidden_questions.jsonl` (285, answers masked).
+See `CHANGELOG.md` and `docs/dataset_statistics_v08.md`.
 
 **Scope claim — read carefully.** This is a **public-ready seed benchmark**. CI runs the public-safe gates
 on every push/PR (`validate_dataset.py`, `check_public_release_readiness.py` → `public-ready`, realism +
 surface scans, harness self-test, `py_compile`). The full grounding/recompute gate (`verify_qa.py`,
-2,011/2,011) runs **locally** against the rebuilt internal corpus and self-skips on a clean checkout where
-that corpus is absent. It is **not a leaderboard-ready or sealed-hidden benchmark**: human-review verdicts
+1,997/1,997) runs **locally** against the rebuilt internal corpus and self-skips on a clean checkout where
+that corpus is absent. It is **not a leaderboard-ready or sealed-hidden benchmark**: v0.8 human review was LLM-assisted (gpt-5.4 + Claude cross-model), not a full human pass
 are still pending, the `test_hidden` split is not served by a held-out harness, question phrasing skews
 analyst-style, and parametric near-duplicates exist (clustered for cluster-weighted scoring). For audit
 and development, GitHub includes the canonical full-label file `data/qa_v0.6_realistic_candidates.jsonl`;

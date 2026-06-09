@@ -8,22 +8,22 @@ abstract: >-
   HUG 분양이력), and housing statutes. The public release contains QA labels,
   evidence locators, deterministic predicates, answerability labels, split and
   provider/region metadata, and long-context-bundle references — no raw source
-  documents, no leaked answers, and no API keys. The v0.7 release is a research preview that adds a
-  provider-agnostic baseline runner, full-context / RAG smoke docs, retrieval diagnostics, and a
-  repository scope policy on top of the unchanged v0.6 dataset build (2,011 QA); it is not
-  leaderboard-ready, human-validated, sealed-hidden, or a final model ranking.
+  documents, no leaked answers, and no API keys. v0.8 is a human-review repair build (1,997 QA): all
+  positional-cloze probes were regenerated into natural source-grounded questions or removed, and
+  location/answer errors were fixed (LLM-assisted review; gpt-5.4 + Claude cross-model verification). It is
+  not yet leaderboard-ready, fully human-validated, or sealed-hidden.
 type: dataset
-version: v0.7
-date-released: "2026-06-06"
+version: v0.8
+# date-released: set on the v0.8 Zenodo release
 license: CC-BY-4.0
 repository-code: "https://github.com/comsa33/kr-housing-longrag-bench"
-# v0.7 versioned DOI (this release, minted by Zenodo 2026-06-06). The concept DOI (all versions / latest)
-# and the v0.6.3 data-build archive DOI are listed under identifiers.
-doi: "10.5281/zenodo.20570856"
+# v0.8 versioned DOI: TO BE MINTED on the v0.8 Zenodo release. Until then cite the concept DOI below
+# (resolves to the latest version). Prior versioned DOIs (v0.7, v0.6.3) are under identifiers.
+doi: "10.5281/zenodo.20559127"
 identifiers:
   - type: doi
     value: "10.5281/zenodo.20570856"
-    description: "Versioned DOI for this v0.7 release."
+    description: "Versioned DOI for the prior v0.7 research-preview release."
   - type: doi
     value: "10.5281/zenodo.20559127"
     description: "Concept DOI (all versions; resolves to the latest)."
