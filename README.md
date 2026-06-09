@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/comsa33/kr-housing-longrag-bench/actions/workflows/ci.yml/badge.svg)](https://github.com/comsa33/kr-housing-longrag-bench/actions/workflows/ci.yml)
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](LICENSE)
-[![DOI](https://zenodo.org/badge/DOI/10.5281%2Fzenodo.20559127.svg)](https://doi.org/10.5281/zenodo.20559127)
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.20559127-blue.svg)](https://doi.org/10.5281/zenodo.20559127)
 
 **A copyright-safe Korean long-context benchmark for testing whether full-context LLMs can replace or
 complement RAG / table-tool pipelines** on real housing announcements (입주자모집공고), public
