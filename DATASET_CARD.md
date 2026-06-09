@@ -31,7 +31,7 @@ context-bundle references, and reconstruction code — **no raw documents, row d
 text**. Raw materials and API keys stay internal under `workspace_local/` (gitignored) and are rebuilt
 locally.
 
-Verification: `validate_dataset.py` = 0; `verify_qa.py` = 0 (2,011/2,011, split-leakage OK);
+Verification: `validate_dataset.py` = 0; `verify_qa.py` = 0 (1,997/1,997, split-leakage OK);
 `check_public_release_readiness.py` = 0; realism + public-surface scans = 0. See `docs/v0.5_batch_report.md`
 (source expansion) and `docs/v0.6_quality_report.md` (realism / bundles / splits).
 
@@ -105,24 +105,24 @@ Do not use this benchmark to provide legal, financial, or housing eligibility ad
 
 ## Citation
 
-If you use this benchmark, cite the **v0.7 release** by its Zenodo versioned DOI (or use the concept DOI to
-always cite the latest version):
+If you use this benchmark, cite the **v0.8 release**. The v0.8 versioned DOI is minted on the v0.8 Zenodo
+release; until then use the concept DOI (always resolves to the latest version):
 
 ```bibtex
-@dataset{lee_kr_housing_longrag_bench_v07_2026,
+@dataset{lee_kr_housing_longrag_bench_2026,
   author    = {Lee, Ruo},
   title     = {KR-Housing-LongRAG-Bench},
   year      = {2026},
-  version   = {v0.7 (research-preview; dataset build v0.6)},
+  version   = {v0.8 (human-review repair build; 1,997 QA)},
   publisher = {Zenodo},
-  doi       = {10.5281/zenodo.20570856},
-  url       = {https://doi.org/10.5281/zenodo.20570856},
-  note      = {Research-preview release (baseline scaffold + smoke diagnostics) over the unchanged v0.6 dataset build; the v0.6 data is archived as v0.6.3 (versioned DOI 10.5281/zenodo.20563604).}
+  doi       = {10.5281/zenodo.20559127},
+  url       = {https://doi.org/10.5281/zenodo.20559127},
+  note      = {v0.8 regenerates all positional-cloze questions into natural source-grounded questions and fixes location/answer errors; supersedes the v0.6/v0.7 builds. The v0.8 versioned DOI is minted on the v0.8 Zenodo release.}
 }
 ```
 
-DOI state: the v0.7 versioned DOI is `10.5281/zenodo.20570856` (Zenodo, 2026-06-06); the concept DOI
-`10.5281/zenodo.20559127` always resolves to the latest version; the v0.6 dataset build is archived as
-v0.6.3 (versioned DOI `10.5281/zenodo.20563604`), and the `v0.7` release reuses that v0.6 data.
+DOI state: the concept DOI `10.5281/zenodo.20559127` always resolves to the latest version; the v0.8
+versioned DOI is assigned on the v0.8 Zenodo release. Prior versioned DOIs: v0.7 `10.5281/zenodo.20570856`,
+v0.6.3 dataset build `10.5281/zenodo.20563604` (the v0.7 release reuses that v0.6 data).
 
 Machine-readable citation metadata is provided in `CITATION.cff`.

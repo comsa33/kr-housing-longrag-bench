@@ -2,7 +2,7 @@
 
 Canonical set: `data/qa_v0.6_realistic_candidates.jsonl` — **1,997 verified QA** (v0.8 build) over **41
 official announcements** from **10 announcement providers** + MOLIT/HUG public tabular data + 3 housing
-statutes. Supersedes the v0.6 build (2,011 QA); see `docs/v0.8_human_review_report.md` / CHANGELOG.
+statutes. Supersedes the v0.6 build (2,011 QA); see `CHANGELOG.md`.
 
 > v0.8 = human-review repair build: all positional-cloze ("X 다음 값" / [위치 탐침]) questions were
 > regenerated into natural, source-grounded questions or removed; location mislabels (항동→구로구,
