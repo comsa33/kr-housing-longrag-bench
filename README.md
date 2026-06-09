@@ -221,25 +221,25 @@ permits it. Korean statutes/rules fall under the non-protected categories of Cop
 
 ## Citation
 
-If you use this benchmark, cite the **v0.7 release** by its Zenodo versioned DOI (or use the concept DOI to
+If you use this benchmark, cite the **v0.8 release** by its Zenodo versioned DOI (or use the concept DOI to
 always cite the latest version):
 
 ```bibtex
-@dataset{lee_kr_housing_longrag_bench_v07_2026,
+@dataset{lee_kr_housing_longrag_bench_2026,
   author    = {Lee, Ruo},
   title     = {KR-Housing-LongRAG-Bench},
   year      = {2026},
-  version   = {v0.7 (research-preview; dataset build v0.6)},
+  version   = {v0.8 (human-review repair build; 1,997 QA)},
   publisher = {Zenodo},
-  doi       = {10.5281/zenodo.20570856},
-  url       = {https://doi.org/10.5281/zenodo.20570856},
-  note      = {Research-preview release (baseline scaffold + smoke diagnostics) over the unchanged v0.6 dataset build; the v0.6 data is archived as v0.6.3 (versioned DOI 10.5281/zenodo.20563604).}
+  doi       = {10.5281/zenodo.20571211},
+  url       = {https://doi.org/10.5281/zenodo.20571211},
+  note      = {v0.8 regenerates all positional-cloze questions into natural source-grounded questions and fixes location/answer errors; supersedes the v0.6/v0.7 builds.}
 }
 ```
 
-DOI state: the **v0.7 versioned DOI is `10.5281/zenodo.20570856`** (Zenodo, 2026-06-06); the **concept DOI
-`10.5281/zenodo.20559127`** always resolves to the latest version; the **v0.6 dataset build** is archived
-as **v0.6.3, versioned DOI `10.5281/zenodo.20563604`** (the `v0.7` release reuses that v0.6 data).
+DOI state: the **v0.8 versioned DOI is `10.5281/zenodo.20571211`** (Zenodo, 2026-06-09); the **concept DOI
+`10.5281/zenodo.20559127`** always resolves to the latest version. Prior versioned DOIs: **v0.7
+`10.5281/zenodo.20570856`**, **v0.6.3 dataset build `10.5281/zenodo.20563604`**.
 
 The machine-readable citation metadata is also available in [`CITATION.cff`](CITATION.cff). GitHub's
 "Cite this repository" button uses that file automatically.

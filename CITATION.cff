@@ -14,19 +14,22 @@ abstract: >-
   not yet leaderboard-ready, fully human-validated, or sealed-hidden.
 type: dataset
 version: v0.8
-# date-released: set on the v0.8 Zenodo release
+date-released: 2026-06-09
 license: CC-BY-4.0
 repository-code: "https://github.com/comsa33/kr-housing-longrag-bench"
-# v0.8 versioned DOI: TO BE MINTED on the v0.8 Zenodo release. Until then cite the concept DOI below
-# (resolves to the latest version). Prior versioned DOIs (v0.7, v0.6.3) are under identifiers.
-doi: "10.5281/zenodo.20559127"
+# doi below is the v0.8 versioned DOI (this release). The concept DOI (resolves to the latest version)
+# and prior versioned DOIs (v0.7, v0.6.3) are listed under identifiers.
+doi: "10.5281/zenodo.20571211"
 identifiers:
   - type: doi
-    value: "10.5281/zenodo.20570856"
-    description: "Versioned DOI for the prior v0.7 research-preview release."
+    value: "10.5281/zenodo.20571211"
+    description: "Versioned DOI for this v0.8 human-review repair release."
   - type: doi
     value: "10.5281/zenodo.20559127"
     description: "Concept DOI (all versions; resolves to the latest)."
+  - type: doi
+    value: "10.5281/zenodo.20570856"
+    description: "Versioned DOI for the prior v0.7 research-preview release."
   - type: doi
     value: "10.5281/zenodo.20563604"
     description: "Versioned DOI for the v0.6.3 dataset-build archive (the v0.7 release reuses this v0.6 data)."

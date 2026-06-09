@@ -105,8 +105,8 @@ Do not use this benchmark to provide legal, financial, or housing eligibility ad
 
 ## Citation
 
-If you use this benchmark, cite the **v0.8 release**. The v0.8 versioned DOI is minted on the v0.8 Zenodo
-release; until then use the concept DOI (always resolves to the latest version):
+If you use this benchmark, cite the **v0.8 release** by its Zenodo versioned DOI (or use the concept DOI to
+always cite the latest version):
 
 ```bibtex
 @dataset{lee_kr_housing_longrag_bench_2026,
@@ -115,14 +115,14 @@ release; until then use the concept DOI (always resolves to the latest version):
   year      = {2026},
   version   = {v0.8 (human-review repair build; 1,997 QA)},
   publisher = {Zenodo},
-  doi       = {10.5281/zenodo.20559127},
-  url       = {https://doi.org/10.5281/zenodo.20559127},
-  note      = {v0.8 regenerates all positional-cloze questions into natural source-grounded questions and fixes location/answer errors; supersedes the v0.6/v0.7 builds. The v0.8 versioned DOI is minted on the v0.8 Zenodo release.}
+  doi       = {10.5281/zenodo.20571211},
+  url       = {https://doi.org/10.5281/zenodo.20571211},
+  note      = {v0.8 regenerates all positional-cloze questions into natural source-grounded questions and fixes location/answer errors; supersedes the v0.6/v0.7 builds.}
 }
 ```
 
-DOI state: the concept DOI `10.5281/zenodo.20559127` always resolves to the latest version; the v0.8
-versioned DOI is assigned on the v0.8 Zenodo release. Prior versioned DOIs: v0.7 `10.5281/zenodo.20570856`,
+DOI state: the v0.8 versioned DOI is `10.5281/zenodo.20571211` (Zenodo, 2026-06-09); the concept DOI
+`10.5281/zenodo.20559127` always resolves to the latest version. Prior versioned DOIs: v0.7 `10.5281/zenodo.20570856`,
 v0.6.3 dataset build `10.5281/zenodo.20563604` (the v0.7 release reuses that v0.6 data).
 
 Machine-readable citation metadata is provided in `CITATION.cff`.
