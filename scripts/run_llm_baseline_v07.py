@@ -120,7 +120,7 @@ class BaseProvider:
     name = "base"
 
     def __init__(self, model: str, temperature: float, max_output_tokens: int, mock: bool = False,
-                 reasoning: bool | None = None):
+                 reasoning: bool | None = None, num_ctx: int | None = None):
         self.model = model
         self.temperature = temperature
         self.max_output_tokens = max_output_tokens
@@ -128,6 +128,9 @@ class BaseProvider:
         # None = auto-detect reasoning model from the name; True/False = force (for Azure, where the
         # deployment name may not reveal the underlying model).
         self.reasoning = reasoning
+        # ollama-only: context window. The ollama default (4096) silently TRUNCATES long full-context
+        # bundles, so long-context runs must pass e.g. 65536. Ignored by hosted providers.
+        self.num_ctx = num_ctx
         self._client = None
 
     def required_env(self) -> list[str]:
@@ -324,19 +327,19 @@ class OllamaProvider(BaseProvider):
             )
 
     def _generate(self, prompt):
+        options = {"temperature": self.temperature, "num_predict": self.max_output_tokens}
+        if self.num_ctx:
+            # Without this, ollama defaults to num_ctx=4096 and silently truncates long bundles.
+            options["num_ctx"] = self.num_ctx
         body = json.dumps(
-            {
-                "model": self.model,
-                "prompt": prompt,
-                "stream": False,
-                "options": {"temperature": self.temperature, "num_predict": self.max_output_tokens},
-            }
+            {"model": self.model, "prompt": prompt, "stream": False, "options": options}
         ).encode("utf-8")
         req = urllib.request.Request(
             f"{self.base_url()}/api/generate", data=body, headers={"Content-Type": "application/json"}
         )
         try:
-            with urllib.request.urlopen(req, timeout=120) as r:
+            # Long-context / cloud reasoning generations can take minutes; 120s was too tight.
+            with urllib.request.urlopen(req, timeout=900) as r:
                 data = json.loads(r.read().decode("utf-8"))
         except urllib.error.URLError as exc:  # pragma: no cover - needs a live server
             # per-request failure: RuntimeError so main()'s per-item handler logs it and continues
@@ -361,7 +364,8 @@ _REASONING_OVERRIDE = {"auto": None, "on": True, "off": False}
 def make_provider(args) -> BaseProvider:
     cls = PROVIDER_CLASSES[args.provider]
     return cls(args.model, args.temperature, args.max_output_tokens, mock=args.mock,
-               reasoning=_REASONING_OVERRIDE[getattr(args, "reasoning", "auto")])
+               reasoning=_REASONING_OVERRIDE[getattr(args, "reasoning", "auto")],
+               num_ctx=getattr(args, "num_ctx", None))
 
 
 # --------------------------------------------------------------------------- io helpers
@@ -427,6 +431,9 @@ def parse_args(argv=None):
     ap.add_argument("--mock", action="store_true", help="run the loop with a deterministic fake response (offline)")
     ap.add_argument("--temperature", type=float, default=0.0)
     ap.add_argument("--max-output-tokens", type=int, default=512)
+    ap.add_argument("--num-ctx", type=int, default=None,
+                    help="ollama only: context window (e.g. 65536). The ollama default (4096) silently "
+                         "truncates long full-context bundles, so set this for long-context runs.")
     ap.add_argument("--reasoning", choices=["auto", "on", "off"], default="auto",
                     help="OpenAI/Azure token-param mode: auto = detect reasoning models (gpt-5*/o-series) "
                          "by name; on/off = force (use for Azure deployments whose name hides the model).")
