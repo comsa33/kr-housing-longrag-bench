@@ -33,7 +33,8 @@ GOLD = {
 
 
 def load_jsonl(path: Path) -> list[dict]:
-    return [json.loads(l) for l in path.open(encoding="utf-8") if l.strip()]
+    with path.open(encoding="utf-8") as f:
+        return [json.loads(l) for l in f if l.strip()]
 
 
 def main() -> int:

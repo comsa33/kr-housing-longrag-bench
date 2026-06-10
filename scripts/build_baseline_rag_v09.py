@@ -42,7 +42,8 @@ DEFAULT_OUT = ROOT / "workspace_local" / "audit" / "baselines" / "rag_bm25_v09_p
 
 
 def load_jsonl(path: Path) -> list[dict]:
-    return [json.loads(l) for l in path.open(encoding="utf-8") if l.strip()]
+    with path.open(encoding="utf-8") as f:
+        return [json.loads(l) for l in f if l.strip()]
 
 
 def pages_of(passages: list) -> list[str]:
@@ -101,8 +102,8 @@ def main() -> int:
         retrieved_pages = pages_of(picked)
         gold_pages = list(rec.get("page_ids") or [])
         if gold_pages:
-            hit = len(set(retrieved_pages) & set(gold_pages)) / len(set(gold_pages))
-            recalls.append(hit)
+            recall = len(set(retrieved_pages) & set(gold_pages)) / len(set(gold_pages))
+            recalls.append(recall)
         written.append({
             "qa_id": qid,
             "split": s["split"],

@@ -55,7 +55,8 @@ DEFAULT_FC_CAPS = {"512k": 18, "256k": 22}
 
 
 def load(path: Path) -> list[dict]:
-    return [json.loads(line) for line in path.open(encoding="utf-8") if line.strip()]
+    with path.open(encoding="utf-8") as f:
+        return [json.loads(line) for line in f if line.strip()]
 
 
 def slim(row: dict) -> dict:
@@ -64,6 +65,8 @@ def slim(row: dict) -> dict:
 
 def draw_dev(rows: list[dict], target: int, per_cluster: int, seed: int) -> list[dict]:
     """Stratify dev by task_type with a per-family floor, dedup by cluster_id."""
+    if not rows:
+        return []
     rng = random.Random(seed)
     by_family: dict[str, list[dict]] = defaultdict(list)
     for r in rows:
