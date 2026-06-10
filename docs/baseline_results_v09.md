@@ -76,14 +76,16 @@ Measured ratio for cost planning: **~2.45 chars/token** on this Korean-heavy mix
 
 ## 5. Cost projection (OpenAI leg; local leg is $0)
 
-At `gpt-4.1-mini` list price (USD/1M tokens: in $0.40, out $1.60 — confirm against live billing):
+At `gpt-4.1-mini` list price (USD/1M tokens: in $0.40, out $1.60 — confirm against live billing). Token
+counts use **decoded character count / 2.45**, not file byte size (Korean UTF-8 is ~3 bytes/char, which
+would overcount tokens ~1.7x):
 
 | Regime | Items | Input tokens | Est. USD |
 |---|---:|---:|---:|
-| full-context (capped) | 116 | ~19.7M | ~$7.9 |
+| full-context (capped) | 116 | ~11.2M | ~$4.5 |
 | RAG (BM25) | 304 | ~2.4M | ~$1.0 |
 | closed-book | 304 | tiny (locator-only) | ~$0 |
-| **Total (OpenAI)** | | | **~$8.9** |
+| **Total (OpenAI)** | | | **~$5.5** |
 
 `gemma4:12b` runs (all regimes it can fit) cost $0 (local GPU). Runs are chunked across days via `--resume`
 to respect rate limits; cost is bounded, not free-tier-gated.

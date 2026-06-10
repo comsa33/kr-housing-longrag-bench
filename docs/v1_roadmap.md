@@ -173,7 +173,8 @@ validation), clean up v0.8 carry-overs, then reduce seed-benchmark limitations.
    whereas gpt-4o-mini's 128k window rejects it) and `gemma4:12b` (open, local on the 3090 server
    `tts-dev-003`, `num_ctx=65536`). Full-context is the cost driver, so the giant tiers are capped
    (`512k→12`, `256k→16` ⇒ 116 full-context-eligible items; RAG/closed-book run all 304) to land at
-   **≈$8.9** on the OpenAI leg; the local leg is $0. Report plain + cluster-weighted accuracy cut by
+   **≈$5.5** on the OpenAI leg (full-context ~$4.5 + RAG ~$1; measured at ~2.45 chars/token); the local
+   leg is $0. Report plain + cluster-weighted accuracy cut by
    split / task_type / context_tier / question_style; record model ids, context limits, retrieval settings,
    cost, and date. **Extensible by design** (see the doc): the sample draw is seed-nested, so raising a
    tier cap is purely additive and `--resume` re-runs only new items; adding a model is orthogonal; and the

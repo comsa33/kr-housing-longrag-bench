@@ -118,19 +118,24 @@ def dist(rows: list[dict], key: str) -> dict:
     return dict(Counter(r.get(key) for r in rows).most_common())
 
 
-def bundle_tokens(row: dict) -> int | None:
-    """Approx prompt tokens for a full-context run of this item (bundle chars / ratio).
+_CHAR_CACHE: dict[str, int | None] = {}
 
-    Returns None when the item has no bundle or the bundle text is absent on disk
-    (a clean checkout without the internal corpus) — those can't run full-context.
+
+def bundle_tokens(row: dict) -> int | None:
+    """Approx prompt tokens for a full-context run of this item (bundle CHARS / ratio).
+
+    Uses decoded character count, NOT file byte size — Korean UTF-8 is ~3 bytes/char,
+    so st_size would overcount tokens by ~1.7x. Returns None when the item has no
+    bundle or the bundle text is absent on disk (clean checkout without the corpus).
     """
     bid = row.get("bundle_id")
     if not bid:
         return None
-    f = BUNDLES / f"{bid}.txt"
-    if not f.exists():
-        return None
-    return int(f.stat().st_size / CHARS_PER_TOKEN)
+    if bid not in _CHAR_CACHE:
+        f = BUNDLES / f"{bid}.txt"
+        _CHAR_CACHE[bid] = len(f.read_text(encoding="utf-8")) if f.exists() else None
+    chars = _CHAR_CACHE[bid]
+    return None if chars is None else int(chars / CHARS_PER_TOKEN)
 
 
 def build_fc_subset(sample: list[dict], caps: dict[str, int], seed: int) -> list[dict]:
