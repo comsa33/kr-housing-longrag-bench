@@ -131,6 +131,9 @@ class BaseProvider:
         # ollama-only: context window. The ollama default (4096) silently TRUNCATES long full-context
         # bundles, so long-context runs must pass e.g. 65536. Ignored by hosted providers.
         self.num_ctx = num_ctx
+        # per-call extras (token usage, thinking trace, etc.) stashed by _generate, read by main()
+        # to write the rich per-item call log. Reset at the start of every generate().
+        self.last_meta: dict = {}
         self._client = None
 
     def required_env(self) -> list[str]:
@@ -156,6 +159,7 @@ class BaseProvider:
         raise NotImplementedError
 
     def generate(self, prompt: str) -> str:
+        self.last_meta = {}
         if self.mock:
             return MOCK_PREDICTION
         return self._generate(prompt)
@@ -188,6 +192,20 @@ def _openai_chat_kwargs(model: str, prompt: str, temperature: float, max_output_
     return kw
 
 
+def _openai_usage(resp) -> dict:
+    """Extract token usage from an OpenAI/Azure chat response (best-effort; empty if absent)."""
+    u = getattr(resp, "usage", None)
+    if u is None:
+        return {}
+    out = {"prompt_tokens": getattr(u, "prompt_tokens", None),
+           "completion_tokens": getattr(u, "completion_tokens", None)}
+    details = getattr(u, "completion_tokens_details", None)
+    rt = getattr(details, "reasoning_tokens", None) if details is not None else None
+    if rt is not None:
+        out["reasoning_tokens"] = rt
+    return out
+
+
 class OpenAIProvider(BaseProvider):
     name = "openai"
 
@@ -206,6 +224,7 @@ class OpenAIProvider(BaseProvider):
         resp = self._client.chat.completions.create(
             **_openai_chat_kwargs(self.model, prompt, self.temperature, self.max_output_tokens, self.reasoning)
         )
+        self.last_meta = _openai_usage(resp)
         return (resp.choices[0].message.content or "").strip()
 
 
@@ -235,6 +254,7 @@ class AzureOpenAIProvider(BaseProvider):
         resp = self._client.chat.completions.create(
             **_openai_chat_kwargs(self.model, prompt, self.temperature, self.max_output_tokens, self.reasoning)
         )
+        self.last_meta = _openai_usage(resp)
         return (resp.choices[0].message.content or "").strip()
 
 
@@ -346,6 +366,11 @@ class OllamaProvider(BaseProvider):
             raise RuntimeError(
                 f"[ollama] request to {self.base_url()} failed: {exc}. Is `ollama serve` running and the model pulled?"
             )
+        # thinking models (e.g. minimax-m3) put the reasoning trace in a separate `thinking` field;
+        # capture it plus token counts for the rich per-item call log.
+        self.last_meta = {"thinking": data.get("thinking"),
+                          "prompt_tokens": data.get("prompt_eval_count"),
+                          "completion_tokens": data.get("eval_count")}
         return str(data.get("response", "")).strip()
 
 
@@ -492,16 +517,22 @@ def main(argv=None) -> int:
 
     log_path = out_path.with_suffix(".log")
     meta_path = out_path.with_suffix(".meta.json")
+    # rich per-item call log (INTERNAL, joinable by qa_id): prediction + token usage + latency +
+    # thinking trace (for reasoning models). The full input prompt is NOT duplicated here — it is
+    # recoverable from the prompt file by qa_id.
+    calls_path = out_path.with_suffix(".calls.jsonl")
     started = now_iso()
     written, errors = 0, 0
 
     mode = "w" if not args.resume else "a"
-    with out_path.open(mode, encoding="utf-8") as out_f, log_path.open(mode, encoding="utf-8") as log_f:
+    with out_path.open(mode, encoding="utf-8") as out_f, log_path.open(mode, encoding="utf-8") as log_f, \
+            calls_path.open(mode, encoding="utf-8") as calls_f:
         log_f.write(f"# run start {started} provider={args.provider} model={args.model} "
                     f"split={args.split} mock={args.mock} todo={len(todo)} (skipped_resume={len(records) - len(todo)})\n")
         for i, r in enumerate(todo, 1):
             qid = r.get("qa_id")
             prompt = select_prompt(r)
+            t0 = time.perf_counter()
             try:
                 pred = provider.generate(prompt)
             except SystemExit:
@@ -511,8 +542,14 @@ def main(argv=None) -> int:
                 log_f.write(f"{now_iso()} ERROR qa_id={qid}: {exc!r}\n")
                 log_f.flush()
                 continue
+            latency_s = round(time.perf_counter() - t0, 3)
             out_f.write(json.dumps({"qa_id": qid, "prediction": pred}, ensure_ascii=False) + "\n")
             out_f.flush()
+            calls_f.write(json.dumps(
+                {"qa_id": qid, "prediction": pred, "latency_s": latency_s,
+                 "prompt_chars": len(prompt), **provider.last_meta},
+                ensure_ascii=False) + "\n")
+            calls_f.flush()
             written += 1
             if args.sleep_seconds > 0 and i < len(todo):
                 time.sleep(args.sleep_seconds)
