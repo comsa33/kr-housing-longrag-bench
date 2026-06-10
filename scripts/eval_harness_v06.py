@@ -163,7 +163,8 @@ def main() -> int:
             missing += 1
         ok = score(it, preds.get(qid, ""))
         w = it.get("cluster_weight", 1.0)
-        for key in ("ALL", f"split:{it['_split']}", f"task:{it['task_type']}", f"style:{it.get('question_style','?')}"):
+        for key in ("ALL", f"split:{it['_split']}", f"task:{it['task_type']}",
+                    f"style:{it.get('question_style','?')}", f"tier:{it.get('context_tier','?')}"):
             add(key, ok, w)
 
     def line(key):
@@ -176,7 +177,7 @@ def main() -> int:
     if missing_splits:
         print(f"gold unavailable for requested splits {missing_splits} (expected for clean checkout hidden split)")
     print(line("ALL"))
-    for grp in ("split:", "task:", "style:"):
+    for grp in ("split:", "task:", "style:", "tier:"):
         print(f"-- by {grp[:-1]} --")
         for key in sorted(k for k in by if k.startswith(grp)):
             print("  " + line(key))

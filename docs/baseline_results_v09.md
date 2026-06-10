@@ -60,8 +60,10 @@ newly added items.
 
 | Model | Kind | Context window | Notes |
 |---|---|---|---|
-| `gpt-4.1-mini` | proprietary, hosted (OpenAI) | **~1M tokens (verified)** | runs all regimes; data-sharing free/paid tier is acceptable on dev/test_public (public splits) but **never on hidden gold** |
-| `gemma4:12b` | open weights, local | 256K | served via `ollama` on `tts-dev-003` (RTX 3090, 24GB); **must set `num_ctx=65536`** or the 64k bundle is silently truncated; ≤256k tiers only; **the non-data-sharing path for eventual hidden-split baselines** |
+| `gpt-4.1-mini` | proprietary, hosted (OpenAI) | **~1M tokens (verified)** | runs all regimes; data-sharing tier acceptable on dev/test_public (public splits) but **never on hidden gold** |
+| `minimax-m3:cloud` | open weights, hosted (Ollama Cloud) | **512K** | open-weights long-context point (paper reproducibility), all tiers incl 512k; runs remotely (no local GPU); **thinking model → set `--max-output-tokens 2048` or thinking starves the answer**, `--num-ctx 65536`; cloud ⇒ dev/test_public only, **never hidden gold** |
+
+A single 24GB GPU (the RTX 3090 on `tts-dev-003`) is **VRAM-bound, not context-window-bound**: the KV cache for 256k+ tokens does not fit on 24GB for any model (a local `gemma4:12b` realistically tops out near the 64k tier). So the open-weights long-context point uses `minimax-m3:cloud` (remote) instead. A local non-data-sharing model on the 3090 is **deferred to v1.0** for hidden-split small-tier scoring; big-tier hidden full-context would need an ≥80GB GPU.
 
 **Why gpt-4.1-mini, not gpt-4o-mini (empirically verified, 2026-06-10).** This is a long-context
 benchmark, so the model must ingest the haystack. On an identical 512k-tier bundle (974,007 chars =
@@ -87,32 +89,69 @@ would overcount tokens ~1.7x):
 | closed-book | 304 | tiny (locator-only) | ~$0 |
 | **Total (OpenAI)** | | | **~$5.5** |
 
-`gemma4:12b` runs (all regimes it can fit) cost $0 (local GPU). Runs are chunked across days via `--resume`
-to respect rate limits; cost is bounded, not free-tier-gated.
+`minimax-m3:cloud` runs on the Ollama Cloud Free tier (small quota; Pro is $20/mo for 50x) — bounded, not
+metered per our billing. OpenAI runs are chunked across days via `--resume` to respect rate limits.
 
-## 6. Commands (to be finalized as the runners are wired)
+## 6. Commands (finalized)
 
 ```bash
-# 1. draw the fixed sample (deterministic; internal output)
+# 1. draw the fixed sample + build the regime prompt sets (deterministic; INTERNAL output)
 python3 scripts/build_baseline_sample_v09.py            # seed 20260610, caps 512k=12 / 256k=16
+python3 scripts/build_baseline_fullcontext_v09.py       # 116 full-context prompts (bundle embedded)
+python3 scripts/build_baseline_rag_v09.py               # 268 BM25 RAG prompts (+ retrieved/gold page_ids)
 
-# 2. run each regime/model into workspace_local/audit/baselines/ (resumable, daily chunks)
-#    closed-book   : scripts/run_llm_baseline_v07.py (locator-only prompts)
-#    full-context  : full-context prompts (bundle text embedded) over baseline_sample_v09.fc.jsonl
-#    RAG (BM25)    : BM25-retrieved context over baseline_sample_v09.jsonl
-#    gemma4:12b    : --provider ollama --base-url <ssh-tunnelled 3090>, num_ctx=65536
+# 2. run each regime x model into workspace_local/audit/baselines/ (resumable; explicit --out per regime
+#    so closed/full/RAG don't collide on the auto name). Run once per split. Examples for one model:
+export OPENAI_API_KEY=...   # from workspace_local/secrets/openai_api.key
+M=gpt-4.1-mini
+for SP in test_public dev; do
+  # closed-book (locator-only floor)
+  python3 scripts/run_llm_baseline_v07.py --provider openai --model $M --split $SP \
+      --out workspace_local/audit/baselines/cb_${M}_${SP}.jsonl --resume
+  # full-context
+  python3 scripts/run_llm_baseline_v07.py --provider openai --model $M --split $SP \
+      --prompt-file workspace_local/audit/baselines/fullcontext_v09_prompts.jsonl \
+      --out workspace_local/audit/baselines/fc_${M}_${SP}.jsonl --max-output-tokens 256 --resume
+  # RAG (BM25)
+  python3 scripts/run_llm_baseline_v07.py --provider openai --model $M --split $SP \
+      --prompt-file workspace_local/audit/baselines/rag_bm25_v09_prompts.jsonl \
+      --out workspace_local/audit/baselines/rag_${M}_${SP}.jsonl --resume
+done
+# minimax-m3:cloud leg: --provider ollama --model minimax-m3:cloud --num-ctx 65536 --max-output-tokens 2048
+#   (Ruo signed in via `ollama login`; cloud ⇒ dev/test_public only, never hidden)
 
-# 3. score every prediction file
-python3 scripts/eval_harness_v06.py --pred workspace_local/audit/baselines/<file>.jsonl
+# 3. score, restricted to the locked sample (cluster-weighted is the headline)
+#    closed-book over the full 304 sample; full/RAG over the qa_ids actually present in their pred file
+python3 scripts/eval_harness_v06.py --pred <cb pred> --splits dev,test_public \
+    --ids-file workspace_local/audit/baselines/baseline_sample_v09.jsonl
+python3 scripts/eval_harness_v06.py --pred <fc|rag pred> --splits dev,test_public --pred-only
+# retrieval quality (model-independent): recall@k / hit@k from the RAG prompt file
+python3 scripts/score_retrieval_v09.py --rag workspace_local/audit/baselines/rag_bm25_v09_prompts.jsonl
 ```
 
-## 7. Results
+## 7. Metrics (the v0.9 reported set)
 
-**TBD** — populated as runs complete. Tables will report plain + cluster-weighted accuracy overall and cut
-by split / task_type / context_tier / question_style, per (model × regime), with model ids, context limits,
-retrieval settings, cost, and run date. The cluster-weighted metric stays the headline.
+- **Answer accuracy** (`scripts/eval_harness_v06.py`): plain + **cluster-weighted** accuracy (the
+  cluster-weighted number is the headline — it discounts near-duplicate clusters so a few repeated items
+  cannot inflate the score). Per-`answer_type` matching: `exact_numbers` (all gold numeric tokens present),
+  `boolean_and_reason` (abstention detection), else normalized-substring. Cut by **split / task_type /
+  context_tier / question_style**. Restrict to the locked sample with `--ids-file` (full 304) or
+  `--pred-only` (the subset a regime actually ran).
+- **Abstention** is captured by `task:answerability_detection` and the `boolean_and_reason` metric.
+- **Retrieval quality** for the RAG regime (`scripts/score_retrieval_v09.py`): **recall@k** (fraction of
+  gold pages retrieved) and **hit@k** (any gold page retrieved), plain + cluster-weighted, cut by
+  split / task_type / context_tier. Model-independent (a property of BM25). Sanity at k=5: recall@5 ≈ 0.59.
+- **Paper-grade extensions (deferred):** replace the loose normalized-substring match with
+  normalized-EM / numeric-tolerance / multi-answer set-F1; add an evidence-position cut; optionally an
+  LLM-judge secondary metric for free-text (note its cost/reproducibility tradeoff). All additive on this
+  same sample + predictions; see `docs/evaluation_protocol.md`.
 
-## 8. Limitations and the path to paper-grade
+## 8. Results
+
+**TBD** — populated as runs complete, per (model × regime), reporting the metrics in §7 with model ids,
+context limits, retrieval settings (k), cost, and run date.
+
+## 9. Limitations and the path to paper-grade
 
 This v0.9 set is a **reference baseline**, captioned **indicative**. Before a camera-ready paper claim:
 
