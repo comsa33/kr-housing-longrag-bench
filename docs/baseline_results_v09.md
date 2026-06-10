@@ -148,8 +148,54 @@ python3 scripts/score_retrieval_v09.py --rag workspace_local/audit/baselines/rag
 
 ## 8. Results
 
-**TBD** — populated as runs complete, per (model × regime), reporting the metrics in §7 with model ids,
-context limits, retrieval settings (k), cost, and run date.
+**Reference / indicative** numbers. Model `gpt-4.1-mini` (run 2026-06-10; `temperature=0`, `max_output_tokens=256`); BM25 `k=5`. `minimax-m3:cloud` runs are pending and will be added as a second row block. Cluster-weighted (cw) is the headline; plain is shown alongside.
+
+### 8.1 Each regime on its natural item set
+
+The three regimes cover different item counts (closed-book runs the full sample; RAG runs items that have a retrievable bundle; full-context runs the tier-capped bundle-eligible subset), so these rows are **not** directly comparable — see §8.2 for the apples-to-apples view.
+
+| Regime (gpt-4.1-mini) | Items | Plain acc | Cluster-weighted |
+|---|---:|---:|---:|
+| closed-book (locator-only) | 304 | 9.2% | 2.1% |
+| RAG (BM25, k=5) | 268 | 46.6% | 19.1% |
+| full-context | 116 | **79.3%** | **45.7%** |
+
+### 8.2 Head-to-head on the common 116-item set (full-context-eligible)
+
+Same 116 items scored under all three regimes — the honest comparison.
+
+| Regime (gpt-4.1-mini, n=116) | Plain acc | Cluster-weighted |
+|---|---:|---:|
+| closed-book | 6.9% | 0.2% |
+| RAG (BM25, k=5) | 69.0% | 31.2% |
+| full-context | **79.3%** | **45.7%** |
+
+Monotonic **closed-book ≪ RAG ≪ full-context**: context is decisive (the benchmark is near-unanswerable closed-book but tractable with evidence), and full-context beats BM25 RAG by ~10 pts plain / ~14 pts cw — yet RAG recovers most of the lift at ~1/9 the context (a real efficiency finding, not a ceiling).
+
+### 8.3 By context tier — the long-context collapse
+
+full-context accuracy (plain) by tier shows a sharp **lost-in-the-middle** cliff even for a 1M-context model:
+
+| Tier | 32k | 64k | 128k | 256k | 512k |
+|---|---:|---:|---:|---:|---:|
+| full-context plain | 92.3% | 90.9% | 85.7% | 75.0% | **0.0%** (0/12) |
+| RAG(BM25) plain | 86.5% | 77.3% | 35.7% | 68.7% | **1.0%** (1/97) |
+
+At the 512k tier (Korean multi-document haystacks) the model ingests the whole context but **cannot locate the answer** (0/12 full-context), and BM25 also fails to retrieve the gold page (recall@5 ≈ 53%, but the gold page sits among many same-domain distractors). This 512k cliff is a headline benchmark finding.
+
+### 8.4 Hardest task families
+
+Even with full-context, **multi-document / aggregation** families stay at ≈0%: `cross_document_legal_reasoning`, `cross_source_aggregation`, `multi_document_comparison`, `region_comparison`, `provider_comparison`. Tractable families: `long_context_retrieval` (94% fc), `table_numeric_reasoning` (79% fc), `eligibility_reasoning` (100% fc), `answerability_detection` (100% closed-book — correct abstention).
+
+### 8.5 Retrieval quality (BM25, k=5, model-independent)
+
+| Cut | recall@5 | hit@5 | cw-recall | cw-hit |
+|---|---:|---:|---:|---:|
+| ALL (n=268) | 59.1% | 61.2% | 55.1% | 60.3% |
+
+Notable per-task: `long_distance_retrieval` 100%, `eligibility_reasoning` 75%, vs `schedule_reasoning` 11% and `region_comparison` 25% — BM25 is weak exactly where evidence is scattered or schedule-shaped. Full per-task/tier breakdown in `scripts/score_retrieval_v09.py` output.
+
+> Caveats: indicative reference numbers, one proprietary model so far; `contains_all`/normalized-substring matching can over-credit partial answers; tier caps mean the 512k row rests on 12 full-context items. See §9.
 
 ## 9. Limitations and the path to paper-grade
 
