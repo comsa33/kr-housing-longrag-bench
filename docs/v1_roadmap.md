@@ -164,11 +164,23 @@ validation), clean up v0.8 carry-overs, then reduce seed-benchmark limitations.
 
 **Priority 0 — carried forward from v0.7/v0.8 (do these first):**
 
-1. **Release-grade baseline result tables.** Run ≥3 real systems (e.g. a strong full-context LLM, a
-   BM25/dense/hybrid RAG, and a table/tool pipeline) on fixed splits; report plain + cluster-weighted
-   accuracy cut by split / task_type / context_tier / evidence_position / question_style. Record model ids,
-   context limits, retrieval settings, cost, and date. This is what makes a benchmark paper compelling and
-   is the single highest-leverage next task.
+1. **Release-grade baseline result tables.** ▶ **IN PROGRESS** — design locked in
+   [`docs/baseline_results_v09.md`](baseline_results_v09.md). A fixed, seeded, stratified sample
+   (`scripts/build_baseline_sample_v09.py`, seed `20260610`: test_public 104 + dev 200 stratified over all
+   12 task families, cluster-deduplicated; 304 items) is run across **three regimes** — closed-book
+   (locator-only, already have the v0.7 floor), **full-context**, and **RAG (BM25)** — and **two models**:
+   `gpt-4.1-mini` (proprietary, **1M context verified empirically** — ingests our 393k-token 512k tier,
+   whereas gpt-4o-mini's 128k window rejects it) and `gemma4:12b` (open, local on the 3090 server
+   `tts-dev-003`, `num_ctx=65536`). Full-context is the cost driver, so the giant tiers are capped
+   (`512k→12`, `256k→16` ⇒ 116 full-context-eligible items; RAG/closed-book run all 304) to land at
+   **≈$8.9** on the OpenAI leg; the local leg is $0. Report plain + cluster-weighted accuracy cut by
+   split / task_type / context_tier / question_style; record model ids, context limits, retrieval settings,
+   cost, and date. **Extensible by design** (see the doc): the sample draw is seed-nested, so raising a
+   tier cap is purely additive and `--resume` re-runs only new items; adding a model is orthogonal; and the
+   local (non-data-sharing) gemma leg is the path to eventual hidden-split baselines. For the paper this
+   v0.9 set is captioned **indicative/reference** — before camera-ready, lift the 512k/256k caps (tighter
+   CIs), add 1-2 models (gpt-5-mini / Qwen), and add dense/hybrid RAG. This is the single
+   highest-leverage next task.
 2. **Human-validation sample.** A 10-20% stratified sample (plus 100% of high-risk legal/multi-document
    items) reviewed by a human, with inter-annotator agreement reported. Upgrades the card from
    "LLM-assisted" toward "human-validated."
