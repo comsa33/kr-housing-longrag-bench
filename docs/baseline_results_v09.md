@@ -127,7 +127,16 @@ python3 scripts/eval_harness_v06.py --pred <cb pred> --splits dev,test_public \
 python3 scripts/eval_harness_v06.py --pred <fc|rag pred> --splits dev,test_public --pred-only
 # retrieval quality (model-independent): recall@k / hit@k from the RAG prompt file
 python3 scripts/score_retrieval_v09.py --rag workspace_local/audit/baselines/rag_bm25_v09_prompts.jsonl
+
+# navigate the INTERNAL artifacts: writes an INDEX.md catalog (naming legend + per-file status)
+python3 scripts/catalog_baselines_v09.py
 ```
+
+**Artifact layout (INTERNAL, under `workspace_local/audit/baselines/`, gitignored).** Predictions are
+`<regime>_<model>_<split>.jsonl` with `{qa_id, prediction}` (regime ∈ cb/rag/fc); each run also writes a
+rich `<…>.calls.jsonl` (tokens, latency, and for reasoning models the `thinking` trace, joinable by
+qa_id), a `<…>.meta.json`, and a `<…>.log`. Input prompts are `<regime>_v09_prompts.jsonl`. Run
+`catalog_baselines_v09.py` to (re)generate `INDEX.md`, which lists every artifact with counts and status.
 
 ## 7. Metrics (the v0.9 reported set)
 
