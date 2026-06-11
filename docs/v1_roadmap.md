@@ -15,7 +15,9 @@ Repository/package boundaries are governed by `docs/repository_scope_policy.md`.
   unrepairable items; was 2,011 in the v0.6/v0.7 build).
 - 41 official announcements; 10 announcement providers; 9 announcement 시도; 12 task families.
 - 282 effective near-duplicate clusters; cluster-weighted accuracy is the headline metric.
-- Public split files (dev 1,608 / test_public 104 / test_hidden 285) with masked hidden questions.
+- Public split files: **published v0.8** = dev 1,608 / test_public 104 / test_hidden 285 (masked); the
+  **v0.9 branch** merges `test_hidden` into `test_public` → dev 1,608 / **test_public 389**, no hidden split
+  (not yet released).
 - Hugging Face `load_dataset()` verified; the dataset viewer serves the v0.8 parquet conversion.
 - GitHub CI green; Zenodo versioned DOI `10.5281/zenodo.20571211` (concept `10.5281/zenodo.20559127`).
 
@@ -164,21 +166,27 @@ validation), clean up v0.8 carry-overs, then reduce seed-benchmark limitations.
 
 **Priority 0 — carried forward from v0.7/v0.8 (do these first):**
 
-1. **Release-grade baseline result tables.** ▶ **RESULTS IN (2026-06-11)** — see
-   [`docs/baseline_results_v09.md`](baseline_results_v09.md) §8: 5 models (gpt-4.1-mini, **gpt-5.5
-   winner**, gpt-5.4-mini/nano, minimax) × 3 regimes via OpenAI Batch, headline = **LLM-judge**.
+1. **Release-grade baseline result tables.** ▶ **DONE (2026-06-11)** — see
+   [`docs/baseline_results_v09.md`](baseline_results_v09.md) §8: 4 OpenAI models (gpt-4.1-mini, **gpt-5.5
+   winner**, gpt-5.4-mini/nano) × 3 regimes via OpenAI Batch, headline = **LLM-judge**.
    Key result: the legacy `contains_all` metric systematically undercounts and fabricated a FALSE
-   "512k collapse" (0% → judge 42%); no collapse exists. Remaining gating items for paper-grade (NOT
-   more models): **(a) validate the LLM-judge vs human labels**, (b) report test_public separately +
-   evaluate `test_hidden` via a LOCAL non-data-sharing model (dev≠test), (c) finish minimax, (d) fix the
-   cross_source full-context bundle (HUG rows absent), (e) optional dense/hybrid RAG, (f) grow the
-   dataset LAST. Original design notes follow. A fixed, seeded, stratified sample
+   "512k collapse" (0% → judge 42%); no collapse exists. Gating status:
+   **(a) ✅ LLM-judge validated** vs human (n=80, agreement 96.2 %, κ=0.924, §9.0);
+   **(b) ✅ test_public reported separately** (§8.5) and **the former `test_hidden` (285) merged into
+   `test_public` → 389** (no hidden split; no local-model leg needed);
+   **(c) open-weights leg DEFERRED** — `minimax-m3:cloud` is hosted (weights unreleased as of 2026-06), so it
+   does NOT qualify; a genuinely open-weights model is to be selected by verifying live availability;
+   **(d) ✅ HUG cross_source full-context fix applied** at the prompt level (20 items, §8.6) — canonical
+   bundle rebuild still pending; **(e) optional dense/hybrid RAG**; **(f) grow the dataset LAST**.
+   ⚠️ Cost: the multi-model run cost far more than the single-model `~$5.5` estimate — one day booked **~$148**
+   (gpt-5.5 reasoning output is the driver; never re-run gpt-5.5 on cb/rag — see baseline §5).
+   *Original pilot design notes follow (superseded).* A fixed, seeded, stratified pilot sample
    (`scripts/build_baseline_sample_v09.py`, seed `20260610`: test_public 104 + dev 200 stratified over all
-   12 task families, cluster-deduplicated; 304 items) is run across **three regimes** — closed-book
-   (locator-only, already have the v0.7 floor), **full-context**, and **RAG (BM25)** — and **two models**:
-   `gpt-4.1-mini` (proprietary, **1M context verified empirically** — ingests our 393k-token 512k tier,
-   whereas gpt-4o-mini's 128k window rejects it) and `gemma4:12b` (open, local on the 3090 server
-   `tts-dev-003`, `num_ctx=65536`). Full-context is the cost driver, so the giant tiers are capped
+   12 task families, cluster-deduplicated; 304 items) was used to bring up the pipeline; the headline runs
+   cover the **full** dev + **389-item** test_public. Regimes — closed-book (locator-only, v0.7 floor),
+   **full-context**, **RAG (BM25)**; the verified context-window finding: `gpt-4.1-mini`
+   (**1M context, ingests our 393k-token 512k tier**, whereas gpt-4o-mini's 128k window rejects it) and
+   gpt-5.5 cover 512k, while the gpt-5.4 family caps at 272k. Full-context is the cost driver, so the giant tiers are capped
    (`512k→12`, `256k→16` ⇒ 116 full-context-eligible items; RAG/closed-book run all 304) to land at
    **≈$5.5** on the OpenAI leg (full-context ~$4.5 + RAG ~$1; measured at ~2.45 chars/token); the local
    leg is $0. Report plain + cluster-weighted accuracy cut by

@@ -1,69 +1,97 @@
-# Baseline Results (v0.9, release-grade — design locked, runs in progress)
+# Baseline Results (v0.9, release-grade)
 
-**Scope.** This document defines the **release-grade reference baselines** for the v0.9 build: a fixed,
-seeded, stratified evaluation sample run across three context regimes and two models, scored by
-`scripts/eval_harness_v06.py`. It supersedes the v0.7 *smoke* diagnostics
-([`baseline_results_v07.md`](baseline_results_v07.md)), which used a 22-item convenience slice and a
-closed-book floor only.
+**Scope.** This document reports the **release-grade reference baselines** for the v0.9 build: **five models**
+× **three context regimes** (closed-book / RAG-BM25 / full-context), run via the **OpenAI Batch API** and
+scored by an **LLM-judge headline metric** (semantic equivalence, human-validated — §9.0), with deterministic
+soft/EM + Wilson 95% CIs as the reproducible reference (§8.4). It supersedes the v0.7 *smoke* diagnostics
+([`baseline_results_v07.md`](baseline_results_v07.md), a 22-item convenience slice, closed-book floor only).
 
-This is a **research-preview reference baseline**, not a sealed-hidden leaderboard and not a final model
-ranking. Numbers reported here are captioned **indicative/reference**; see *Limitations and the path to
-paper-grade* below for exactly what must be added before a camera-ready claim. No raw documents, bundle
-text, hidden gold, or API keys are published here; all predictions, prompts, and run metadata are INTERNAL
-under `workspace_local/audit/baselines/` (gitignored).
+This is a **research-preview reference baseline**, **not** a sealed-hidden leaderboard and **not** a final
+model ranking. Per-tier long-context numbers are captioned **indicative**; see *Limitations and the path to
+paper-grade* (§9) for what must be added before a camera-ready claim. No raw documents, bundle text, or API
+keys are published here; all predictions, prompts, and run metadata are INTERNAL under
+`workspace_local/audit/baselines/` (gitignored).
 
-## 1. Evaluation sample (fixed, seeded, reproducible)
+> **Reading guide.** §§1–7 describe the **current** design and run mechanics; §§8–9 are the results and
+> limitations. Where an earlier 304-item *pilot* sample is referenced, it is labelled as such — the headline
+> coverage below is the **full** dev + the **389-item** held-out `test_public`, not the pilot slice.
 
-Built by `scripts/build_baseline_sample_v09.py` (seed `20260610`; the drawn files live INTERNAL under
-`workspace_local/audit/baselines/`). The *reproducible artifact that ships* is the script + its seed, not
-the drawn file.
+## 1. Evaluation coverage
 
-- **test_public**: all 104 items (small held split, taken whole — no sampling).
-- **dev**: 200 items, **stratified by `task_type`** so all 12 task families are represented (per-family
-  floor), **near-duplicate-deduplicated by `cluster_id`** (≤1 item per cluster; 114 distinct clusters).
-- **Total sample: 304 items.** Coverage spans all 12 task families, both question styles
-  (real_user / professional_analyst), all 5 context tiers (32k / 64k / 128k / 256k / 512k), all 10
-  providers, and 9 시도.
+The dataset is **1,997 QA**: `dev` (1,608) + `test_public` (389). There is **no hidden split** — the former
+`test_hidden` (285) was merged into `test_public` in v0.9 (see CHANGELOG; §8.5). `cluster_id` near-duplicate
+clusters are scored with **cluster-weighted** accuracy so repetition cannot inflate scores.
 
-The drawn sample is `baseline_sample_v09.jsonl` (all 304, used for RAG + closed-book) plus
-`baseline_sample_v09.fc.jsonl` (the full-context-eligible subset, see §3).
+- **closed-book** and **RAG** are run on the **full** `dev` + `test_public` (cb: 1,608 + 389; RAG: items
+  with gold pages, 386 of test_public).
+- **full-context** is **tier-capped** (cost control — §3): the embedded haystack at the 512k tier is ~393k
+  tokens, so a handful of items dominate the bill.
+
+A 304-item seeded *pilot* sample (`build_baseline_sample_v09.py`, seed `20260610`: test_public 104 + dev 200
+stratified) was used to bring up and validate the pipeline; it is **superseded** by the full-split runs above
+and is retained only as the seed-nested source for the tier-capped full-context subsets (§3). The drawn pilot
+files live INTERNAL under `workspace_local/audit/baselines/`.
 
 ## 2. Regimes
 
 | Regime | What the model sees | Coverage | Purpose |
 |---|---|---|---|
-| **closed-book** (locator-only) | instruction + question + `context_spec` locators, **no document text** | all 304 | refusal / hallucination floor (a true lower bound; the v0.7 §4 numbers are this regime) |
-| **full-context** | the question + the **entire bundle text** at the item's `context_tier` | 116-item capped subset (§3) | long-context LLM headline (lost-in-the-middle stress on Korean haystacks up to ~393k tokens) |
-| **RAG (BM25)** | the question + **BM25-retrieved chunks** (~8k tokens) | all 304 | the tier-independent, scalable retrieval baseline |
+| **closed-book** (locator-only) | instruction + question + `context_spec` locators, **no document text** | full dev + test_public | refusal / hallucination floor (a true lower bound; the v0.7 §4 numbers are this regime) |
+| **full-context** | the question + the **entire bundle text** at the item's `context_tier` | tier-capped subset (§3) | long-context LLM headline (lost-in-the-middle stress on Korean haystacks up to ~393k tokens) |
+| **RAG (BM25)** | the question + **BM25-retrieved chunks** (~8k tokens) | full dev + test_public | the tier-independent, scalable retrieval baseline |
 
-closed-book and RAG run on all 304 because they are cheap (tiny / bounded context). Full-context is the
-cost driver and is tier-capped.
+closed-book and RAG run on the full split because they are cheap (tiny / bounded context). Full-context is
+the cost driver (input scales with the haystack) and is therefore tier-capped.
 
 ## 3. Full-context subset and tier caps
 
 Full-context input cost scales with the haystack: the "512k" tier is ~393k tokens (measured), so a handful
-of those items dominate the bill. To keep the OpenAI leg near budget while still covering every tier, the
-giant tiers are capped:
+of those items dominate the bill. To keep cost bounded while still covering every tier, the giant tiers are
+capped (seeded selection; items with no bundle on disk — mostly `answerability_detection` with no haystack —
+are not full-context-eligible). Two capped subsets were built:
 
-- caps: `512k → 12`, `256k → 16`; smaller tiers (32k/64k/128k) uncapped.
-- items with no bundle on disk (36, mostly `answerability_detection` with no haystack) are not
-  full-context-eligible.
-- **Result: 116 full-context-eligible items** spanning all 5 tiers (32k 52 / 64k 22 / 256k 16 / 128k 14 /
-  512k 12).
+- **pilot subset (116 items):** caps `512k → 12`, `256k → 16` over the 304-item pilot (32k 52 / 64k 22 /
+  128k 14 / 256k 16 / 512k 12). This is the §8.1–8.2 pooled-headline full-context coverage.
+- **test_public extension (72 items):** built over the 285 merged items (`512k → 20`, `256k → 16`, others
+  →12) so the held-out split reports full-context per-tier directly (§8.5; test_public fc now **n=105**, incl.
+  **25 at 512k** vs 5 before).
 
-The cap is a **cost-control choice, not a structural limit** — the full dataset retains all 97 of the
-512k-tier items. Because the subset draw is **seed-nested** (same seed ⇒ same shuffle ⇒ `[:12] ⊂ [:30]`),
-raising a cap later is **purely additive**: already-run predictions stay valid and `--resume` runs only the
-newly added items.
+The cap is a **cost-control choice, not a structural limit**. Because the draw is **seed-nested** (same seed
+⇒ `[:12] ⊂ [:30]`), raising a cap later is **purely additive** — already-run predictions stay valid.
+
+**HUG injection (cross_source only).** `cross_source_aggregation` items ask an aggregate over the HUG
+(주택도시보증공사) sale-history table, whose gold is computed from 624 rows that the canonical bundles do
+**not** embed → unanswerable in the full-context regime (a benchmark-construction artifact, §8.6). The fix is
+applied **at the prompt level to the cross_source full-context items only** (the original 4 + the 16 the merge
+added at 512k = 20 prompts): the 624 HUG rows are injected as a compact in-bundle table by
+`scripts/fix_fc_hug_bundle_v09.py`. Non-cross_source full-context prompts are unchanged, and the **canonical
+dataset bundles still lack HUG** (rebuilding them so HUG is embedded by default is deferred dataset work).
 
 ## 4. Models
 
-| Model | Kind | Context window | Notes |
-|---|---|---|---|
-| `gpt-4.1-mini` | proprietary, hosted (OpenAI) | **~1M tokens (verified)** | runs all regimes; data-sharing tier acceptable on dev/test_public (public splits) but **never on hidden gold** |
-| `minimax-m3:cloud` | open weights, hosted (Ollama Cloud) | **512K** | open-weights long-context point (paper reproducibility), all tiers incl 512k; runs remotely (no local GPU); **thinking model → set `--max-output-tokens 2048` or thinking starves the answer**, `--num-ctx 65536`; cloud ⇒ dev/test_public only, **never hidden gold** |
+Five proprietary, hosted models (OpenAI), run via the Batch API. All are **API/hosted** — there is **no
+open-weights model in this table** (see the note below).
 
-A single 24GB GPU (the RTX 3090 on `tts-dev-003`) is **VRAM-bound, not context-window-bound**: the KV cache for 256k+ tokens does not fit on 24GB for any model (a local `gemma4:12b` realistically tops out near the 64k tier). So the open-weights long-context point uses `minimax-m3:cloud` (remote) instead. A local non-data-sharing model on the 3090 is **deferred to v1.0** for hidden-split small-tier scoring; big-tier hidden full-context would need an ≥80GB GPU.
+| Model | Context window | Covers 512k? | Notes |
+|---|---|---|---|
+| `gpt-4.1-mini` | **~1M (verified 393k accepted)** | ✅ | all regimes/tiers; low reasoning |
+| **`gpt-5.5`** | **≥393k (0 ctx-rejections)** | ✅ | overall winner; **heavy reasoning → the cost driver (§5)** |
+| `gpt-5.4-mini` | **272k (verified)** | ❌ ✗ctx | rejects the 393k bundle (HTTP 400 "limit 272000"); strong on tiers it fits |
+| `gpt-5.4-nano` | **272k (verified)** | ❌ ✗ctx | smallest; degrades fastest |
+
+The 272k window of the gpt-5.4 family is a real **quality-vs-context-coverage tradeoff**: they cannot ingest
+the 512k tier (recorded as `✗ctx`, an error, not a wrong answer), while gpt-4.1-mini and gpt-5.5 cover all
+tiers.
+
+> **Open-weights leg — DEFERRED (not yet run).** An earlier plan used `minimax-m3:cloud` (Ollama Cloud) as
+> the "open-weights" point, but as of 2026-06 MiniMax M3 is a **hosted endpoint whose weights are not
+> publicly released** (open-weight release was *announced* but not available); accessed via Ollama Cloud it
+> is a cloud API, not a locally-runnable open model. **It does not satisfy the open-weights / reproducibility
+> role and is reclassified as hosted; its partial run (318/688) is treated as incomplete diagnostics, not a
+> reported result.** A genuinely open-weights long-context model for this leg is **deferred and to be
+> selected by verifying current availability against live sources** (not asserted from memory). Local GPU
+> note: a single 24GB RTX 3090 is **VRAM-bound** (KV cache for 256k+ tokens does not fit), so the open leg
+> would run via a provider serving public weights (reproducible because the weights are public), not locally.
 
 **Why gpt-4.1-mini, not gpt-4o-mini (empirically verified, 2026-06-10).** This is a long-context
 benchmark, so the model must ingest the haystack. On an identical 512k-tier bundle (974,007 chars =
@@ -76,60 +104,62 @@ benchmark, so the model must ingest the haystack. On an identical 512k-tier bund
 
 Measured ratio for cost planning: **~2.45 chars/token** on this Korean-heavy mixed text.
 
-## 5. Cost projection (OpenAI leg; local leg is $0)
+## 5. Cost — pre-run estimate vs observed
 
-At `gpt-4.1-mini` list price (USD/1M tokens: in $0.40, out $1.60 — confirm against live billing). Token
-counts use **decoded character count / 2.45**, not file byte size (Korean UTF-8 is ~3 bytes/char, which
-would overcount tokens ~1.7x):
+**Pre-run estimate (single model, pilot 304, ⚠️ misleading):** the original `gpt-4.1-mini`-only projection
+was **~$5.5** (fc 116 ~11.2M input + RAG ~$1 + closed-book ~$0, at $0.40/$1.60 per 1M in/out). This held for
+gpt-4.1-mini but **badly under-projected the multi-model run** because it ignored reasoning output.
 
-| Regime | Items | Input tokens | Est. USD |
+**Observed (authoritative, OpenAI Costs API via admin key):** the full v0.9 effort cost far more — a single
+day (2026-06-11) booked **~$148**. Derived **batch** rates (already 50%-discounted):
+
+| Model | output (reasoning) | long-ctx input | regular input |
 |---|---:|---:|---:|
-| full-context (capped) | 116 | ~11.2M | ~$4.5 |
-| RAG (BM25) | 304 | ~2.4M | ~$1.0 |
-| closed-book | 304 | tiny (locator-only) | ~$0 |
-| **Total (OpenAI)** | | | **~$5.5** |
+| **gpt-5.5** | **~$15.0 /Mtok** ← dominant | ~$0.87 /Mtok | ~$2.35 /Mtok |
+| gpt-4.1-mini | low | ~$0.20 /Mtok | ~$0.40 /Mtok |
 
-`minimax-m3:cloud` runs on the Ollama Cloud Free tier (small quota; Pro is $20/mo for 50x) — bounded, not
-metered per our billing. OpenAI runs are chunked across days via `--resume` to respect rate limits.
+**gpt-5.5 is the cost driver, and its reasoning *output* is the killer.** In closed-book (no evidence) it
+reasons explosively — 285 cb items emitted ~444k reasoning + ~452k completion tokens (~$7 just for output).
+In full-context it barely reasons (~137 tok/item); there the cost is *input* tokens (the 393k bundles).
+
+> **⚠️ Cost rule (do not violate):** **never re-run gpt-5.5 on closed-book / RAG** (reasoning output
+> explodes). Use gpt-5.5 only where it adds unique value (full-context / 512k). For cheap regimes prefer
+> gpt-4.1-mini. **Always check the Costs API before and after a run** (`GET /v1/organization/costs`,
+> `amount.value` is a string), and **estimate output tokens, not just input**, for reasoning models. Batch
+> halves cost but does not change this.
 
 ## 6. Commands (finalized)
 
+The runs use the **OpenAI Batch API** (50% cheaper, async <24h, qa_id-native `custom_id`). The LLM-judge is
+the headline; deterministic soft/EM + Wilson CIs are the reproducible reference.
+
 ```bash
-# 1. draw the fixed sample + build the regime prompt sets (deterministic; INTERNAL output)
-python3 scripts/build_baseline_sample_v09.py            # seed 20260610, caps 512k=12 / 256k=16
-python3 scripts/build_baseline_fullcontext_v09.py       # 116 full-context prompts (bundle embedded)
-python3 scripts/build_baseline_rag_v09.py               # 268 BM25 RAG prompts (+ retrieved/gold page_ids)
-
-# 2. run each regime x model into workspace_local/audit/baselines/ (resumable; explicit --out per regime
-#    so closed/full/RAG don't collide on the auto name). Run once per split. Examples for one model:
 export OPENAI_API_KEY=...   # from workspace_local/secrets/openai_api.key
-M=gpt-4.1-mini
-for SP in test_public dev; do
-  # closed-book (locator-only floor)
-  python3 scripts/run_llm_baseline_v07.py --provider openai --model $M --split $SP \
-      --out workspace_local/audit/baselines/cb_${M}_${SP}.jsonl --resume
-  # full-context
-  python3 scripts/run_llm_baseline_v07.py --provider openai --model $M --split $SP \
-      --prompt-file workspace_local/audit/baselines/fullcontext_v09_prompts.jsonl \
-      --out workspace_local/audit/baselines/fc_${M}_${SP}.jsonl --max-output-tokens 256 --resume
-  # RAG (BM25)
-  python3 scripts/run_llm_baseline_v07.py --provider openai --model $M --split $SP \
-      --prompt-file workspace_local/audit/baselines/rag_bm25_v09_prompts.jsonl \
-      --out workspace_local/audit/baselines/rag_${M}_${SP}.jsonl --resume
-done
-# minimax-m3:cloud leg: --provider ollama --model minimax-m3:cloud --num-ctx 65536 --max-output-tokens 2048
-#   (Ruo signed in via `ollama login`; cloud ⇒ dev/test_public only, never hidden)
 
-# 3. score, restricted to the locked sample (cluster-weighted is the headline)
-#    closed-book over the full 304 sample; full/RAG over the qa_ids actually present in their pred file
-python3 scripts/eval_harness_v06.py --pred <cb pred> --splits dev,test_public \
-    --ids-file workspace_local/audit/baselines/baseline_sample_v09.jsonl
-python3 scripts/eval_harness_v06.py --pred <fc|rag pred> --splits dev,test_public --pred-only
-# retrieval quality (model-independent): recall@k / hit@k from the RAG prompt file
-python3 scripts/score_retrieval_v09.py --rag workspace_local/audit/baselines/rag_bm25_v09_prompts.jsonl
+# 1. build the regime prompt sets (deterministic; INTERNAL output)
+python3 scripts/build_baseline_rag_v09.py --sample <split-or-sample>.jsonl --out .../rag_..._prompts.jsonl
+python3 scripts/build_baseline_fullcontext_v09.py --sample <fc-subset>.jsonl --out .../fc_..._prompts.jsonl
+#   cross_source full-context prompts then get HUG injected:
+python3 scripts/fix_fc_hug_bundle_v09.py            # 624 HUG rows -> the cross_source fc prompts (§3)
 
-# navigate the INTERNAL artifacts: writes an INDEX.md catalog (naming legend + per-file status)
-python3 scripts/catalog_baselines_v09.py
+# 2. run each model x regime via the Batch API (submit -> status -> fetch). custom_id = <regime>__<split>__<qa_id>
+python3 scripts/run_batch_baseline_v09.py submit --model gpt-5.5 --regimes cb,rag,fc --max-output-tokens 4000
+python3 scripts/run_batch_baseline_v09.py status --model gpt-5.5
+python3 scripts/run_batch_baseline_v09.py fetch  --model gpt-5.5   # writes <regime>_<model>_<split>.jsonl + .calls.jsonl
+#   partial/extension runs: --prompt-file <subset> --track-suffix _foo --out-suffix _foo (no clobber)
+#   ⚠️ do NOT re-run gpt-5.5 on cb/rag (reasoning-output cost — §5)
+
+# 3. LLM-judge (headline) — semantic equivalence, judge = gpt-4.1-mini, public splits only, per regime
+python3 scripts/llm_judge_v09.py submit --pred <one-regime merged preds>.jsonl --tag <tag>
+python3 scripts/llm_judge_v09.py fetch  --tag <tag>            # writes <tag>.judged.jsonl
+
+# 4. score: judge accuracy by split (+ Wilson CI, fc by tier) and the deterministic soft/EM reference
+python3 scripts/score_judge_v09.py   --splits ALL,dev,test_public     # LLM-judge, plain + cluster-weighted
+python3 scripts/score_answers_v09.py --pred <preds>.jsonl --pred-only # soft|EM|contains|recall + Wilson CI
+python3 scripts/score_retrieval_v09.py --rag .../rag_..._prompts.jsonl # BM25 recall@k / hit@k (model-independent)
+
+# navigate INTERNAL artifacts (naming legend + per-file status)
+python3 scripts/catalog_baselines_v09.py            # -> workspace_local/audit/baselines/INDEX.md
 ```
 
 **Artifact layout (INTERNAL, under `workspace_local/audit/baselines/`, gitignored).** Predictions are
@@ -140,24 +170,24 @@ qa_id), a `<…>.meta.json`, and a `<…>.log`. Input prompts are `<regime>_v09_
 
 ## 7. Metrics (the v0.9 reported set)
 
-- **Answer accuracy** (`scripts/eval_harness_v06.py`): plain + **cluster-weighted** accuracy (the
-  cluster-weighted number is the headline — it discounts near-duplicate clusters so a few repeated items
-  cannot inflate the score). Per-`answer_type` matching: `exact_numbers` (all gold numeric tokens present),
-  `boolean_and_reason` (abstention detection), else normalized-substring. Cut by **split / task_type /
-  context_tier / question_style**. Restrict to the locked sample with `--ids-file` (full 304) or
-  `--pred-only` (the subset a regime actually ran).
-- **Abstention** is captured by `task:answerability_detection` and the `boolean_and_reason` metric.
-- **Retrieval quality** for the RAG regime (`scripts/score_retrieval_v09.py`): **recall@k** (fraction of
-  gold pages retrieved) and **hit@k** (any gold page retrieved), plain + cluster-weighted, cut by
-  split / task_type / context_tier. Model-independent (a property of BM25). Sanity at k=5: recall@5 ≈ 0.59.
-- **Paper-grade extensions (deferred):** replace the loose normalized-substring match with
-  normalized-EM / numeric-tolerance / multi-answer set-F1; add an evidence-position cut; optionally an
-  LLM-judge secondary metric for free-text (note its cost/reproducibility tradeoff). All additive on this
-  same sample + predictions; see `docs/evaluation_protocol.md`.
+- **Headline — LLM-judge** (`scripts/llm_judge_v09.py`, `scripts/score_judge_v09.py`): semantic-equivalence
+  judgement (correct / incorrect / unanswerable; judge = gpt-4.1-mini, public splits only), reported **plain
+  + cluster-weighted** with a **Wilson 95% CI**, cut by split / task_type / context_tier. It replaced the
+  legacy substring match, which **systematically undercounts** paraphrases/format (§8.4). The judge is
+  **human-validated**: n=80 blind, agreement 96.2 %, Cohen's κ=0.924 (§9.0).
+- **Deterministic reference** (`scripts/score_answers_v09.py`): **soft** (EM | contains | token-recall ≥
+  0.7), plus EM / contains / numeric, each with a Wilson 95% CI, plain + cluster-weighted. Reproducible
+  without an API; tracks the judge closely and is the fallback for anyone re-scoring offline.
+- **Cluster-weighted** is the headline cut for both: it discounts near-duplicate `cluster_id` clusters so a
+  few repeated items cannot inflate the score. **Abstention** is captured by `task:answerability_detection`.
+- **Retrieval quality** for RAG (`scripts/score_retrieval_v09.py`): **recall@k** / **hit@k**, plain +
+  cluster-weighted, cut by split / task_type / context_tier. Model-independent (a property of BM25).
+- **Deferred extensions:** evidence-position cut; multi-answer set-F1; a second independent human annotator
+  for the judge (the κ above is judge-vs-creator, not inter-human). All additive on the same predictions.
 
 ## 8. Results
 
-Run 2026-06-11 via the OpenAI Batch API (`temperature=0`; reasoning models at default effort, `max_completion_tokens=4000`; BM25 `k=5`). **The headline metric is the LLM-judge** (semantic equivalence, `scripts/llm_judge_v09.py`, judge = gpt-4.1-mini) — see §8.4 for why the legacy `contains_all` metric is unreliable. cb/rag are scored on the full dev+test_public; full-context (fc) on the tier-capped 116-item subset. `minimax-m3:cloud` (open weights) is still filling and will be added.
+Run 2026-06-11 via the OpenAI Batch API (`temperature=0`; reasoning models at default effort, `max_completion_tokens=4000`; BM25 `k=5`). **The headline metric is the LLM-judge** (semantic equivalence, `scripts/llm_judge_v09.py`, judge = gpt-4.1-mini) — see §8.4 for why the legacy `contains_all` metric is unreliable. cb/rag are scored on the full dev+test_public; full-context (fc) on the tier-capped subsets of §3 (pilot 116 for the pooled tables; test_public extended to n=105). No open-weights model is reported (the leg is deferred — see §4).
 
 ### 8.1 Five models × three regimes (LLM-judge; plain / cluster-weighted)
 
@@ -273,7 +303,12 @@ The fix **separates the models on a real capability**: with the table in front o
 This lifts gpt-5.5's 512k tier from 42% → **75%** (§8.2) and its overall fc plain from 93% → **97%** (§8.1);
 gpt-4.1-mini is unchanged. The other 8 512k items were left byte-identical, so their predictions stand.
 
-> Caveats: LLM-judge is **human-validated** (§9.0: n=80, agreement 96.2 %, κ=0.924); §8.1–8.2 pool dev+test_public for power, with test_public broken out in §8.5 (small → wide CIs); fc rests on a tier-capped 116-item sample (with the §8.6 HUG-bundle fix applied to the 4 cross_source 512k items); gpt-5.5 cb/rag had ~93 quota-failed items (re-run pending); test_hidden pending a local model; minimax (open weights) incomplete.
+The **test_public extension** (§8.5) added 16 more cross_source items at 512k, so the **same prompt-level HUG
+fix was re-applied to all 20** (4 + 16). On the held-out 512k tier (now n=25) the result holds with real
+power: **gpt-5.5 76%** vs **gpt-4.1-mini 20%** — same separation, more items. The fix is **prompt-level only**;
+the canonical dataset bundles still lack HUG (a default-embed rebuild is deferred dataset work, §3).
+
+> Caveats: LLM-judge is **human-validated** (§9.0: n=80, agreement 96.2 %, κ=0.924); §8.1–8.2 pool dev+test_public for power, with test_public broken out in §8.5 (now n=389, fc n=105); full-context rests on tier-capped subsets (§3) with the HUG-bundle fix applied to the **20** cross_source items at 512k (§8.6); gpt-5.5 cb/rag had ~93 quota-failed items (re-run pending — but cb/rag re-runs are gpt-5.5's cost driver, §5); no open-weights model is reported (leg deferred, §4).
 
 ## 9. Limitations and the path to paper-grade
 
@@ -316,8 +351,11 @@ This v0.9 set is a **reference baseline**, captioned **indicative**. Before a ca
   ~93 quota-failed gpt-5.5 cb items.
 - **Lift the 512k/256k caps** so long-context-degradation claims rest on more than ~12 items per tier
   (tighter confidence intervals). Additive on this exact sample, and the merge already supplies the items.
-- **Add 1-2 models** (e.g. `gpt-5-mini`, an open Qwen) to show the spread. Orthogonal — just another runner
-  invocation and eval.
+- **Add a genuinely open-weights model** for the reproducibility/spread leg (§4). The earlier `minimax-m3:cloud`
+  plan does **not** qualify (hosted, weights unreleased as of 2026-06). The specific model is **to be selected
+  by verifying current availability + context window + license against live sources** (not asserted from a
+  stale knowledge cutoff); it must cover the 512k tier, and can run via a provider serving public weights
+  (reproducible because the weights are public). Orthogonal — another runner invocation + eval.
 - **Add dense / hybrid RAG** alongside BM25 (the v0.7 retrieval diagnostics tooling already exists).
 - ~~**Human-validate the eval** on a stratified sample~~ — **DONE (§9.0)**: n=80, agreement 96.2 %,
   κ=0.924. Optional follow-up: a second independent annotator on the same CSV.
