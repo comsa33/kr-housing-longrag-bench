@@ -166,7 +166,7 @@ Run 2026-06-11 via the OpenAI Batch API (`temperature=0`; reasoning models at de
 | gpt-4.1-mini | 18% / 32% (n=1712) | 56% / 43% (n=1255) | 86% / 73% (n=116) |
 | gpt-5.4-mini | 17% / 18% (n=1712) | 54% / 38% (n=1255) | 95% / 86% (n=100*) |
 | gpt-5.4-nano | 8% / 6% (n=1712) | 45% / 25% (n=1255) | 71% / 54% (n=100*) |
-| **gpt-5.5** | **39% / 49%** (n=1639) | **58% / 42%** (n=1235) | **93% / 83%** (n=116) |
+| **gpt-5.5** | **39% / 49%** (n=1639) | **58% / 42%** (n=1235) | **97% / 83%** (n=116) |
 
 \* gpt-5.4-mini/nano have a **272k-token context window**, so 16/116 fc items (the 512k tier + the largest 256k items) are context-rejected, not answered — a model property, reported as `✗ctx` in §8.2, not a wrong answer. gpt-4.1-mini (~1M) and gpt-5.5 (≥393k verified) ingest all tiers.
 
@@ -179,9 +179,11 @@ Run 2026-06-11 via the OpenAI Batch API (`temperature=0`; reasoning models at de
 | gpt-4.1-mini | 98% | 86% | 93% | 69% | 50% |
 | gpt-5.4-mini | 98% | 95% | 79% | 100% | ✗ctx |
 | gpt-5.4-nano | 87% | 55% | 36% | 75% | ✗ctx |
-| **gpt-5.5** | **100%** | 95% | **100%** | **100%** | **42%** |
+| **gpt-5.5** | **100%** | 95% | **100%** | **100%** | **75%** |
 
-**There is no "512k collapse."** gpt-5.5 is at or near 100% from 32k to 256k and **42%** (not 0%) at 512k. The residual 512k drop is mostly a **benchmark-construction artifact, not a model failure**: of the 12 512k items, ~4 are `cross_source_aggregation` questions whose gold requires HUG sale-history rows that are **absent from the full-context bundle** (unanswerable in this regime — to be fixed/excluded, see §9); the rest are a few genuine multi-document legal misses. The **272k context-coverage tradeoff** (gpt-5.4 family ✗ at 512k vs gpt-5.5/gpt-4.1-mini covering it) is the real, honest long-context finding.
+(512k numbers are **after the HUG-bundle fix of §8.6** — the 4 `cross_source_aggregation` items now carry the HUG table in-bundle. Pre-fix, gpt-5.5's 512k was 42%, deflated by an artifact, not a model failure.)
+
+**There is no "512k collapse."** gpt-5.5 holds at or near 100% from 32k to 256k and **75%** at 512k. The residual 512k gap is now a **genuine** model signal: of the 12 512k items, the 3 gpt-5.5 still misses are real multi-document legal/comparison hops, and the cross_source aggregation that used to be unanswerable now cleanly **separates the models** (§8.6) — gpt-5.5 aggregates the in-bundle HUG table correctly, gpt-4.1-mini cannot. The **272k context-coverage tradeoff** (gpt-5.4 family ✗ at 512k vs gpt-5.5/gpt-4.1-mini covering it) is the other honest long-context finding.
 
 ### 8.3 Retrieval quality (BM25, k=5, model-independent)
 
@@ -197,7 +199,11 @@ The legacy `contains_all`/normalized-substring match (v0.7/v0.8) produces **syst
 | soft (em \| contains \| token-recall≥0.7; `score_answers_v09.py`) | 91.4% | 16.7% |
 | **LLM-judge** (semantic; `llm_judge_v09.py`) | **93.1%** | **41.7%** |
 
-`contains_all` undercounts every model and, at the 512k tier, drove a **non-existent** "512k collapse" to 0%. All v0.9 headline numbers use the LLM-judge; soft + Wilson 95% CIs are the reproducible deterministic reference. The LLM-judge itself is now **human-validated** (§9.0).
+These three columns are computed on the **pre-§8.6 predictions** (where the 512k cross_source items were
+unanswerable) precisely to isolate the metric gap; they are not the current headline. After the HUG-bundle
+fix the headline 512k judge is **75%** (§8.2). `contains_all` undercounts every model and, at the 512k tier,
+drove a **non-existent** "512k collapse" to 0%. All v0.9 headline numbers use the LLM-judge; soft + Wilson
+95% CIs are the reproducible deterministic reference. The LLM-judge itself is now **human-validated** (§9.0).
 
 ### 8.5 Held-out split: test_public reported separately (dev ≠ test)
 
@@ -212,7 +218,7 @@ development-set red flag for a paper. The **same** LLM-judge verdicts, cut by sp
 | gpt-4.1-mini | 21% / 55% [37–71%] (n=104) | 58% / 38% (n=101) | 88% / 98% (n=33) |
 | gpt-5.4-mini | 23% / 31% [17–49%] (n=104) | 60% / 31% (n=101) | 100% / 100% (n=27) |
 | gpt-5.4-nano | 4% / 0% [0–13%] (n=104) | 48% / 10% (n=101) | 85% / 77% (n=27) |
-| **gpt-5.5** | **37% / 68%** [49–82%] (n=87) | 56% / 27% (n=101) | 88% / 46% (n=33) |
+| **gpt-5.5** | **37% / 68%** [49–82%] (n=87) | 56% / 27% (n=101) | 94% / 47% (n=33) |
 
 The split-level ranking is **directionally consistent** with the pooled table (gpt-5.5 strongest closed-book;
 context monotonicity holds), so dev was not flattering the leaderboard. **But two honest caveats the pooled
@@ -230,7 +236,31 @@ table hid:**
 (OpenAI / Ollama Cloud). It will be scored only through a **locally-hosted non-data-sharing model** once that
 leg exists (§9.1); none of the cloud models in this table are eligible for it.
 
-> Caveats: LLM-judge is **human-validated** (§9.0: n=80, agreement 96.2 %, κ=0.924); §8.1–8.2 pool dev+test_public for power, with test_public broken out in §8.5 (small → wide CIs); fc rests on a tier-capped 116-item sample; gpt-5.5 cb/rag had ~93 quota-failed items (re-run pending); test_hidden pending a local model; minimax (open weights) incomplete.
+### 8.6 HUG-bundle fix turns an artifact into a capability signal
+
+The four `cross_source_aggregation` items at the 512k tier ask an aggregate over the HUG (주택도시보증공사)
+sale-history table — e.g. *"how many 2023 사업장 in 경기도?"* (gold 61건) or *"average 총세대수"* (gold
+1,073세대). Their gold is computed from 624 HUG rows that were **never embedded in the full-context bundle**
+(only the LH announcements were), so every model could only abstain and was scored wrong — a
+benchmark-construction artifact that pinned gpt-5.5's 512k to 42%.
+
+Full-context means *every source the question needs is in the bundle*, so this is a bundle bug, not a task
+design issue. We injected the 624 rows as a compact in-bundle table (`scripts/fix_fc_hug_bundle_v09.py`;
+verified to reproduce all four golds: 61 / 15 / 77 / 1,073) and re-ran the two models that can ingest the
+resulting ~410k-token prompt (gpt-4.1-mini, gpt-5.5; the 272k gpt-5.4 family still ✗ctx). LLM-judged result:
+
+| Model | cross_source @512k, HUG **absent** (old) | HUG **present** (fixed) |
+|---|---:|---:|
+| gpt-4.1-mini | 0 / 4 (unanswerable) | **0 / 4** |
+| **gpt-5.5** | 0 / 4 (unanswerable) | **4 / 4** |
+
+The fix **separates the models on a real capability**: with the table in front of it, gpt-5.5 aggregates
+(counts / averages rows by 지역·연도) correctly across a 410k-token context, while gpt-4.1-mini still cannot
+(it returns wrong counts like 38/600 or abstains) — genuine long-context aggregation, no longer an artifact.
+This lifts gpt-5.5's 512k tier from 42% → **75%** (§8.2) and its overall fc plain from 93% → **97%** (§8.1);
+gpt-4.1-mini is unchanged. The other 8 512k items were left byte-identical, so their predictions stand.
+
+> Caveats: LLM-judge is **human-validated** (§9.0: n=80, agreement 96.2 %, κ=0.924); §8.1–8.2 pool dev+test_public for power, with test_public broken out in §8.5 (small → wide CIs); fc rests on a tier-capped 116-item sample (with the §8.6 HUG-bundle fix applied to the 4 cross_source 512k items); gpt-5.5 cb/rag had ~93 quota-failed items (re-run pending); test_hidden pending a local model; minimax (open weights) incomplete.
 
 ## 9. Limitations and the path to paper-grade
 
@@ -282,6 +312,9 @@ This v0.9 set is a **reference baseline**, captioned **indicative**. Before a ca
   κ=0.924. Optional follow-up: a second independent annotator on the same CSV.
 - ~~**Report test_public separately** (dev ≠ test)~~ — **DONE (§8.5)** via `scripts/score_judge_v09.py`.
   Remaining: grow test_public (above) and the local-model hidden leg (above).
+- ~~**Fix the cross_source HUG bundle**~~ — **DONE (§8.6)** via `scripts/fix_fc_hug_bundle_v09.py`: HUG rows
+  injected, 4 items re-run + re-judged; 512k is now a real signal (gpt-5.5 75%, gpt-4.1-mini 50%). Optional:
+  rebuild the dataset's canonical bundles so future builds embed HUG by default (this fix patched the run).
 
 None of this requires rework: the seeded-nested sample + `--resume` + model-orthogonal scoring make every
 addition accumulate on top of what is reported here.
