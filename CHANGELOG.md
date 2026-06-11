@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.9 — split consolidation + release-grade baselines (in progress)
+## v0.9 — split consolidation + release-grade baselines (2026-06-11)
 
 Same 1,997 QA and schema as v0.8; this is a split-policy + evaluation change, not a content rebuild.
 
