@@ -210,29 +210,42 @@ Run 2026-06-11 via the OpenAI Batch API (`temperature=0`; reasoning models at de
 
 ### 8.1 Five models × three regimes (LLM-judge; plain / cluster-weighted)
 
+Pooled over the **full** dev + test_public (closed-book now covers all 1,997; full-context on the tier-capped
+subsets of §3, n=188 = pilot 116 + test_public extension 72):
+
 | Model | closed-book | RAG (BM25) | full-context |
 |---|---|---|---|
-| gpt-4.1-mini | 18% / 32% (n=1712) | 56% / 43% (n=1255) | 86% / 73% (n=116) |
-| gpt-5.4-mini | 17% / 18% (n=1712) | 54% / 38% (n=1255) | 95% / 86% (n=100*) |
-| gpt-5.4-nano | 8% / 6% (n=1712) | 45% / 25% (n=1255) | 71% / 54% (n=100*) |
-| **gpt-5.5** | **39% / 49%** (n=1639) | **58% / 42%** (n=1235) | **97% / 83%** (n=116) |
+| gpt-4.1-mini | 18% / 31% (n=1997) | 57% / 43% (n=1540) | 79% / 68% (n=188) |
+| gpt-5.4-mini | 17% / 20% (n=1997) | 56% / 39% (n=1540) | 92% / 86% (n=151\*) |
+| gpt-5.4-nano | 7% / 6% (n=1997) | 45% / 25% (n=1540) | 68% / 54% (n=151\*) |
+| **gpt-5.5** | **40% / 49%** (n=1997) | **60% / 43%** (n=1520) | **95% / 78%** (n=188) |
 
-\* gpt-5.4-mini/nano have a **272k-token context window**, so 16/116 fc items (the 512k tier + the largest 256k items) are context-rejected, not answered — a model property, reported as `✗ctx` in §8.2, not a wrong answer. gpt-4.1-mini (~1M) and gpt-5.5 (≥393k verified) ingest all tiers.
+\* gpt-5.4-mini/nano have a **272k-token context window**, so they context-reject the 512k fc items (their fc
+n=151 excludes 512k) — a model property, reported as `✗ctx` in §8.2, not a wrong answer. gpt-4.1-mini (~1M)
+and gpt-5.5 (≥393k verified) ingest all tiers.
 
 **gpt-5.5 leads every regime.** Monotonic closed-book ≪ RAG ≪ full-context holds for all models: context is decisive. Smaller models degrade faster (gpt-5.4-nano).
 
 ### 8.2 Full-context by context tier (LLM-judge, plain)
 
+Pooled, per tier (item counts: 32k 64 / 64k 34 / 128k 26 / 256k 32 / 512k 32):
+
 | Model | 32k | 64k | 128k | 256k | 512k |
 |---|---:|---:|---:|---:|---:|
-| gpt-4.1-mini | 98% | 86% | 93% | 69% | 50% |
-| gpt-5.4-mini | 98% | 95% | 79% | 100% | ✗ctx |
-| gpt-5.4-nano | 87% | 55% | 36% | 75% | ✗ctx |
-| **gpt-5.5** | **100%** | 95% | **100%** | **100%** | **75%** |
+| gpt-4.1-mini | 97% | 91% | 88% | 75% | 25% |
+| gpt-5.4-mini | 98% | 88% | 88% | 85% | ✗ctx |
+| gpt-5.4-nano | 84% | 56% | 50% | 63% | ✗ctx |
+| **gpt-5.5** | **100%** | 97% | **100%** | 97% | **78%** |
 
-(512k numbers are **after the HUG-bundle fix of §8.6** — the 4 `cross_source_aggregation` items now carry the HUG table in-bundle. Pre-fix, gpt-5.5's 512k was 42%, deflated by an artifact, not a model failure.)
+(512k numbers are **after the HUG-bundle fix of §8.6** — all 20 `cross_source_aggregation` items at 512k carry
+the HUG table. Pre-fix, gpt-5.5's 512k was deflated to 42% by an artifact, not a model failure.)
 
-**There is no "512k collapse."** gpt-5.5 holds at or near 100% from 32k to 256k and **75%** at 512k. The residual 512k gap is now a **genuine** model signal: of the 12 512k items, the 3 gpt-5.5 still misses are real multi-document legal/comparison hops, and the cross_source aggregation that used to be unanswerable now cleanly **separates the models** (§8.6) — gpt-5.5 aggregates the in-bundle HUG table correctly, gpt-4.1-mini cannot. The **272k context-coverage tradeoff** (gpt-5.4 family ✗ at 512k vs gpt-5.5/gpt-4.1-mini covering it) is the other honest long-context finding.
+**There is no "512k collapse."** gpt-5.5 holds at or near 100% from 32k to 256k and **78%** at 512k (now n=32,
+not 12). The residual 512k gap is a **genuine** model signal — multi-document legal/comparison hops — and the
+cross_source aggregation that used to be unanswerable now cleanly **separates the models** (§8.6): gpt-5.5
+aggregates the in-bundle HUG table correctly while gpt-4.1-mini cannot (**25%** at 512k). The **272k
+context-coverage tradeoff** (gpt-5.4 family ✗ at 512k vs gpt-5.5/gpt-4.1-mini covering it) is the other honest
+long-context finding.
 
 ### 8.3 Retrieval quality (BM25, k=5, model-independent)
 
@@ -272,10 +285,10 @@ isolate the held-out headline.
 | gpt-4.1-mini | 20% / 39% [29–51%] (n=389) | 61% / 41% (n=386) | 73% / 70% (n=105) |
 | gpt-5.4-mini | 20% / 29% [19–40%] (n=389) | 62% / 38% (n=386) | 91% / 90% (n=78\*) |
 | gpt-5.4-nano | 4% / 0% [0–6%] (n=389) | 47% / 18% (n=386) | 71% / 60% (n=78\*) |
-| **gpt-5.5** | **46% / 59%** [48–70%] (n=372) | 63% / 40% (n=386) | **93% / 59%** (n=105) |
+| **gpt-5.5** | **46% / 58%** [46–69%] (n=389) | 63% / 40% (n=386) | **93% / 59%** (n=105) |
 
 \* gpt-5.4-mini/nano (272k window) context-reject the 512k fc items, so their fc n is lower and excludes 512k.
-gpt-5.5 cb n=372 (the original ~93 quota-failed items are still pending a re-run).
+All four models now cover the full 389 closed-book (the earlier gpt-5.5 quota-failures were re-run).
 
 **full-context by tier on test_public (LLM-judge, plain):**
 
@@ -319,7 +332,7 @@ resulting ~410k-token prompt (gpt-4.1-mini, gpt-5.5; the 272k gpt-5.4 family sti
 The fix **separates the models on a real capability**: with the table in front of it, gpt-5.5 aggregates
 (counts / averages rows by 지역·연도) correctly across a 410k-token context, while gpt-4.1-mini still cannot
 (it returns wrong counts like 38/600 or abstains) — genuine long-context aggregation, no longer an artifact.
-This lifts gpt-5.5's 512k tier from 42% → **75%** (§8.2) and its overall fc plain from 93% → **97%** (§8.1);
+This is what lifts gpt-5.5's 512k tier off the artifact floor of 42% (pooled, it now reads **78%** in §8.2);
 gpt-4.1-mini is unchanged. The other 8 512k items were left byte-identical, so their predictions stand.
 
 The **test_public extension** (§8.5) added 16 more cross_source items at 512k, so the **same prompt-level HUG
@@ -328,7 +341,7 @@ power: **gpt-5.5 76%** vs **gpt-4.1-mini 20%** — same separation, more items. 
 **prompt-level** injection, and the **canonical bundle now embeds the same HUG table by default** (§3), so the
 fix is permanent for future rebuilds.
 
-> Caveats: LLM-judge is **human-validated** (§9.0: n=80, agreement 96.2 %, κ=0.924); §8.1–8.2 pool dev+test_public for power, with test_public broken out in §8.5 (now n=389, fc n=105); full-context rests on tier-capped subsets (§3) with the HUG-bundle fix applied to the **20** cross_source items at 512k (§8.6); gpt-5.5 cb/rag had ~93 quota-failed items (re-run pending — but cb/rag re-runs are gpt-5.5's cost driver, §5); no open-weights model is reported (leg deferred, §4).
+> Caveats: LLM-judge is **human-validated** (§9.0: n=80, agreement 96.2 %, κ=0.924); §8.1–8.2 pool dev+test_public for power, with test_public broken out in §8.5 (now n=389, fc n=105); full-context rests on tier-capped subsets (§3) with the HUG-bundle fix applied to the **20** cross_source items at 512k (§8.6); all four models now cover the full 1,997 closed-book; no open-weights model is reported (leg deferred, §4).
 
 ## 9. Limitations and the path to paper-grade
 
@@ -368,8 +381,8 @@ This v0.9 set is a **reference baseline**, captioned **indicative**. Before a ca
   tier-capped n=105 (incl. 25 at 512k), HUG-fix re-applied to the 16 merged cross_source items. The held-out
   split now carries the headline with tight CIs and confirms the 512k finding at n=25. The canonical
   `mix_multiprovider_512k` bundle now **embeds HUG by default** (§3/§8.6), so the cross_source artifact is
-  fixed at the dataset level too. The ~73 quota-failed gpt-5.5 cb items are being filled (gpt-5.5 cb is the
-  cost driver, so this is the only remaining gpt-5.5 spend).
+  fixed at the dataset level too. The earlier gpt-5.5 closed-book quota-failures have been re-run, so all four
+  models now cover the full 1,997 closed-book / 389 test_public.
 - **Lift the 512k/256k caps** so long-context-degradation claims rest on more than ~12 items per tier
   (tighter confidence intervals). Additive on this exact sample, and the merge already supplies the items.
 - **Add a genuinely open-weights model** for the reproducibility/spread leg (§4). The earlier `minimax-m3:cloud`
