@@ -197,9 +197,40 @@ The legacy `contains_all`/normalized-substring match (v0.7/v0.8) produces **syst
 | soft (em \| contains \| token-recall≥0.7; `score_answers_v09.py`) | 91.4% | 16.7% |
 | **LLM-judge** (semantic; `llm_judge_v09.py`) | **93.1%** | **41.7%** |
 
-`contains_all` undercounts every model and, at the 512k tier, drove a **non-existent** "512k collapse" to 0%. All v0.9 headline numbers use the LLM-judge; soft + Wilson 95% CIs are the reproducible deterministic reference. **The LLM-judge itself must be validated against human labels before camera-ready (§9).**
+`contains_all` undercounts every model and, at the 512k tier, drove a **non-existent** "512k collapse" to 0%. All v0.9 headline numbers use the LLM-judge; soft + Wilson 95% CIs are the reproducible deterministic reference. The LLM-judge itself is now **human-validated** (§9.0).
 
-> Caveats: LLM-judge is **human-validated** (§9.0: n=80, agreement 96.2 %, κ=0.924); cb/rag pool dev+test_public (a development-set red flag — report test_public separately + evaluate hidden via a local model before the paper); fc rests on a tier-capped 116-item sample; gpt-5.5 cb/rag had ~93 quota-failed items (re-run pending); minimax (open weights) incomplete.
+### 8.5 Held-out split: test_public reported separately (dev ≠ test)
+
+§8.1–8.2 pool `dev` (development, 1,608) with `test_public` (the held-out eval, 104) — convenient but a
+development-set red flag for a paper. The **same** LLM-judge verdicts, cut by split with a Wilson 95% CI
+(`scripts/score_judge_v09.py`), isolate the held-out headline:
+
+**test_public only (LLM-judge, plain / cluster-weighted; cb shows the cw 95% CI):**
+
+| Model | closed-book | RAG (BM25) | full-context |
+|---|---|---|---|
+| gpt-4.1-mini | 21% / 55% [37–71%] (n=104) | 58% / 38% (n=101) | 88% / 98% (n=33) |
+| gpt-5.4-mini | 23% / 31% [17–49%] (n=104) | 60% / 31% (n=101) | 100% / 100% (n=27) |
+| gpt-5.4-nano | 4% / 0% [0–13%] (n=104) | 48% / 10% (n=101) | 85% / 77% (n=27) |
+| **gpt-5.5** | **37% / 68%** [49–82%] (n=87) | 56% / 27% (n=101) | 88% / 46% (n=33) |
+
+The split-level ranking is **directionally consistent** with the pooled table (gpt-5.5 strongest closed-book;
+context monotonicity holds), so dev was not flattering the leaderboard. **But two honest caveats the pooled
+table hid:**
+
+1. **test_public is underpowered for fine-grained claims.** n is 104 (cb) / 101 (rag) / **33 (fc)**; the cb
+   cluster-weighted CIs span ~30 points, and the fc-by-tier cells on test_public are n=5–15 each — **too few
+   to support per-tier long-context degradation claims on test_public alone.** Those tier claims (§8.2) rest
+   on the **pooled** sample and must stay captioned *indicative*. This is the concrete motivation for growing
+   **test_public specifically** (§9.1), not just total QA.
+2. **plain vs cluster-weighted diverges more on the small split** (e.g. gpt-4.1-mini cb 21% plain vs 55% cw):
+   test_public has few clusters, so a handful of answerable clusters dominate the weighted score. Report both.
+
+**test_hidden (285) is NOT evaluated here** — its gold is sealed and must never transit a data-sharing API
+(OpenAI / Ollama Cloud). It will be scored only through a **locally-hosted non-data-sharing model** once that
+leg exists (§9.1); none of the cloud models in this table are eligible for it.
+
+> Caveats: LLM-judge is **human-validated** (§9.0: n=80, agreement 96.2 %, κ=0.924); §8.1–8.2 pool dev+test_public for power, with test_public broken out in §8.5 (small → wide CIs); fc rests on a tier-capped 116-item sample; gpt-5.5 cb/rag had ~93 quota-failed items (re-run pending); test_hidden pending a local model; minimax (open weights) incomplete.
 
 ## 9. Limitations and the path to paper-grade
 
@@ -235,15 +266,22 @@ independent annotator on the same n=80 CSV remains a nice-to-have for camera-rea
 
 This v0.9 set is a **reference baseline**, captioned **indicative**. Before a camera-ready paper claim:
 
+- **Grow `test_public` specifically** (currently 104; fc only 33) so the held-out split (§8.5) can carry
+  the headline on its own with tight CIs, and per-tier long-context claims hold on test_public — not just the
+  dev-pooled sample. Highest-leverage data work; do before bulk QA growth.
 - **Lift the 512k/256k caps** so long-context-degradation claims rest on more than ~12 items per tier
   (tighter confidence intervals). Additive on this exact sample.
+- **Evaluate `test_hidden` (285)** — blocked on a **locally-hosted non-data-sharing model** (the sealed gold
+  must never transit OpenAI or Ollama Cloud; `minimax-m3:cloud` is cloud and is therefore *not* eligible).
+  Needs a local GPU leg (e.g. `gemma4:12b` on the company server, deferred from v0.9). Questions live in
+  `data/qa_v0.6_test_hidden_questions.jsonl`; gold stays in the gitignored audit file.
 - **Add 1-2 models** (e.g. `gpt-5-mini`, an open Qwen) to show the spread. Orthogonal — just another runner
   invocation and eval.
 - **Add dense / hybrid RAG** alongside BM25 (the v0.7 retrieval diagnostics tooling already exists).
 - ~~**Human-validate the eval** on a stratified sample~~ — **DONE (§9.0)**: n=80, agreement 96.2 %,
   κ=0.924. Optional follow-up: a second independent annotator on the same CSV.
-- **Hidden-split baselines** run only through the local non-data-sharing model (`gemma4:12b`), never an
-  OpenAI data-sharing tier.
+- ~~**Report test_public separately** (dev ≠ test)~~ — **DONE (§8.5)** via `scripts/score_judge_v09.py`.
+  Remaining: grow test_public (above) and the local-model hidden leg (above).
 
 None of this requires rework: the seeded-nested sample + `--resume` + model-orthogonal scoring make every
 addition accumulate on top of what is reported here.
