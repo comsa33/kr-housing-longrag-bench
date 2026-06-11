@@ -207,11 +207,17 @@ drove a **non-existent** "512k collapse" to 0%. All v0.9 headline numbers use th
 
 ### 8.5 Held-out split: test_public reported separately (dev ≠ test)
 
-§8.1–8.2 pool `dev` (development, 1,608) with `test_public` (the held-out eval, 104) — convenient but a
-development-set red flag for a paper. The **same** LLM-judge verdicts, cut by split with a Wilson 95% CI
-(`scripts/score_judge_v09.py`), isolate the held-out headline:
+§8.1–8.2 pool `dev` (development, 1,608) with `test_public` — convenient but a development-set red flag for a
+paper. The **same** LLM-judge verdicts, cut by split with a Wilson 95% CI (`scripts/score_judge_v09.py`),
+isolate the held-out headline.
 
-**test_public only (LLM-judge, plain / cluster-weighted; cb shows the cw 95% CI):**
+> **v0.9 split change:** `test_public` was enlarged 104 → **389** by merging the former `test_hidden` (§
+> dataset CHANGELOG; 512k tier 41 → 124, + `ood_region`/`ood_year` subsets). The table below still reports
+> the **originally-sampled 104** items (the baseline run predates the merge); extending baselines to the new
+> 285 test_public items is pending (cheap for cb/rag; fc is tier-capped). Once covered, the held-out test is
+> large enough to carry the headline on its own and to support per-tier long-context claims directly.
+
+**test_public (original 104-item sample; LLM-judge, plain / cluster-weighted; cb shows the cw 95% CI):**
 
 | Model | closed-book | RAG (BM25) | full-context |
 |---|---|---|---|
@@ -224,17 +230,19 @@ The split-level ranking is **directionally consistent** with the pooled table (g
 context monotonicity holds), so dev was not flattering the leaderboard. **But two honest caveats the pooled
 table hid:**
 
-1. **test_public is underpowered for fine-grained claims.** n is 104 (cb) / 101 (rag) / **33 (fc)**; the cb
-   cluster-weighted CIs span ~30 points, and the fc-by-tier cells on test_public are n=5–15 each — **too few
-   to support per-tier long-context degradation claims on test_public alone.** Those tier claims (§8.2) rest
-   on the **pooled** sample and must stay captioned *indicative*. This is the concrete motivation for growing
-   **test_public specifically** (§9.1), not just total QA.
+1. **The scored sample is underpowered for fine-grained claims** (until baselines cover the enlarged split).
+   At the originally-sampled 104, n is 104 (cb) / 101 (rag) / **33 (fc)**; the cb cluster-weighted CIs span
+   ~30 points, and the fc-by-tier cells are n=5–15 each — **too few to support per-tier long-context
+   degradation claims on the held-out set alone.** Those tier claims (§8.2) currently rest on the **pooled**
+   sample and stay captioned *indicative*. The v0.9 merge already enlarged the test **data** to 389 (512k
+   41→124); the remaining work is running baselines on the new 285 so the held-out numbers inherit that power.
 2. **plain vs cluster-weighted diverges more on the small split** (e.g. gpt-4.1-mini cb 21% plain vs 55% cw):
    test_public has few clusters, so a handful of answerable clusters dominate the weighted score. Report both.
 
-**test_hidden (285) is NOT evaluated here** — its gold is sealed and must never transit a data-sharing API
-(OpenAI / Ollama Cloud). It will be scored only through a **locally-hosted non-data-sharing model** once that
-leg exists (§9.1); none of the cloud models in this table are eligible for it.
+**There is no longer a hidden split** — the former `test_hidden` (285) was merged into `test_public` in v0.9
+(a larger public held-out test is more valuable than a sealed set we cannot serve; a future release can
+re-carve a sealed split from grown data). The merged items are part of the 389 above and carry `ood_region` /
+`ood_year` tags for a generalization breakdown once baselines cover them.
 
 ### 8.6 HUG-bundle fix turns an artifact into a capability signal
 
@@ -296,15 +304,12 @@ independent annotator on the same n=80 CSV remains a nice-to-have for camera-rea
 
 This v0.9 set is a **reference baseline**, captioned **indicative**. Before a camera-ready paper claim:
 
-- **Grow `test_public` specifically** (currently 104; fc only 33) so the held-out split (§8.5) can carry
-  the headline on its own with tight CIs, and per-tier long-context claims hold on test_public — not just the
-  dev-pooled sample. Highest-leverage data work; do before bulk QA growth.
+- **Run baselines on the enlarged `test_public`** — the v0.9 merge grew the held-out test 104 → **389**
+  (512k 41→124) at the **data** level; the scored sample is still the original 104. Extending the cb/rag/fc
+  runs to the new 285 (cheap for cb/rag; fc tier-capped) lets the held-out split carry the headline on its
+  own with tight CIs and supports per-tier long-context claims directly. Highest-leverage remaining work.
 - **Lift the 512k/256k caps** so long-context-degradation claims rest on more than ~12 items per tier
-  (tighter confidence intervals). Additive on this exact sample.
-- **Evaluate `test_hidden` (285)** — blocked on a **locally-hosted non-data-sharing model** (the sealed gold
-  must never transit OpenAI or Ollama Cloud; `minimax-m3:cloud` is cloud and is therefore *not* eligible).
-  Needs a local GPU leg (e.g. `gemma4:12b` on the company server, deferred from v0.9). Questions live in
-  `data/qa_v0.6_test_hidden_questions.jsonl`; gold stays in the gitignored audit file.
+  (tighter confidence intervals). Additive on this exact sample, and the merge already supplies the items.
 - **Add 1-2 models** (e.g. `gpt-5-mini`, an open Qwen) to show the spread. Orthogonal — just another runner
   invocation and eval.
 - **Add dense / hybrid RAG** alongside BM25 (the v0.7 retrieval diagnostics tooling already exists).
