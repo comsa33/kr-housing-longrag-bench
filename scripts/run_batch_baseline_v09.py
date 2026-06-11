@@ -157,8 +157,11 @@ def fetch(args) -> int:
     track = json.loads(tp.read_text(encoding="utf-8"))
     cl = client()
     model_label = safe(args.model)
-    # regime__split -> list of (qa_id, prediction, usage)
+    # regime__split -> list of (qa_id, prediction, usage); errors tracked separately so a
+    # context-length rejection (e.g. a 272k-window model on a 393k bundle) is NOT silently
+    # conflated with a wrong answer.
     bucket: dict = defaultdict(list)
+    errbucket: dict = defaultdict(list)
     pending = 0
     for b in track["batches"]:
         bt = cl.batches.retrieve(b["batch_id"])
@@ -167,33 +170,60 @@ def fetch(args) -> int:
             pending += 1
             continue
         text = cl.files.content(bt.output_file_id).text
+        # durable raw archive of the exact OpenAI batch output (provenance; INTERNAL)
+        (B / f"batch_raw_{model_label}_part{b['part']}.jsonl").write_text(text, encoding="utf-8")
         for line in text.splitlines():
             if not line.strip():
                 continue
             o = json.loads(line)
             cid = o.get("custom_id", "")
             reg, split, qa_id = cid.split("__", 2)
-            resp = (o.get("response") or {}).get("body") or {}
-            err = o.get("error")
-            if err or not resp:
+            resp = o.get("response") or {}
+            body = resp.get("body") or {}
+            err = o.get("error") or body.get("error")
+            if err or resp.get("status_code") not in (None, 200) or not body.get("choices"):
+                msg = err.get("message") if isinstance(err, dict) else (str(err) if err else f"status {resp.get('status_code')}")
+                errbucket[f"{reg}__{split}"].append((qa_id, msg))
                 continue
-            pred = (resp.get("choices") or [{}])[0].get("message", {}).get("content") or ""
-            usage = resp.get("usage") or {}
-            bucket[f"{reg}__{split}"].append((qa_id, pred.strip(), usage))
+            pred = (body.get("choices") or [{}])[0].get("message", {}).get("content") or ""
+            bucket[f"{reg}__{split}"].append((qa_id, pred.strip(), body.get("usage") or {}))
 
-    for key, items in sorted(bucket.items()):
+        # FAILED requests (e.g. context-length rejections) go to a SEPARATE error file, not output.
+        if getattr(bt, "error_file_id", None):
+            etext = cl.files.content(bt.error_file_id).text
+            (B / f"batch_raw_{model_label}_part{b['part']}.errors.jsonl").write_text(etext, encoding="utf-8")
+            for line in etext.splitlines():
+                if not line.strip():
+                    continue
+                o = json.loads(line)
+                cid = o.get("custom_id", "")
+                if not cid:
+                    continue
+                reg, split, qa_id = cid.split("__", 2)
+                err = o.get("error") or ((o.get("response") or {}).get("body") or {}).get("error")
+                msg = err.get("message") if isinstance(err, dict) else (str(err) if err else "error")
+                errbucket[f"{reg}__{split}"].append((qa_id, msg))
+
+    for key in sorted(set(bucket) | set(errbucket)):
         reg, split = key.split("__", 1)
+        items, errs = bucket.get(key, []), errbucket.get(key, [])
         out = B / f"{reg}_{model_label}_{split}.jsonl"
         calls = B / f"{reg}_{model_label}_{split}.calls.jsonl"
         with out.open("w", encoding="utf-8") as of, calls.open("w", encoding="utf-8") as cf:
             for qa_id, pred, usage in items:
                 of.write(json.dumps({"qa_id": qa_id, "prediction": pred}, ensure_ascii=False) + "\n")
+                det = usage.get("completion_tokens_details") or {}
                 cf.write(json.dumps({
                     "qa_id": qa_id, "prediction": pred,
                     "prompt_tokens": usage.get("prompt_tokens"),
                     "completion_tokens": usage.get("completion_tokens"),
+                    "reasoning_tokens": det.get("reasoning_tokens"),
+                    "total_tokens": usage.get("total_tokens"),
                 }, ensure_ascii=False) + "\n")
-        print(f"[ok] {key}: wrote {len(items)} preds -> {out.name} (+ .calls.jsonl)")
+            for qa_id, msg in errs:  # errored items: calls log only, with the reason (not in preds)
+                cf.write(json.dumps({"qa_id": qa_id, "prediction": None, "error": msg}, ensure_ascii=False) + "\n")
+        note = f" + {len(errs)} errored ({errs[0][1][:50]}…)" if errs else ""
+        print(f"[ok] {key}: {len(items)} preds -> {out.name}{note}")
     if pending:
         print(f"[note] {pending} batch(es) not ready yet; re-run fetch later.")
     return 0
