@@ -11,8 +11,10 @@ tabular data (MOLIT 실거래 / HUG 분양이력), and housing statutes.
 - **What it is:** 1,997 verified QA over 41 official announcements (10 providers) + public tabular data +
   3 statutes, with evidence locators, deterministic predicates, answerability labels, and
   long-context-bundle references — **no raw PDFs/HWPs, no API keys**.
-- **Current release:** `v0.8` (human-review repair build; **1,997 QA**) — **public-ready seed benchmark,
-  NOT leaderboard-ready** (see caveats below). v0.8 regenerates all positional-cloze questions into natural
+- **Current release:** `v0.9` (split consolidation + release-grade baselines; **1,997 QA**, on the v0.8
+  human-review build) — **public-ready seed benchmark, NOT leaderboard-ready** (see caveats below). v0.9
+  merges the former `test_hidden` into `test_public` (389) and adds LLM-judge-scored baselines (§
+  `docs/baseline_results_v09.md`); the underlying v0.8 build regenerated all positional-cloze questions into natural
   source-grounded questions, fixes location/answer errors, and removes 14 unrepairable items; it supersedes
   the v0.6 build (the v0.7 "v0.6 unchanged" description no longer applies). See `CHANGELOG.md`.
 - **Canonical file:** `data/qa_v0.6_realistic_candidates.jsonl`. Splits: `data/qa_v0.6_dev.jsonl` (1,608),
@@ -27,7 +29,7 @@ tabular data (MOLIT 실거래 / HUG 분양이력), and housing statutes.
 
 This is a seed package, not a finished large-scale benchmark. It is structured so the dataset can grow into a paper-grade benchmark without redistributing copyrighted PDFs/HWPs.
 
-## Current Release: v0.8 (human-review repair build; 1,997 QA)
+## Current Release: v0.9 (split consolidation + baselines; 1,997 QA, on the v0.8 build)
 
 **Canonical set: `data/qa_v0.6_realistic_candidates.jsonl` — 1,997 verified QA** across 12 task families,
 built over **41 official announcements** from 10 providers (LH, SH, GH, iH, JPDC, 부산도시공사,
@@ -223,25 +225,26 @@ permits it. Korean statutes/rules fall under the non-protected categories of Cop
 
 ## Citation
 
-If you use this benchmark, cite the **v0.8 release** by its Zenodo versioned DOI (or use the concept DOI to
-always cite the latest version):
+If you use this benchmark, cite the **v0.9 release** by the concept DOI (always resolves to the latest
+version; the v0.9 versioned DOI is minted on the GitHub release):
 
 ```bibtex
 @dataset{lee_kr_housing_longrag_bench_2026,
   author    = {Lee, Ruo},
   title     = {KR-Housing-LongRAG-Bench},
   year      = {2026},
-  version   = {v0.8 (human-review repair build; 1,997 QA)},
+  version   = {v0.9 (split consolidation + release-grade baselines; 1,997 QA)},
   publisher = {Zenodo},
-  doi       = {10.5281/zenodo.20571211},
-  url       = {https://doi.org/10.5281/zenodo.20571211},
-  note      = {v0.8 regenerates all positional-cloze questions into natural source-grounded questions and fixes location/answer errors; supersedes the v0.6/v0.7 builds.}
+  doi       = {10.5281/zenodo.20559127},
+  url       = {https://doi.org/10.5281/zenodo.20559127},
+  note      = {v0.9 merges the former test_hidden split into test_public (389) and adds release-grade baselines; same 1,997 QA as v0.8.}
 }
 ```
 
-DOI state: the **v0.8 versioned DOI is `10.5281/zenodo.20571211`** (Zenodo, 2026-06-09); the **concept DOI
-`10.5281/zenodo.20559127`** always resolves to the latest version. Prior versioned DOIs: **v0.7
-`10.5281/zenodo.20570856`**, **v0.6.3 dataset build `10.5281/zenodo.20563604`**.
+DOI state: the **concept DOI `10.5281/zenodo.20559127`** always resolves to the latest version; the **v0.9
+versioned DOI is minted by Zenodo on the GitHub release** and will be listed here. Prior versioned DOIs:
+**v0.8 `10.5281/zenodo.20571211`**, **v0.7 `10.5281/zenodo.20570856`**, **v0.6.3 dataset build
+`10.5281/zenodo.20563604`**.
 
 The machine-readable citation metadata is also available in [`CITATION.cff`](CITATION.cff). GitHub's
 "Cite this repository" button uses that file automatically.
