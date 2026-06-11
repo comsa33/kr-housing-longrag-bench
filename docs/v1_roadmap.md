@@ -164,8 +164,15 @@ validation), clean up v0.8 carry-overs, then reduce seed-benchmark limitations.
 
 **Priority 0 — carried forward from v0.7/v0.8 (do these first):**
 
-1. **Release-grade baseline result tables.** ▶ **IN PROGRESS** — design locked in
-   [`docs/baseline_results_v09.md`](baseline_results_v09.md). A fixed, seeded, stratified sample
+1. **Release-grade baseline result tables.** ▶ **RESULTS IN (2026-06-11)** — see
+   [`docs/baseline_results_v09.md`](baseline_results_v09.md) §8: 5 models (gpt-4.1-mini, **gpt-5.5
+   winner**, gpt-5.4-mini/nano, minimax) × 3 regimes via OpenAI Batch, headline = **LLM-judge**.
+   Key result: the legacy `contains_all` metric systematically undercounts and fabricated a FALSE
+   "512k collapse" (0% → judge 42%); no collapse exists. Remaining gating items for paper-grade (NOT
+   more models): **(a) validate the LLM-judge vs human labels**, (b) report test_public separately +
+   evaluate `test_hidden` via a LOCAL non-data-sharing model (dev≠test), (c) finish minimax, (d) fix the
+   cross_source full-context bundle (HUG rows absent), (e) optional dense/hybrid RAG, (f) grow the
+   dataset LAST. Original design notes follow. A fixed, seeded, stratified sample
    (`scripts/build_baseline_sample_v09.py`, seed `20260610`: test_public 104 + dev 200 stratified over all
    12 task families, cluster-deduplicated; 304 items) is run across **three regimes** — closed-book
    (locator-only, already have the v0.7 floor), **full-context**, and **RAG (BM25)** — and **two models**:

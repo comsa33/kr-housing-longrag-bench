@@ -157,54 +157,49 @@ qa_id), a `<…>.meta.json`, and a `<…>.log`. Input prompts are `<regime>_v09_
 
 ## 8. Results
 
-**Reference / indicative** numbers. Model `gpt-4.1-mini` (run 2026-06-10; `temperature=0`, `max_output_tokens=256`); BM25 `k=5`. `minimax-m3:cloud` runs are pending and will be added as a second row block. Cluster-weighted (cw) is the headline; plain is shown alongside.
+Run 2026-06-11 via the OpenAI Batch API (`temperature=0`; reasoning models at default effort, `max_completion_tokens=4000`; BM25 `k=5`). **The headline metric is the LLM-judge** (semantic equivalence, `scripts/llm_judge_v09.py`, judge = gpt-4.1-mini) — see §8.4 for why the legacy `contains_all` metric is unreliable. cb/rag are scored on the full dev+test_public; full-context (fc) on the tier-capped 116-item subset. `minimax-m3:cloud` (open weights) is still filling and will be added.
 
-### 8.1 Each regime on its natural item set
+### 8.1 Five models × three regimes (LLM-judge; plain / cluster-weighted)
 
-The three regimes cover different item counts (closed-book runs the full sample; RAG runs items that have a retrievable bundle; full-context runs the tier-capped bundle-eligible subset), so these rows are **not** directly comparable — see §8.2 for the apples-to-apples view.
+| Model | closed-book | RAG (BM25) | full-context |
+|---|---|---|---|
+| gpt-4.1-mini | 18% / 32% (n=1712) | 56% / 43% (n=1255) | 86% / 73% (n=116) |
+| gpt-5.4-mini | 17% / 18% (n=1712) | 54% / 38% (n=1255) | 95% / 86% (n=100*) |
+| gpt-5.4-nano | 8% / 6% (n=1712) | 45% / 25% (n=1255) | 71% / 54% (n=100*) |
+| **gpt-5.5** | **39% / 49%** (n=1639) | **58% / 42%** (n=1235) | **93% / 83%** (n=116) |
 
-| Regime (gpt-4.1-mini) | Items | Plain acc | Cluster-weighted |
-|---|---:|---:|---:|
-| closed-book (locator-only) | 304 | 9.2% | 2.1% |
-| RAG (BM25, k=5) | 268 | 46.6% | 19.1% |
-| full-context | 116 | **79.3%** | **45.7%** |
+\* gpt-5.4-mini/nano have a **272k-token context window**, so 16/116 fc items (the 512k tier + the largest 256k items) are context-rejected, not answered — a model property, reported as `✗ctx` in §8.2, not a wrong answer. gpt-4.1-mini (~1M) and gpt-5.5 (≥393k verified) ingest all tiers.
 
-### 8.2 Head-to-head on the common 116-item set (full-context-eligible)
+**gpt-5.5 leads every regime.** Monotonic closed-book ≪ RAG ≪ full-context holds for all models: context is decisive. Smaller models degrade faster (gpt-5.4-nano).
 
-Same 116 items scored under all three regimes — the honest comparison.
+### 8.2 Full-context by context tier (LLM-judge, plain)
 
-| Regime (gpt-4.1-mini, n=116) | Plain acc | Cluster-weighted |
-|---|---:|---:|
-| closed-book | 6.9% | 0.2% |
-| RAG (BM25, k=5) | 69.0% | 31.2% |
-| full-context | **79.3%** | **45.7%** |
-
-Monotonic **closed-book ≪ RAG ≪ full-context**: context is decisive (the benchmark is near-unanswerable closed-book but tractable with evidence), and full-context beats BM25 RAG by ~10 pts plain / ~14 pts cw — yet RAG recovers most of the lift at ~1/9 the context (a real efficiency finding, not a ceiling).
-
-### 8.3 By context tier — the long-context collapse
-
-full-context accuracy (plain) by tier shows a sharp **lost-in-the-middle** cliff even for a 1M-context model:
-
-| Tier | 32k | 64k | 128k | 256k | 512k |
+| Model | 32k | 64k | 128k | 256k | 512k |
 |---|---:|---:|---:|---:|---:|
-| full-context plain | 92.3% | 90.9% | 85.7% | 75.0% | **0.0%** (0/12) |
-| RAG(BM25) plain | 86.5% | 77.3% | 35.7% | 68.7% | **1.0%** (1/97) |
+| gpt-4.1-mini | 98% | 86% | 93% | 69% | 50% |
+| gpt-5.4-mini | 98% | 95% | 79% | 100% | ✗ctx |
+| gpt-5.4-nano | 87% | 55% | 36% | 75% | ✗ctx |
+| **gpt-5.5** | **100%** | 95% | **100%** | **100%** | **42%** |
 
-At the 512k tier (Korean multi-document haystacks) the model ingests the whole context but **cannot locate the answer** (0/12 full-context), and BM25 also fails to retrieve the gold page (recall@5 ≈ 53%, but the gold page sits among many same-domain distractors). This 512k cliff is a headline benchmark finding.
+**There is no "512k collapse."** gpt-5.5 is at or near 100% from 32k to 256k and **42%** (not 0%) at 512k. The residual 512k drop is mostly a **benchmark-construction artifact, not a model failure**: of the 12 512k items, ~4 are `cross_source_aggregation` questions whose gold requires HUG sale-history rows that are **absent from the full-context bundle** (unanswerable in this regime — to be fixed/excluded, see §9); the rest are a few genuine multi-document legal misses. The **272k context-coverage tradeoff** (gpt-5.4 family ✗ at 512k vs gpt-5.5/gpt-4.1-mini covering it) is the real, honest long-context finding.
 
-### 8.4 Hardest task families
+### 8.3 Retrieval quality (BM25, k=5, model-independent)
 
-Even with full-context, **multi-document / aggregation** families stay at ≈0%: `cross_document_legal_reasoning`, `cross_source_aggregation`, `multi_document_comparison`, `region_comparison`, `provider_comparison`. Tractable families: `long_context_retrieval` (94% fc), `table_numeric_reasoning` (79% fc), `eligibility_reasoning` (100% fc), `answerability_detection` (100% closed-book — correct abstention).
+On the full split (n=1,255 items with gold pages): recall@5 ≈ **47.6%**, hit@5 ≈ 48.8% (cw-recall 52.1%). Per-task highs (`long_distance_retrieval` ≈ 98%, `eligibility_reasoning` ≈ 74%) vs lows (`schedule_reasoning` ≈ 11%, `multi_document_comparison` ≈ 13%) — BM25 is weakest where evidence is scattered across documents. Full breakdown via `scripts/score_retrieval_v09.py`.
 
-### 8.5 Retrieval quality (BM25, k=5, model-independent)
+### 8.4 Metric matters — `contains_all` is unreliable (a methodological result)
 
-| Cut | recall@5 | hit@5 | cw-recall | cw-hit |
-|---|---:|---:|---:|---:|
-| ALL (n=268) | 59.1% | 61.2% | 55.1% | 60.3% |
+The legacy `contains_all`/normalized-substring match (v0.7/v0.8) produces **systematic false negatives** when the prediction is correct but phrased or formatted differently from the gold (e.g. gold `"부산도시공사=부산광역시 / 한국토지주택공사=경기도"` vs a correct pred `"부산도시공사: 부산광역시 / …: 경기도"`). Three metrics on the same gpt-5.5 full-context predictions:
 
-Notable per-task: `long_distance_retrieval` 100%, `eligibility_reasoning` 75%, vs `schedule_reasoning` 11% and `region_comparison` 25% — BM25 is weak exactly where evidence is scattered or schedule-shaped. Full per-task/tier breakdown in `scripts/score_retrieval_v09.py` output.
+| Metric | ALL | 512k tier |
+|---|---:|---:|
+| `contains_all` (legacy) | 87.9% | **0%** ← fabricated "collapse" |
+| soft (em \| contains \| token-recall≥0.7; `score_answers_v09.py`) | 91.4% | 16.7% |
+| **LLM-judge** (semantic; `llm_judge_v09.py`) | **93.1%** | **41.7%** |
 
-> Caveats: indicative reference numbers, one proprietary model so far; `contains_all`/normalized-substring matching can over-credit partial answers; tier caps mean the 512k row rests on 12 full-context items. See §9.
+`contains_all` undercounts every model and, at the 512k tier, drove a **non-existent** "512k collapse" to 0%. All v0.9 headline numbers use the LLM-judge; soft + Wilson 95% CIs are the reproducible deterministic reference. **The LLM-judge itself must be validated against human labels before camera-ready (§9).**
+
+> Caveats: LLM-judge is not yet human-validated (§9); cb/rag pool dev+test_public (a development-set red flag — report test_public separately + evaluate hidden via a local model before the paper); fc rests on a tier-capped 116-item sample; gpt-5.5 cb/rag had ~93 quota-failed items (re-run pending); minimax (open weights) incomplete.
 
 ## 9. Limitations and the path to paper-grade
 
