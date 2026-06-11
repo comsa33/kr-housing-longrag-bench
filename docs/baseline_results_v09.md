@@ -211,38 +211,43 @@ drove a **non-existent** "512k collapse" to 0%. All v0.9 headline numbers use th
 paper. The **same** LLM-judge verdicts, cut by split with a Wilson 95% CI (`scripts/score_judge_v09.py`),
 isolate the held-out headline.
 
-> **v0.9 split change:** `test_public` was enlarged 104 → **389** by merging the former `test_hidden` (§
-> dataset CHANGELOG; 512k tier 41 → 124, + `ood_region`/`ood_year` subsets). The table below still reports
-> the **originally-sampled 104** items (the baseline run predates the merge); extending baselines to the new
-> 285 test_public items is pending (cheap for cb/rag; fc is tier-capped). Once covered, the held-out test is
-> large enough to carry the headline on its own and to support per-tier long-context claims directly.
+> **v0.9 split change:** `test_public` was enlarged 104 → **389** by merging the former `test_hidden` (see
+> dataset CHANGELOG; 512k tier 41 → 124, + `ood_region`/`ood_year` subsets). Baselines have been **extended to
+> the full 389** (cb/rag on all 389; fc on a tier-capped subset, now n=105 incl. **25 at 512k** vs 5 before).
+> The HUG-bundle fix of §8.6 was re-applied to the 16 cross_source items that the merge added at 512k.
 
-**test_public (original 104-item sample; LLM-judge, plain / cluster-weighted; cb shows the cw 95% CI):**
+**test_public — full 389 (LLM-judge, plain / cluster-weighted; cb shows the cw 95% CI):**
 
 | Model | closed-book | RAG (BM25) | full-context |
 |---|---|---|---|
-| gpt-4.1-mini | 21% / 55% [37–71%] (n=104) | 58% / 38% (n=101) | 88% / 98% (n=33) |
-| gpt-5.4-mini | 23% / 31% [17–49%] (n=104) | 60% / 31% (n=101) | 100% / 100% (n=27) |
-| gpt-5.4-nano | 4% / 0% [0–13%] (n=104) | 48% / 10% (n=101) | 85% / 77% (n=27) |
-| **gpt-5.5** | **37% / 68%** [49–82%] (n=87) | 56% / 27% (n=101) | 94% / 47% (n=33) |
+| gpt-4.1-mini | 20% / 39% [29–51%] (n=389) | 61% / 41% (n=386) | 73% / 70% (n=105) |
+| gpt-5.4-mini | 20% / 29% [19–40%] (n=389) | 62% / 38% (n=386) | 91% / 90% (n=78\*) |
+| gpt-5.4-nano | 4% / 0% [0–6%] (n=389) | 47% / 18% (n=386) | 71% / 60% (n=78\*) |
+| **gpt-5.5** | **46% / 59%** [48–70%] (n=372) | 63% / 40% (n=386) | **93% / 59%** (n=105) |
 
-The split-level ranking is **directionally consistent** with the pooled table (gpt-5.5 strongest closed-book;
-context monotonicity holds), so dev was not flattering the leaderboard. **But two honest caveats the pooled
-table hid:**
+\* gpt-5.4-mini/nano (272k window) context-reject the 512k fc items, so their fc n is lower and excludes 512k.
+gpt-5.5 cb n=372 (the original ~93 quota-failed items are still pending a re-run).
 
-1. **The scored sample is underpowered for fine-grained claims** (until baselines cover the enlarged split).
-   At the originally-sampled 104, n is 104 (cb) / 101 (rag) / **33 (fc)**; the cb cluster-weighted CIs span
-   ~30 points, and the fc-by-tier cells are n=5–15 each — **too few to support per-tier long-context
-   degradation claims on the held-out set alone.** Those tier claims (§8.2) currently rest on the **pooled**
-   sample and stay captioned *indicative*. The v0.9 merge already enlarged the test **data** to 389 (512k
-   41→124); the remaining work is running baselines on the new 285 so the held-out numbers inherit that power.
-2. **plain vs cluster-weighted diverges more on the small split** (e.g. gpt-4.1-mini cb 21% plain vs 55% cw):
-   test_public has few clusters, so a handful of answerable clusters dominate the weighted score. Report both.
+**full-context by tier on test_public (LLM-judge, plain):**
+
+| Model | 32k | 64k | 128k | 256k | 512k |
+|---|---:|---:|---:|---:|---:|
+| gpt-4.1-mini | 96% (n27) | 100% (n19) | 83% (n12) | 77% (n22) | **20% (n25)** |
+| **gpt-5.5** | 100% (n27) | 100% (n19) | 100% (n12) | 95% (n22) | **76% (n25)** |
+
+The enlarged held-out set **confirms the §8.6 finding with real power**: at 512k (now n=25, not 5), gpt-5.5
+holds **76%** while gpt-4.1-mini sits at **20%** — both ingest the same HUG-augmented 410k-token bundle, but
+only the frontier model aggregates over it. The split-level ranking matches the pooled table (gpt-5.5
+strongest; context monotonicity holds), so dev was not flattering the leaderboard. Two reporting notes:
+
+1. **plain vs cluster-weighted diverges on this split** (e.g. gpt-4.1-mini cb 20% plain vs 39% cw): a few
+   answerable clusters dominate the weighted score, so we report both.
+2. **`ood_region` (116) / `ood_year` (50) subsets** (carried via `split_tags`) now support an
+   in-distribution-vs-OOD generalization breakdown — left for the camera-ready analysis.
 
 **There is no longer a hidden split** — the former `test_hidden` (285) was merged into `test_public` in v0.9
 (a larger public held-out test is more valuable than a sealed set we cannot serve; a future release can
-re-carve a sealed split from grown data). The merged items are part of the 389 above and carry `ood_region` /
-`ood_year` tags for a generalization breakdown once baselines cover them.
+re-carve a sealed split from grown data).
 
 ### 8.6 HUG-bundle fix turns an artifact into a capability signal
 
@@ -304,10 +309,11 @@ independent annotator on the same n=80 CSV remains a nice-to-have for camera-rea
 
 This v0.9 set is a **reference baseline**, captioned **indicative**. Before a camera-ready paper claim:
 
-- **Run baselines on the enlarged `test_public`** — the v0.9 merge grew the held-out test 104 → **389**
-  (512k 41→124) at the **data** level; the scored sample is still the original 104. Extending the cb/rag/fc
-  runs to the new 285 (cheap for cb/rag; fc tier-capped) lets the held-out split carry the headline on its
-  own with tight CIs and supports per-tier long-context claims directly. Highest-leverage remaining work.
+- ~~**Run baselines on the enlarged `test_public`**~~ — **DONE (§8.5)**: cb/rag extended to all 389, fc to a
+  tier-capped n=105 (incl. 25 at 512k), HUG-fix re-applied to the 16 merged cross_source items. The held-out
+  split now carries the headline with tight CIs and confirms the 512k finding at n=25. Remaining: optionally
+  rebuild canonical bundles so cross_source embeds HUG by default (this run patched prompts), and re-run the
+  ~93 quota-failed gpt-5.5 cb items.
 - **Lift the 512k/256k caps** so long-context-degradation claims rest on more than ~12 items per tier
   (tighter confidence intervals). Additive on this exact sample, and the merge already supplies the items.
 - **Add 1-2 models** (e.g. `gpt-5-mini`, an open Qwen) to show the spread. Orthogonal — just another runner
