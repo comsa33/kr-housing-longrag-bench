@@ -62,15 +62,20 @@ def main() -> int:
     ap.add_argument("--chunk-chars", type=int, default=1200, help="passage size for sub-page chunking")
     ap.add_argument("--per-page-max", type=int, default=0, help="cap chunks per page (page-diverse); 0=off")
     ap.add_argument("--out", default=None, help="output JSONL (must be under workspace_local/)")
+    ap.add_argument("--sample", default=None, help="sample JSONL (default: the locked 304); pass a full "
+                    "dev+test_public list to build RAG prompts over the full split")
     args = ap.parse_args()
 
     out = Path(args.out).resolve() if args.out else DEFAULT_OUT
     if not out.is_relative_to((ROOT / "workspace_local").resolve()):
         raise SystemExit(f"--out must be under workspace_local/ (embeds bundle text). Got: {out}")
-    if not SAMPLE.exists():
-        raise SystemExit(f"missing {SAMPLE} — run scripts/build_baseline_sample_v09.py first")
+    sample_path = (Path(args.sample) if args.sample else SAMPLE)
+    if not sample_path.is_absolute():
+        sample_path = ROOT / sample_path
+    if not sample_path.exists():
+        raise SystemExit(f"missing sample {sample_path} — run scripts/build_baseline_sample_v09.py first")
 
-    sample = load_jsonl(SAMPLE)
+    sample = load_jsonl(sample_path)
     # qa_id -> full QA record (need question + gold page_ids + instruction).
     qa_by_id: dict[str, dict] = {}
     for f in SPLIT_FILES.values():
