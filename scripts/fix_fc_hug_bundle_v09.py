@@ -7,8 +7,9 @@ bundle — only the LH announcements were. So the model could not answer in the 
 scored wrong, artificially deflating the 512k fc number (see baseline_results_v09.md §8.2/§8.5).
 
 This is a full-context regime by definition: every source the question needs must be in the bundle.
-We therefore inject the 624 raw HUG rows as a compact readable table (the SAME rows the gold predicate
-is computed from — verified to reproduce all four golds) into the 4 prompts, just before the question.
+We therefore inject the HUG rows as a compact readable table (624 raw rows; 623 are valid — one empty
+대구-2023 placeholder, immaterial: all four golds reproduce identically and no gold references it) into the
+4 prompts, just before the question. The canonical bundle (build_bundles_v06.py) embeds the 623 valid rows.
 Only the cross_source items are touched; the other 512k items are left byte-identical so their already-
 run predictions stay valid. Output: a 4-item prompt file to re-run on the models that can ingest 512k
 (gpt-4.1-mini, gpt-5.5; the 272k-window gpt-5.4 family still ✗ctx and need no re-run).
@@ -30,7 +31,7 @@ QMARK = "\n\n[질문]\n"  # injection point: HUG table goes immediately before t
 
 
 def build_hug_table() -> str:
-    """Compact, count/avg-friendly rendering of the 624 HUG sale-history rows."""
+    """Compact, count/avg-friendly rendering of the HUG sale-history rows (624 raw from rows_v0.3.jsonl)."""
     rows = [json.loads(l) for l in ROWS.open(encoding="utf-8") if l.strip()]
     rows.sort(key=lambda r: (r["_query_area_name"], r["_query_year"], r["_row_id"]))
     out = [

@@ -60,14 +60,15 @@ The cap is a **cost-control choice, not a structural limit**. Because the draw i
 ⇒ `[:12] ⊂ [:30]`), raising a cap later is **purely additive** — already-run predictions stay valid.
 
 **HUG injection (cross_source only).** `cross_source_aggregation` items ask an aggregate over the HUG
-(주택도시보증공사) sale-history table, whose gold is computed from 624 rows that the canonical bundles do
-**not** embed → unanswerable in the full-context regime (a benchmark-construction artifact, §8.6). The fix is
-applied **at the prompt level to the cross_source full-context items only** (the original 4 + the 16 the merge
-added at 512k = 20 prompts): the 624 HUG rows are injected as a compact in-bundle table by
-`scripts/fix_fc_hug_bundle_v09.py`. Non-cross_source full-context prompts are unchanged. **The canonical
-bundle now embeds HUG by default:** `scripts/build_bundles_v06.py` includes the complete 623-row HUG table as
-a guaranteed component of `mix_multiprovider_512k` (the bundle every cross_source item references), verified
-to reproduce all four golds. So the prompt-level patch above is **redundant for bundles rebuilt from the
+(주택도시보증공사) sale-history table — **624 acquired rows, 623 valid** (one 대구광역시-2023 row has a null
+business name / household count and is dropped; no evaluated gold references it, so the two row sets reproduce
+**identical** golds). The canonical bundles did **not** embed this table → these items were unanswerable in
+the full-context regime (a benchmark-construction artifact, §8.6). The fix is applied **at the prompt level to
+the cross_source full-context items only** (the original 4 + the 16 the merge added at 512k = 20 prompts) via
+`scripts/fix_fc_hug_bundle_v09.py` (which embeds the 624 raw rows — immaterial vs the 623 valid). Non-
+cross_source full-context prompts are unchanged. **The canonical bundle now embeds HUG by default:**
+`scripts/build_bundles_v06.py` includes the complete **623 valid-row** HUG table as a guaranteed component of
+`mix_multiprovider_512k` (the bundle every cross_source item references), verified to reproduce all four golds. So the prompt-level patch above is **redundant for bundles rebuilt from the
 current script** — it remains documented because the *released* baseline predictions were produced with the
 equivalent prompt-level injection (identical row content). Only `mix_multiprovider_512k` changed on rebuild;
 the other 166 bundles are byte-identical.
@@ -159,7 +160,7 @@ export OPENAI_API_KEY=...   # from workspace_local/secrets/openai_api.key
 python3 scripts/build_baseline_rag_v09.py --sample <split-or-sample>.jsonl --out .../rag_..._prompts.jsonl
 python3 scripts/build_baseline_fullcontext_v09.py --sample <fc-subset>.jsonl --out .../fc_..._prompts.jsonl
 #   cross_source full-context prompts then get HUG injected:
-python3 scripts/fix_fc_hug_bundle_v09.py            # 624 HUG rows -> the cross_source fc prompts (§3)
+python3 scripts/fix_fc_hug_bundle_v09.py            # HUG rows (623 valid) -> the cross_source fc prompts (§3)
 
 # 2. run each model x regime via the Batch API (submit -> status -> fetch). custom_id = <regime>__<split>__<qa_id>
 python3 scripts/run_batch_baseline_v09.py submit --model gpt-5.5 --regimes cb,rag,fc --max-output-tokens 4000
@@ -315,12 +316,12 @@ re-carve a sealed split from grown data).
 
 The four `cross_source_aggregation` items at the 512k tier ask an aggregate over the HUG (주택도시보증공사)
 sale-history table — e.g. *"how many 2023 사업장 in 경기도?"* (gold 61건) or *"average 총세대수"* (gold
-1,073세대). Their gold is computed from 624 HUG rows that were **never embedded in the full-context bundle**
-(only the LH announcements were), so every model could only abstain and was scored wrong — a
-benchmark-construction artifact that pinned gpt-5.5's 512k to 42%.
+1,073세대). Their gold is computed from the HUG sale-history rows (623 valid; §3) that were **never embedded
+in the full-context bundle** (only the LH announcements were), so every model could only abstain and was
+scored wrong — a benchmark-construction artifact that pinned gpt-5.5's 512k to 42%.
 
 Full-context means *every source the question needs is in the bundle*, so this is a bundle bug, not a task
-design issue. We injected the 624 rows as a compact in-bundle table (`scripts/fix_fc_hug_bundle_v09.py`;
+design issue. We injected the HUG rows as a compact in-bundle table (`scripts/fix_fc_hug_bundle_v09.py`;
 verified to reproduce all four golds: 61 / 15 / 77 / 1,073) and re-ran the two models that can ingest the
 resulting ~410k-token prompt (gpt-4.1-mini, gpt-5.5; the 272k gpt-5.4 family still ✗ctx). LLM-judged result:
 
@@ -393,11 +394,13 @@ This v0.9 set is a **reference baseline**, captioned **indicative**. Before a ca
 - **Add dense / hybrid RAG** alongside BM25 (the v0.7 retrieval diagnostics tooling already exists).
 - ~~**Human-validate the eval** on a stratified sample~~ — **DONE (§9.0)**: n=80, agreement 96.2 %,
   κ=0.924. Optional follow-up: a second independent annotator on the same CSV.
-- ~~**Report test_public separately** (dev ≠ test)~~ — **DONE (§8.5)** via `scripts/score_judge_v09.py`.
-  Remaining: grow test_public (above) and the local-model hidden leg (above).
-- ~~**Fix the cross_source HUG bundle**~~ — **DONE (§8.6)** via `scripts/fix_fc_hug_bundle_v09.py`: HUG rows
-  injected, 4 items re-run + re-judged; 512k is now a real signal (gpt-5.5 75%, gpt-4.1-mini 50%). Optional:
-  rebuild the dataset's canonical bundles so future builds embed HUG by default (this fix patched the run).
+- ~~**Report test_public separately** (dev ≠ test)~~ — **DONE (§8.5)** via `scripts/score_judge_v09.py`;
+  the former hidden split was merged in (no local-model leg needed). Optional: grow test_public further (above).
+- ~~**Fix the cross_source HUG bundle**~~ — **DONE (§8.6), prompt-level *and* dataset-level.** The 20
+  cross_source 512k items were HUG-injected and re-judged; the canonical `mix_multiprovider_512k` bundle now
+  **embeds HUG by default** (`scripts/build_bundles_v06.py`), so this is fixed for anyone rebuilding the
+  dataset, not just our run. 512k is now a real signal — pooled **gpt-5.5 78% vs gpt-4.1-mini 25%** (n=32),
+  held-out test_public **76% vs 20%** (n=25).
 
 None of this requires rework: the seeded-nested sample + `--resume` + model-orthogonal scoring make every
 addition accumulate on top of what is reported here.
