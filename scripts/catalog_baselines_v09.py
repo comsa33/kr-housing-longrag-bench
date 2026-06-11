@@ -80,6 +80,10 @@ def main() -> int:
             groups["prompts"].append(p)
         elif n.endswith(".calls.jsonl"):
             groups["calls"].append(p)
+        elif n.endswith(".judged.jsonl") or n.startswith("judge_track_"):
+            groups["judge"].append(p)
+        elif n.startswith("batch_raw_"):
+            groups["raw"].append(p)
         elif PRED_RE.match(n) and PRED_RE.match(n).group(2) in V09_MODELS:
             preds.append(p)
         elif n.endswith(".meta.json") or n.endswith(".log"):
@@ -105,8 +109,9 @@ def main() -> int:
 
     # other groups: just list with counts
     titles = {"sample": "Sample", "prompts": "Prompt sets (input)", "calls": "Call logs (rich)",
+              "judge": "LLM-judge verdicts", "raw": "Raw OpenAI batch archives (provenance)",
               "runmeta": "Run meta / logs", "drivers": "Drivers", "other": "Other / legacy (v07 etc.)"}
-    for key in ("sample", "prompts", "calls", "drivers", "runmeta", "other"):
+    for key in ("sample", "prompts", "calls", "judge", "raw", "drivers", "runmeta", "other"):
         gp = groups.get(key)
         if not gp:
             continue
