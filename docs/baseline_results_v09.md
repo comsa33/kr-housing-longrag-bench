@@ -97,6 +97,20 @@ tiers.
 > selected by verifying current availability against live sources** (not asserted from memory). Local GPU
 > note: a single 24GB RTX 3090 is **VRAM-bound** (KV cache for 256k+ tokens does not fit), so the open leg
 > would run via a provider serving public weights (reproducible because the weights are public), not locally.
+>
+> **Policy (open-weight baseline).**
+> - v0.9 ships **without** an open-weight baseline; it is **not a release blocker**. The current hosted-model
+>   results + RAG/full-context comparison + public dataset & eval code stand on their own.
+> - MiniMax-M3 is labelled a **hosted cloud model**. "Soon to be open-sourced" is **not** grounds to call it
+>   open-weight. If a MiniMax-M3 number is reported before weight release, it is a hosted-cloud result, not an
+>   independently reproducible open-weight baseline.
+> - When public weights ship, add the open-weight baseline in **v0.9.1 / a paper appendix**: pin the model
+>   **revision/commit hash, license, and context length**, run on the **same `test_public` 389**, and confirm
+>   the open-weight result matches (or differs from) any earlier hosted-cloud number.
+>
+> > *Open-weight long-context baselines are deferred until public weights, license, and a reproducible
+> > inference configuration are available. MiniMax-M3 results, if reported before weight release, are treated
+> > as hosted-cloud results rather than independently reproducible open-weight baselines.*
 
 **Why gpt-4.1-mini, not gpt-4o-mini (empirically verified, 2026-06-10).** This is a long-context
 benchmark, so the model must ingest the haystack. On an identical 512k-tier bundle (974,007 chars =

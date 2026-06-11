@@ -174,8 +174,12 @@ validation), clean up v0.8 carry-overs, then reduce seed-benchmark limitations.
    **(a) ✅ LLM-judge validated** vs human (n=80, agreement 96.2 %, κ=0.924, §9.0);
    **(b) ✅ test_public reported separately** (§8.5) and **the former `test_hidden` (285) merged into
    `test_public` → 389** (no hidden split; no local-model leg needed);
-   **(c) open-weights leg DEFERRED** — `minimax-m3:cloud` is hosted (weights unreleased as of 2026-06), so it
-   does NOT qualify; a genuinely open-weights model is to be selected by verifying live availability;
+   **(c) open-weights leg DEFERRED — NOT a release blocker.** Policy: v0.9 ships without an open-weight
+   baseline; `minimax-m3:cloud` is labelled **hosted cloud** ("soon to be open-sourced" ≠ open-weight); when
+   public weights ship, add the open-weight baseline in **v0.9.1 / a paper appendix** with pinned
+   revision/license/context, run on the same `test_public` 389. A genuinely open-weights model must be
+   selected by **verifying live availability** (not asserted from a stale knowledge cutoff). Full policy +
+   disclaimer text in `docs/baseline_results_v09.md` §4;
    **(d) ✅ HUG cross_source full-context fix applied** (20 items, §8.6) — both prompt-level (released runs)
    **and at the dataset level** (`build_bundles_v06.py` now embeds the HUG table in `mix_multiprovider_512k`);
    **(e) optional dense/hybrid RAG**; **(f) grow the dataset LAST**.
