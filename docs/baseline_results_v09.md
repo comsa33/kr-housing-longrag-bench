@@ -199,9 +199,39 @@ The legacy `contains_all`/normalized-substring match (v0.7/v0.8) produces **syst
 
 `contains_all` undercounts every model and, at the 512k tier, drove a **non-existent** "512k collapse" to 0%. All v0.9 headline numbers use the LLM-judge; soft + Wilson 95% CIs are the reproducible deterministic reference. **The LLM-judge itself must be validated against human labels before camera-ready (§9).**
 
-> Caveats: LLM-judge is not yet human-validated (§9); cb/rag pool dev+test_public (a development-set red flag — report test_public separately + evaluate hidden via a local model before the paper); fc rests on a tier-capped 116-item sample; gpt-5.5 cb/rag had ~93 quota-failed items (re-run pending); minimax (open weights) incomplete.
+> Caveats: LLM-judge is **human-validated** (§9.0: n=80, agreement 96.2 %, κ=0.924); cb/rag pool dev+test_public (a development-set red flag — report test_public separately + evaluate hidden via a local model before the paper); fc rests on a tier-capped 116-item sample; gpt-5.5 cb/rag had ~93 quota-failed items (re-run pending); minimax (open weights) incomplete.
 
 ## 9. Limitations and the path to paper-grade
+
+### 9.0 LLM-judge human validation (DONE — 2026-06-11)
+
+The headline metric is the LLM-judge, so it was validated against blind human labels before any paper
+claim. Protocol = standard inter-annotator agreement: a stratified **n=80** sample of judged predictions
+(balanced on the judge's YES/NO; force-including the ambiguous categories — legal paraphrase, comparisons,
+cross_source, abstention, the 512k tier; substantive regimes rag/fc only) was written **without** the judge
+verdict (no anchoring) and labelled `correct (Y/N)` by the dataset creator. We then joined on
+`(qa_id, model, regime)` to the held-out judge verdicts.
+
+| metric | value |
+|---|---|
+| raw agreement | **77/80 = 96.2 %** |
+| Cohen's κ | **0.924** (Landis–Koch "almost perfect", > 0.81) |
+| human correct-rate | 45.0 % |
+| judge correct-rate | 43.8 % |
+
+All **3** disagreements are boundary cases with **no systematic direction** (judge too strict 2 ×, too
+lenient 1 ×):
+- *judge NO / human Y* — gold `광산구`, prediction `광주광역시 광산구` (correct, rejected on format).
+- *judge NO / human Y* — answer led with "확정할 수 없음" but the parenthetical contained the gold `2개월`
+  (a genuine hedging-vs-abstention edge case).
+- *judge YES / human N* — a legal-reasoning answer whose gist was right but which added an unsupported claim.
+
+**Conclusion:** the LLM-judge tracks a human at κ = 0.92 — strong enough to headline. Limitation: a
+**single** creator-annotator (no second rater, so κ is judge-vs-creator, not inter-human); a second
+independent annotator on the same n=80 CSV remains a nice-to-have for camera-ready. Artifacts:
+`workspace_local/audit/baselines/judge_validation.csv` (filled) + `judge_validation.key.jsonl` (verdicts).
+
+### 9.1 Remaining path to paper-grade
 
 This v0.9 set is a **reference baseline**, captioned **indicative**. Before a camera-ready paper claim:
 
@@ -210,8 +240,8 @@ This v0.9 set is a **reference baseline**, captioned **indicative**. Before a ca
 - **Add 1-2 models** (e.g. `gpt-5-mini`, an open Qwen) to show the spread. Orthogonal — just another runner
   invocation and eval.
 - **Add dense / hybrid RAG** alongside BM25 (the v0.7 retrieval diagnostics tooling already exists).
-- **Human-validate the eval** on a stratified sample (separate v0.9 Priority 0.2), and note that
-  `contains_all` scoring can over-credit partial matches.
+- ~~**Human-validate the eval** on a stratified sample~~ — **DONE (§9.0)**: n=80, agreement 96.2 %,
+  κ=0.924. Optional follow-up: a second independent annotator on the same CSV.
 - **Hidden-split baselines** run only through the local non-data-sharing model (`gemma4:12b`), never an
   OpenAI data-sharing tier.
 
