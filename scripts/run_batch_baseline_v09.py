@@ -54,8 +54,8 @@ def load_jsonl(p: Path) -> list[dict]:
         return [json.loads(l) for l in f if l.strip()]
 
 
-def track_path(model: str) -> Path:
-    return B / f"batch_track_{safe(model)}.json"
+def track_path(model: str, suffix: str = "") -> Path:
+    return B / f"batch_track_{safe(model)}{suffix}.json"
 
 
 # --------------------------------------------------------------------------- submit
@@ -65,7 +65,7 @@ def submit(args) -> int:
     requests: list[dict] = []
     counts: dict = defaultdict(int)
     for reg in regimes:
-        pf = PROMPTS[reg]
+        pf = Path(args.prompt_file) if getattr(args, "prompt_file", None) else PROMPTS[reg]
         if not pf.exists():
             raise SystemExit(f"missing prompt file for regime {reg}: {pf}")
         for rec in load_jsonl(pf):
@@ -124,18 +124,18 @@ def submit(args) -> int:
               "Nothing uploaded; no batch created; no tracking file written.")
         return 0
 
-    track_path(args.model).write_text(json.dumps(
+    track_path(args.model, getattr(args, 'track_suffix', '') or '').write_text(json.dumps(
         {"model": args.model, "regimes": regimes, "max_output_tokens": args.max_output_tokens,
          "reasoning": args.reasoning, "counts": dict(counts), "batches": batches},
         ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"[ok] submitted {len(requests)} requests in {len(batches)} batch(es); "
-          f"track: {track_path(args.model).name}. Check: status; then fetch when completed.")
+          f"track: {track_path(args.model, getattr(args, 'track_suffix', '') or '').name}. Check: status; then fetch when completed.")
     return 0
 
 
 # --------------------------------------------------------------------------- status
 def status(args) -> int:
-    tp = track_path(args.model)
+    tp = track_path(args.model, getattr(args, 'track_suffix', '') or '')
     if not tp.exists():
         raise SystemExit(f"no tracking file: {tp} (submit first)")
     track = json.loads(tp.read_text(encoding="utf-8"))
@@ -151,7 +151,7 @@ def status(args) -> int:
 
 # --------------------------------------------------------------------------- fetch
 def fetch(args) -> int:
-    tp = track_path(args.model)
+    tp = track_path(args.model, getattr(args, 'track_suffix', '') or '')
     if not tp.exists():
         raise SystemExit(f"no tracking file: {tp}")
     track = json.loads(tp.read_text(encoding="utf-8"))
@@ -207,8 +207,9 @@ def fetch(args) -> int:
     for key in sorted(set(bucket) | set(errbucket)):
         reg, split = key.split("__", 1)
         items, errs = bucket.get(key, []), errbucket.get(key, [])
-        out = B / f"{reg}_{model_label}_{split}.jsonl"
-        calls = B / f"{reg}_{model_label}_{split}.calls.jsonl"
+        suffix = getattr(args, "out_suffix", "") or ""
+        out = B / f"{reg}_{model_label}_{split}{suffix}.jsonl"
+        calls = B / f"{reg}_{model_label}_{split}{suffix}.calls.jsonl"
         with out.open("w", encoding="utf-8") as of, calls.open("w", encoding="utf-8") as cf:
             for qa_id, pred, usage in items:
                 of.write(json.dumps({"qa_id": qa_id, "prediction": pred}, ensure_ascii=False) + "\n")
@@ -241,10 +242,21 @@ def main() -> int:
     sp.add_argument("--reasoning", choices=["auto", "on", "off"], default="auto")
     sp.add_argument("--dry-run", action="store_true", help="build the input JSONL only; no upload/batch")
     sp.add_argument("--limit", type=int, default=None, help="cap requests (smoke-test the live batch cycle)")
+    sp.add_argument("--prompt-file", default=None,
+                    help="override the prompt file for the listed regime(s) (use with a single regime, "
+                         "e.g. the HUG-injected fc subset)")
+    sp.add_argument("--track-suffix", default="",
+                    help="suffix for the tracking file so a partial re-run does not clobber the main "
+                         "run's tracking (use the same suffix on status/fetch)")
     sp.set_defaults(fn=submit)
     for name in ("status", "fetch"):
         q = sub.add_parser(name)
         q.add_argument("--model", required=True)
+        q.add_argument("--track-suffix", default="", help="match the suffix used at submit")
+        if name == "fetch":
+            q.add_argument("--out-suffix", default="",
+                           help="suffix for output filenames so a partial re-run (e.g. the HUG fix) "
+                                "writes to a separate file instead of clobbering the full results")
         q.set_defaults(fn={"status": status, "fetch": fetch}[name])
     args = ap.parse_args()
     return args.fn(args)
