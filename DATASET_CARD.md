@@ -110,8 +110,8 @@ Do not use this benchmark to provide legal, financial, or housing eligibility ad
 
 ## Citation
 
-If you use this benchmark, cite the **v0.9 release** by the concept DOI (always resolves to the latest
-version; the v0.9 versioned DOI is minted on the GitHub release):
+If you use this benchmark, cite the **v0.9 release** by its Zenodo versioned DOI (or use the concept DOI to
+always cite the latest version):
 
 ```bibtex
 @dataset{lee_kr_housing_longrag_bench_2026,
@@ -120,14 +120,14 @@ version; the v0.9 versioned DOI is minted on the GitHub release):
   year      = {2026},
   version   = {v0.9 (split consolidation + release-grade baselines; 1,997 QA)},
   publisher = {Zenodo},
-  doi       = {10.5281/zenodo.20559127},
-  url       = {https://doi.org/10.5281/zenodo.20559127},
+  doi       = {10.5281/zenodo.20640480},
+  url       = {https://doi.org/10.5281/zenodo.20640480},
   note      = {v0.9 merges the former test_hidden split into test_public (389) and adds release-grade baselines; same 1,997 QA as v0.8.}
 }
 ```
 
-DOI state: the concept DOI `10.5281/zenodo.20559127` always resolves to the latest version; the v0.9
-versioned DOI is minted by Zenodo on the GitHub release. Prior versioned DOIs: v0.8 `10.5281/zenodo.20571211`, v0.7 `10.5281/zenodo.20570856`,
+DOI state: the v0.9 versioned DOI is `10.5281/zenodo.20640480` (Zenodo, 2026-06-11); the concept DOI
+`10.5281/zenodo.20559127` always resolves to the latest version. Prior versioned DOIs: v0.8 `10.5281/zenodo.20571211`, v0.7 `10.5281/zenodo.20570856`,
 v0.6.3 dataset build `10.5281/zenodo.20563604` (the v0.7 release reuses that v0.6 data).
 
 Machine-readable citation metadata is provided in `CITATION.cff`.

@@ -17,13 +17,16 @@ version: v0.9
 date-released: 2026-06-11
 license: CC-BY-4.0
 repository-code: "https://github.com/comsa33/kr-housing-longrag-bench"
-# doi below is the concept DOI (resolves to the latest version). The v0.9 versioned DOI is minted by
-# Zenodo on the GitHub release and is appended to identifiers post-publication. Prior versioned DOIs below.
-doi: "10.5281/zenodo.20559127"
+# doi below is the v0.9 versioned DOI (this release). The concept DOI (resolves to the latest version)
+# and prior versioned DOIs (v0.8, v0.7, v0.6.3) are listed under identifiers.
+doi: "10.5281/zenodo.20640480"
 identifiers:
   - type: doi
+    value: "10.5281/zenodo.20640480"
+    description: "Versioned DOI for this v0.9 release (split consolidation + release-grade baselines)."
+  - type: doi
     value: "10.5281/zenodo.20559127"
-    description: "Concept DOI (all versions; resolves to the latest). v0.9 versioned DOI minted on release."
+    description: "Concept DOI (all versions; resolves to the latest)."
   - type: doi
     value: "10.5281/zenodo.20571211"
     description: "Versioned DOI for the prior v0.8 human-review repair release."
