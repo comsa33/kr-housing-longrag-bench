@@ -19,8 +19,10 @@ v0.6 build** — the v0.7 "v0.6 unchanged" description no longer applies. See `C
 `docs/dataset_statistics_v08.md`.
 
 Canonical v0.6 files: `data/qa_v0.6_realistic_candidates.jsonl` (full set, realism + cluster + bundle
-metadata) and the release splits `data/qa_v0.6_dev.jsonl` / `data/qa_v0.6_test_public.jsonl` /
-`data/qa_v0.6_test_hidden_questions.jsonl` (answers masked). Scoring: `scripts/eval_harness_v06.py`
+metadata) and the release splits `data/qa_v0.6_dev.jsonl` (1,608) / `data/qa_v0.6_test_public.jsonl` (389,
+answers included). **v0.9: the former `test_hidden` split (285) was merged into `test_public`** — a larger
+public held-out test (389) is more valuable than a sealed set we cannot serve; the merged items keep their
+`split_tags` so the `ood_region` (116) and `ood_year` (50) subsets remain reportable. Scoring: `scripts/eval_harness_v06.py`
 (plain + cluster-weighted accuracy). `data/qa_v0.5_candidates.jsonl` is the pre-realism build (same
 qa_ids/answers; input to the realism pass).
 
@@ -49,13 +51,15 @@ published; those stay internal under `workspace_local/` (`docs/repository_scope_
 
 **Scope: public-ready seed benchmark, NOT leaderboard-ready.** The v0.8 human-review build regenerated all
 positional-cloze into natural questions (cloze 34% → 0%; real_user+analyst → 100%) and fixed location/answer
-errors, on top of the v0.6 quality pass that materialized multi-provider long-context bundles and defined splits. Release files: `data/qa_v0.6_dev.jsonl`,
-`data/qa_v0.6_test_public.jsonl`, `data/qa_v0.6_test_hidden_questions.jsonl` (answers masked).
+errors, on top of the v0.6 quality pass that materialized multi-provider long-context bundles and defined splits. Release files: `data/qa_v0.6_dev.jsonl` (1,608),
+`data/qa_v0.6_test_public.jsonl` (389, answers included).
 
-Hidden-split policy: the `test_hidden` split is **not a sealed leaderboard hidden set**. The release split
-file masks answers, sets gold predicates to `null`, and leaves gold row ids empty. GitHub also includes a
-canonical full-label file for audit/development, so a true leaderboard benchmark would need a separate
-held-out harness. Honest caveats: v0.8 human review was **LLM-assisted (gpt-5.4 + Claude cross-model), not a full human
+Split policy (v0.9): there is **no hidden split**. The earlier `test_hidden` (285) was **not a sealed
+leaderboard set** (its policy already disclaimed that), so it was merged into `test_public` to give a
+properly-sized public held-out test (389) — including 124 items at the 512k tier and the `ood_region` /
+`ood_year` generalization subsets. A future release can re-carve a sealed hidden split from grown data if a
+leaderboard is ever stood up; `scripts/make_v06_splits.py` still supports a `test_hidden` split when present.
+Honest caveats: v0.8 human review was **LLM-assisted (gpt-5.4 + Claude cross-model), not a full human
 pass**; question phrasing is now natural (real_user 64%, real_user+analyst 100%, cloze ≈ 0%); parametric
 near-duplicates exist but are clustered (1,997 QA → 282 clusters) and the eval harness reports
 cluster-weighted accuracy so repetition does not inflate scores; some providers contribute few

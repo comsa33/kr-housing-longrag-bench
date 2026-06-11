@@ -1,5 +1,29 @@
 # Changelog
 
+## v0.9 — split consolidation + release-grade baselines (in progress)
+
+Same 1,997 QA and schema as v0.8; this is a split-policy + evaluation change, not a content rebuild.
+
+### Changed
+- **`test_hidden` (285) merged into `test_public`** → a single public held-out test of **389** (dev stays
+  1,608). The former hidden split was never a sealed leaderboard set (its policy already said so), and a
+  larger public test is more valuable than a sealed set we cannot serve. Announcement-level dev↔test
+  disjointness is preserved (leakage = 0, `verify_qa.py`). The 512k tier grows 41 → **124**, and the
+  `ood_region` (116) / `ood_year` (50) generalization subsets are retained via `split_tags`. A future
+  release can re-carve a sealed hidden split from grown data; `make_v06_splits.py` still supports one.
+
+### Removed
+- `data/qa_v0.6_test_hidden_questions.jsonl` (masked-answer hidden file) — no longer a separate split.
+
+### Added (evaluation, see `docs/baseline_results_v09.md`)
+- Release-grade baselines: 5 models × 3 regimes (closed-book / RAG-BM25 / full-context) via the OpenAI
+  Batch API, **LLM-judge headline metric human-validated** (n=80, agreement 96.2 %, Cohen's κ=0.924).
+- **HUG bundle fix (dataset level):** `mix_multiprovider_512k` — the bundle every `cross_source_aggregation`
+  item references — now **embeds the complete HUG sale-history table** (`build_bundles_v06.py`), so these
+  questions are answerable in the full-context regime instead of being an unanswerable artifact. The fix
+  turns the 512k tier into a real capability signal (gpt-5.5 76% vs gpt-4.1-mini 20% at n=25). Only that one
+  bundle changed on rebuild; the other 166 are byte-identical.
+
 ## v0.8 — human-review repair build (1,997 QA)
 
 Supersedes the v0.6 dataset build. The v0.7 release falsely described the data as "v0.6 unchanged"; v0.8

@@ -15,7 +15,9 @@ Repository/package boundaries are governed by `docs/repository_scope_policy.md`.
   unrepairable items; was 2,011 in the v0.6/v0.7 build).
 - 41 official announcements; 10 announcement providers; 9 announcement 시도; 12 task families.
 - 282 effective near-duplicate clusters; cluster-weighted accuracy is the headline metric.
-- Public split files (dev 1,608 / test_public 104 / test_hidden 285) with masked hidden questions.
+- Public split files: **published v0.8** = dev 1,608 / test_public 104 / test_hidden 285 (masked); the
+  **v0.9 branch** merges `test_hidden` into `test_public` → dev 1,608 / **test_public 389**, no hidden split
+  (not yet released).
 - Hugging Face `load_dataset()` verified; the dataset viewer serves the v0.8 parquet conversion.
 - GitHub CI green; Zenodo versioned DOI `10.5281/zenodo.20571211` (concept `10.5281/zenodo.20559127`).
 
@@ -164,11 +166,42 @@ validation), clean up v0.8 carry-overs, then reduce seed-benchmark limitations.
 
 **Priority 0 — carried forward from v0.7/v0.8 (do these first):**
 
-1. **Release-grade baseline result tables.** Run ≥3 real systems (e.g. a strong full-context LLM, a
-   BM25/dense/hybrid RAG, and a table/tool pipeline) on fixed splits; report plain + cluster-weighted
-   accuracy cut by split / task_type / context_tier / evidence_position / question_style. Record model ids,
-   context limits, retrieval settings, cost, and date. This is what makes a benchmark paper compelling and
-   is the single highest-leverage next task.
+1. **Release-grade baseline result tables.** ▶ **DONE (2026-06-11)** — see
+   [`docs/baseline_results_v09.md`](baseline_results_v09.md) §8: 4 OpenAI models (gpt-4.1-mini, **gpt-5.5
+   winner**, gpt-5.4-mini/nano) × 3 regimes via OpenAI Batch, headline = **LLM-judge**.
+   Key result: the legacy `contains_all` metric systematically undercounts and fabricated a FALSE
+   "512k collapse" (0% → judge 42%); no collapse exists. Gating status:
+   **(a) ✅ LLM-judge validated** vs human (n=80, agreement 96.2 %, κ=0.924, §9.0);
+   **(b) ✅ test_public reported separately** (§8.5) and **the former `test_hidden` (285) merged into
+   `test_public` → 389** (no hidden split; no local-model leg needed);
+   **(c) open-weights leg DEFERRED — NOT a release blocker.** Policy: v0.9 ships without an open-weight
+   baseline; `minimax-m3:cloud` is labelled **hosted cloud** ("soon to be open-sourced" ≠ open-weight); when
+   public weights ship, add the open-weight baseline in **v0.9.1 / a paper appendix** with pinned
+   revision/license/context, run on the same `test_public` 389. A genuinely open-weights model must be
+   selected by **verifying live availability** (not asserted from a stale knowledge cutoff). Full policy +
+   disclaimer text in `docs/baseline_results_v09.md` §4;
+   **(d) ✅ HUG cross_source full-context fix applied** (20 items, §8.6) — both prompt-level (released runs)
+   **and at the dataset level** (`build_bundles_v06.py` now embeds the HUG table in `mix_multiprovider_512k`);
+   **(e) optional dense/hybrid RAG**; **(f) grow the dataset LAST**.
+   ⚠️ Cost: the multi-model run cost far more than the single-model `~$5.5` estimate — one day booked **~$148**
+   (gpt-5.5 reasoning output is the driver; never re-run gpt-5.5 on cb/rag — see baseline §5).
+   *Original pilot design notes follow (superseded).* A fixed, seeded, stratified pilot sample
+   (`scripts/build_baseline_sample_v09.py`, seed `20260610`: test_public 104 + dev 200 stratified over all
+   12 task families, cluster-deduplicated; 304 items) was used to bring up the pipeline; the headline runs
+   cover the **full** dev + **389-item** test_public. Regimes — closed-book (locator-only, v0.7 floor),
+   **full-context**, **RAG (BM25)**; the verified context-window finding: `gpt-4.1-mini`
+   (**1M context, ingests our 393k-token 512k tier**, whereas gpt-4o-mini's 128k window rejects it) and
+   gpt-5.5 cover 512k, while the gpt-5.4 family caps at 272k. Full-context is the cost driver, so the giant tiers are capped
+   (`512k→12`, `256k→16` ⇒ 116 full-context-eligible items; RAG/closed-book run all 304) to land at
+   **≈$5.5** on the OpenAI leg (full-context ~$4.5 + RAG ~$1; measured at ~2.45 chars/token); the local
+   leg is $0. Report plain + cluster-weighted accuracy cut by
+   split / task_type / context_tier / question_style; record model ids, context limits, retrieval settings,
+   cost, and date. **Extensible by design** (see the doc): the sample draw is seed-nested, so raising a
+   tier cap is purely additive and `--resume` re-runs only new items; adding a model is orthogonal; and the
+   local (non-data-sharing) gemma leg is the path to eventual hidden-split baselines. For the paper this
+   v0.9 set is captioned **indicative/reference** — before camera-ready, lift the 512k/256k caps (tighter
+   CIs), add 1-2 models (gpt-5-mini / Qwen), and add dense/hybrid RAG. This is the single
+   highest-leverage next task.
 2. **Human-validation sample.** A 10-20% stratified sample (plus 100% of high-risk legal/multi-document
    items) reviewed by a human, with inter-annotator agreement reported. Upgrades the card from
    "LLM-assisted" toward "human-validated."

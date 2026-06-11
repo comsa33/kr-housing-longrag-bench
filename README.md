@@ -16,7 +16,8 @@ tabular data (MOLIT 실거래 / HUG 분양이력), and housing statutes.
   source-grounded questions, fixes location/answer errors, and removes 14 unrepairable items; it supersedes
   the v0.6 build (the v0.7 "v0.6 unchanged" description no longer applies). See `CHANGELOG.md`.
 - **Canonical file:** `data/qa_v0.6_realistic_candidates.jsonl`. Splits: `data/qa_v0.6_dev.jsonl` (1,608),
-  `data/qa_v0.6_test_public.jsonl` (104), `data/qa_v0.6_test_hidden_questions.jsonl` (285, answers masked).
+  `data/qa_v0.6_test_public.jsonl` (389, answers included). v0.9 merged the former `test_hidden` (285) into
+  `test_public`; `split_tags` mark the `ood_region` (116) / `ood_year` (50) generalization subsets.
 - **Quickstart:** [`docs/quickstart_v06.md`](docs/quickstart_v06.md) · **Stats:**
   [`docs/dataset_statistics_v08.md`](docs/dataset_statistics_v08.md) · **Baselines:**
   [`docs/baseline_protocol_v06.md`](docs/baseline_protocol_v06.md) · **License:** [`LICENSE`](LICENSE) ·
@@ -33,7 +34,7 @@ built over **41 official announcements** from 10 providers (LH, SH, GH, iH, JPDC
 광주광역시도시공사, 대구도시개발공사, 대전도시공사, 충북개발공사), plus MOLIT 실거래 / HUG 분양이력
 tabular data and 3 housing statutes. It includes real table cell-grid QA, public-data predicate QA,
 provider/region comparisons, eligibility/schedule items, answerability checks, and announcement-level
-splits (`dev`/`test_public`/`test_hidden`) with split leakage verified at 0.
+splits (`dev`/`test_public`) with announcement-level leakage verified at 0.
 (`data/qa_v0.5_candidates.jsonl` is the pre-realism input build — same qa_ids/answers.)
 
 The v0.8 human-review build regenerated all positional-cloze ("X 다음 값" / [위치 탐침]) questions into
@@ -41,19 +42,20 @@ natural source-grounded questions or removed them (cloze-phrased 34% → ~0%; `q
 real_user/professional_analyst, real_user+analyst 100%), and fixed location/answer errors — on top of the
 v0.6 quality pass that materializes **multi-provider** long-context bundles (32k–512k), clusters parametric
 near-duplicates (1,997 → 282 clusters) for cluster-weighted scoring, and defines a release split policy.
-Public release splits: `data/qa_v0.6_dev.jsonl` (1,608), `data/qa_v0.6_test_public.jsonl` (104), and
-`data/qa_v0.6_test_hidden_questions.jsonl` (285, answers masked).
+Public release splits: `data/qa_v0.6_dev.jsonl` (1,608) and `data/qa_v0.6_test_public.jsonl` (389, answers
+included); v0.9 merged the former `test_hidden` (285) into `test_public` (no sealed split — it was never a
+leaderboard hidden set), retaining `ood_region`/`ood_year` subsets via `split_tags`.
 See `CHANGELOG.md` and `docs/dataset_statistics_v08.md`.
 
 **Scope claim — read carefully.** This is a **public-ready seed benchmark**. CI runs the public-safe gates
 on every push/PR (`validate_dataset.py`, `check_public_release_readiness.py` → `public-ready`, realism +
 surface scans, harness self-test, `py_compile`). The full grounding/recompute gate (`verify_qa.py`,
 1,997/1,997) runs **locally** against the rebuilt internal corpus and self-skips on a clean checkout where
-that corpus is absent. It is **not a leaderboard-ready or sealed-hidden benchmark**: v0.8 human review was LLM-assisted (gpt-5.4 + Claude cross-model), not a full human pass, the `test_hidden` split is not served by a held-out harness, question phrasing skews
+that corpus is absent. It is **not a leaderboard-ready or sealed-hidden benchmark**: v0.8 human review was LLM-assisted (gpt-5.4 + Claude cross-model), not a full human pass, there is no sealed hidden split (the former `test_hidden` was merged into the public test), question phrasing skews
 analyst-style, and parametric near-duplicates exist (clustered for cluster-weighted scoring). For audit
 and development, GitHub includes the canonical full-label file `data/qa_v0.6_realistic_candidates.jsonl`;
-for public evaluation or Hugging Face loading, use the release split files where
-`data/qa_v0.6_test_hidden_questions.jsonl` masks hidden answers. No "perfect" or "hallucination-free"
+for public evaluation or Hugging Face loading, use the release split files (`dev`, `test_public`, all answers
+included). No "perfect" or "hallucination-free"
 claim is made — only what the gates verify.
 
 To **run** the benchmark with full long-context bundles, reconstruct the internal context locally from
@@ -170,8 +172,8 @@ Use `workspace_local/` for that work:
 Canonical v0.6 data:
 
 - `data/qa_v0.6_realistic_candidates.jsonl`: **canonical full set** (1,997 QA; realism + cluster + bundle metadata)
-- `data/qa_v0.6_dev.jsonl` / `data/qa_v0.6_test_public.jsonl`: release splits with answers
-- `data/qa_v0.6_test_hidden_questions.jsonl`: hidden split, answers masked (`answer="[HELD OUT]"`; gold fields null/empty)
+- `data/qa_v0.6_dev.jsonl` (1,608) / `data/qa_v0.6_test_public.jsonl` (389): release splits, all answers included
+  (v0.9 merged the former `test_hidden` into `test_public`; `split_tags` keep the `ood_region`/`ood_year` subsets)
 - `data/qa_v0.6_prompts.jsonl`: locator-only prompt inputs (generated by `make_prompt_v06.py`)
 - `data/qa_v0.5_candidates.jsonl`: pre-realism input build (same qa_ids/answers)
 - `data/source_manifest.jsonl`: source registry with access URL, license basis, and inclusion policy
