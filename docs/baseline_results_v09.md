@@ -64,8 +64,13 @@ The cap is a **cost-control choice, not a structural limit**. Because the draw i
 **not** embed → unanswerable in the full-context regime (a benchmark-construction artifact, §8.6). The fix is
 applied **at the prompt level to the cross_source full-context items only** (the original 4 + the 16 the merge
 added at 512k = 20 prompts): the 624 HUG rows are injected as a compact in-bundle table by
-`scripts/fix_fc_hug_bundle_v09.py`. Non-cross_source full-context prompts are unchanged, and the **canonical
-dataset bundles still lack HUG** (rebuilding them so HUG is embedded by default is deferred dataset work).
+`scripts/fix_fc_hug_bundle_v09.py`. Non-cross_source full-context prompts are unchanged. **The canonical
+bundle now embeds HUG by default:** `scripts/build_bundles_v06.py` includes the complete 623-row HUG table as
+a guaranteed component of `mix_multiprovider_512k` (the bundle every cross_source item references), verified
+to reproduce all four golds. So the prompt-level patch above is **redundant for bundles rebuilt from the
+current script** — it remains documented because the *released* baseline predictions were produced with the
+equivalent prompt-level injection (identical row content). Only `mix_multiprovider_512k` changed on rebuild;
+the other 166 bundles are byte-identical.
 
 ## 4. Models
 
@@ -305,8 +310,9 @@ gpt-4.1-mini is unchanged. The other 8 512k items were left byte-identical, so t
 
 The **test_public extension** (§8.5) added 16 more cross_source items at 512k, so the **same prompt-level HUG
 fix was re-applied to all 20** (4 + 16). On the held-out 512k tier (now n=25) the result holds with real
-power: **gpt-5.5 76%** vs **gpt-4.1-mini 20%** — same separation, more items. The fix is **prompt-level only**;
-the canonical dataset bundles still lack HUG (a default-embed rebuild is deferred dataset work, §3).
+power: **gpt-5.5 76%** vs **gpt-4.1-mini 20%** — same separation, more items. The released predictions used a
+**prompt-level** injection, and the **canonical bundle now embeds the same HUG table by default** (§3), so the
+fix is permanent for future rebuilds.
 
 > Caveats: LLM-judge is **human-validated** (§9.0: n=80, agreement 96.2 %, κ=0.924); §8.1–8.2 pool dev+test_public for power, with test_public broken out in §8.5 (now n=389, fc n=105); full-context rests on tier-capped subsets (§3) with the HUG-bundle fix applied to the **20** cross_source items at 512k (§8.6); gpt-5.5 cb/rag had ~93 quota-failed items (re-run pending — but cb/rag re-runs are gpt-5.5's cost driver, §5); no open-weights model is reported (leg deferred, §4).
 
@@ -346,9 +352,10 @@ This v0.9 set is a **reference baseline**, captioned **indicative**. Before a ca
 
 - ~~**Run baselines on the enlarged `test_public`**~~ — **DONE (§8.5)**: cb/rag extended to all 389, fc to a
   tier-capped n=105 (incl. 25 at 512k), HUG-fix re-applied to the 16 merged cross_source items. The held-out
-  split now carries the headline with tight CIs and confirms the 512k finding at n=25. Remaining: optionally
-  rebuild canonical bundles so cross_source embeds HUG by default (this run patched prompts), and re-run the
-  ~93 quota-failed gpt-5.5 cb items.
+  split now carries the headline with tight CIs and confirms the 512k finding at n=25. The canonical
+  `mix_multiprovider_512k` bundle now **embeds HUG by default** (§3/§8.6), so the cross_source artifact is
+  fixed at the dataset level too. The ~73 quota-failed gpt-5.5 cb items are being filled (gpt-5.5 cb is the
+  cost driver, so this is the only remaining gpt-5.5 spend).
 - **Lift the 512k/256k caps** so long-context-degradation claims rest on more than ~12 items per tier
   (tighter confidence intervals). Additive on this exact sample, and the merge already supplies the items.
 - **Add a genuinely open-weights model** for the reproducibility/spread leg (§4). The earlier `minimax-m3:cloud`

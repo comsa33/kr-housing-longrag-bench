@@ -18,8 +18,11 @@ Same 1,997 QA and schema as v0.8; this is a split-policy + evaluation change, no
 ### Added (evaluation, see `docs/baseline_results_v09.md`)
 - Release-grade baselines: 5 models × 3 regimes (closed-book / RAG-BM25 / full-context) via the OpenAI
   Batch API, **LLM-judge headline metric human-validated** (n=80, agreement 96.2 %, Cohen's κ=0.924).
-- HUG-bundle fix: the 4 cross_source 512k full-context items now embed the HUG table, turning an
-  unanswerable artifact into a real capability signal (gpt-5.5 4/4 vs gpt-4.1-mini 0/4).
+- **HUG bundle fix (dataset level):** `mix_multiprovider_512k` — the bundle every `cross_source_aggregation`
+  item references — now **embeds the complete HUG sale-history table** (`build_bundles_v06.py`), so these
+  questions are answerable in the full-context regime instead of being an unanswerable artifact. The fix
+  turns the 512k tier into a real capability signal (gpt-5.5 76% vs gpt-4.1-mini 20% at n=25). Only that one
+  bundle changed on rebuild; the other 166 are byte-identical.
 
 ## v0.8 — human-review repair build (1,997 QA)
 

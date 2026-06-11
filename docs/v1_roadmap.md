@@ -176,8 +176,9 @@ validation), clean up v0.8 carry-overs, then reduce seed-benchmark limitations.
    `test_public` → 389** (no hidden split; no local-model leg needed);
    **(c) open-weights leg DEFERRED** — `minimax-m3:cloud` is hosted (weights unreleased as of 2026-06), so it
    does NOT qualify; a genuinely open-weights model is to be selected by verifying live availability;
-   **(d) ✅ HUG cross_source full-context fix applied** at the prompt level (20 items, §8.6) — canonical
-   bundle rebuild still pending; **(e) optional dense/hybrid RAG**; **(f) grow the dataset LAST**.
+   **(d) ✅ HUG cross_source full-context fix applied** (20 items, §8.6) — both prompt-level (released runs)
+   **and at the dataset level** (`build_bundles_v06.py` now embeds the HUG table in `mix_multiprovider_512k`);
+   **(e) optional dense/hybrid RAG**; **(f) grow the dataset LAST**.
    ⚠️ Cost: the multi-model run cost far more than the single-model `~$5.5` estimate — one day booked **~$148**
    (gpt-5.5 reasoning output is the driver; never re-run gpt-5.5 on cb/rag — see baseline §5).
    *Original pilot design notes follow (superseded).* A fixed, seeded, stratified pilot sample
