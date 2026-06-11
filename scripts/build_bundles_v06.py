@@ -75,6 +75,31 @@ def row_block_components() -> list:
     return out
 
 
+def hug_block_component() -> dict:
+    """The complete HUG (주택도시보증공사) sale-history table as ONE guaranteed component.
+
+    `cross_source_aggregation` questions aggregate over this table (count / avg TOT_HOCO by 지역·연도), so the
+    bundle must embed it COMPLETELY (a partial/padding-truncated copy would change the count). Included
+    verbatim and in full in the multi-provider mix bundle, never as a paddable distractor.
+    """
+    rows = sorted(C.hug_rows(), key=lambda r: (r.get("_query_area_name", ""), r.get("_query_year", ""), r.get("_row_id", "")))
+    lines = [
+        "===== [참고자료] HUG 분양이력 자료 (주택도시보증공사, 분양보증 발급 사업장) =====",
+        f"총 {len(rows)}개 사업장. 각 행 = 분양 사업장 1건. ‘분양 사업장 건수’는 해당 지역·연도 행의 개수이고, "
+        "‘평균 총세대수(TOT_HOCO)’는 그 행들의 총세대수 평균입니다.",
+        "지역 | 연도 | 사업장명 | 총세대수(TOT_HOCO) | 일반분양세대(GNRL_SILT_HOCO)",
+    ]
+    for r in rows:
+        lines.append(" | ".join([
+            r.get("_query_area_name", ""), r.get("_query_year", ""),
+            r.get("BSU_NM", ""), str(r.get("TOT_HOCO", "")), str(r.get("GNRL_SILT_HOCO", "")),
+        ]))
+    lines.append("===== [참고자료 끝] =====")
+    text = "\n".join(lines) + "\n"
+    return {"type": "hug_sale_history_rows", "id": "hug_sale_history_block", "ann": None,
+            "text": text, "tokens": toks(text)}
+
+
 DISTRACTORS: list = []
 
 
@@ -159,7 +184,12 @@ def build():
         if not added:
             break
         i += 1
-    manifest.append(assemble("mix_multiprovider_512k", "512k", "multiprovider_announcement_heavy", interleaved, TIERS["512k"]))
+    # The HUG sale-history table is embedded COMPLETE and guaranteed (not as a paddable distractor) in the
+    # 512k multi-provider mix — this is the bundle that every cross_source_aggregation item references, and
+    # its gold is computed from these rows. (Prompt-level injection in fix_fc_hug_bundle_v09.py is now
+    # redundant for bundles rebuilt from this script.)
+    hug = hug_block_component()
+    manifest.append(assemble("mix_multiprovider_512k", "512k", "multiprovider_announcement_heavy", [hug] + interleaved, TIERS["512k"]))
     manifest.append(assemble("mix_multiprovider_256k", "256k", "multiprovider_law_heavy", laws + interleaved, TIERS["256k"]))
     manifest.append(assemble("mix_multiprovider_32k", "32k", "multiprovider_compact", interleaved[:14], TIERS["32k"]))
 

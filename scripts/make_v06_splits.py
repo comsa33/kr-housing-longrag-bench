@@ -49,10 +49,14 @@ def main() -> int:
 
     write(DEV, dev)
     write(TPUB, tpub)
-    write(THID_Q, [mask(r) for r in thid])
-    write(THID_A, thid)
+    # test_hidden was merged into test_public in v0.9 (a larger public held-out test is more valuable than a
+    # sealed set we cannot serve; see DATASET_CARD). Emit hidden files only if any test_hidden rows remain
+    # (kept so a future release can re-carve a hidden split from grown data).
+    if thid:
+        write(THID_Q, [mask(r) for r in thid])
+        write(THID_A, thid)
 
-    # leakage guard: no announcement appears in more than one eval split
+    # leakage guard: no announcement may cross any two distinct splits (dev / test_public / test_hidden)
     import re
     def anns(r):
         s = set(r.get("announcement_ids", []) or [])
@@ -66,19 +70,17 @@ def main() -> int:
     for r in rows:
         for a in anns(r):
             sp = r.get("split")
-            if a in split_of_ann and split_of_ann[a] != sp and {split_of_ann[a], sp} & {"test_public", "test_hidden"} and split_of_ann[a] in ("test_public", "test_hidden") and sp in ("test_public", "test_hidden"):
-                leak.append(a)
+            if a in split_of_ann and split_of_ann[a] != sp:
+                leak.append((a, split_of_ann[a], sp))
             split_of_ann.setdefault(a, sp)
 
     print("=== v0.6 splits ===")
     print(f"  dev: {len(dev)} -> {DEV.name}")
     print(f"  test_public: {len(tpub)} -> {TPUB.name}")
-    print(f"  test_hidden: {len(thid)} (questions masked -> {THID_Q.name}; answers internal -> {THID_A.relative_to(ROOT)})")
-    # confirm masking
-    sample = json.loads(THID_Q.read_text(encoding='utf-8').splitlines()[0]) if thid else {}
-    print(f"  hidden public sample answer field: {sample.get('answer')!r} | has gold_predicate: {'gold_predicate' in sample}")
-    print(f"  cross-eval-split announcement leakage: {len(set(leak))}")
-    return 0
+    print(f"  test_hidden: {len(thid)} ({'merged into test_public (v0.9)' if not thid else 'masked -> ' + THID_Q.name})")
+    leak_anns = {a for a, _, _ in leak}
+    print(f"  cross-split announcement leakage: {len(leak_anns)}" + (f"  !! {sorted(leak)[:3]}" if leak else ""))
+    return 1 if leak else 0
 
 
 if __name__ == "__main__":
