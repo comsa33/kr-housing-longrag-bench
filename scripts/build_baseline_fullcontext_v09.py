@@ -56,6 +56,8 @@ def load_jsonl(path: Path) -> list[dict]:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default=None, help="output JSONL (must be under workspace_local/)")
+    ap.add_argument("--sample", default=None, help="tier-capped fc subset file (default: the locked "
+                    "baseline_sample_v09.fc.jsonl); pass another to extend fc to new items")
     args = ap.parse_args()
 
     out = Path(args.out).resolve() if args.out else DEFAULT_OUT
@@ -63,9 +65,10 @@ def main() -> int:
     if not out.is_relative_to(wl):
         raise SystemExit(f"--out must be under workspace_local/ (embeds bundle text). Got: {out}")
 
-    if not FC_SAMPLE.exists():
-        raise SystemExit(f"missing {FC_SAMPLE} — run scripts/build_baseline_sample_v09.py first")
-    fc = load_jsonl(FC_SAMPLE)
+    sample = Path(args.sample).resolve() if args.sample else FC_SAMPLE
+    if not sample.exists():
+        raise SystemExit(f"missing {sample} — run scripts/build_baseline_sample_v09.py first")
+    fc = load_jsonl(sample)
 
     # qa_id -> question, from the split files (the slim sample has no question text).
     q_by_id: dict[str, str] = {}
