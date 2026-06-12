@@ -1,25 +1,29 @@
 # Roadmap to v1.0
 
-Status date: 2026-06-09
+Status date: 2026-06-12
 
 This roadmap supersedes the older v0.5-centered expansion roadmap. The dataset is already public as a seed
-benchmark, and the `v0.7` (research-preview) and `v0.8` (human-review repair) milestones are **released**.
-The remaining work is to turn it into a stable, paper-grade, and eventually leaderboard-ready benchmark.
+benchmark, and the `v0.7` (research-preview), `v0.8` (human-review repair), and `v0.9`
+(split consolidation + release-grade baselines) milestones are **released**. The remaining work is to turn it
+into a stable paper submission and, later, a leaderboard-ready benchmark.
 Repository/package boundaries are governed by `docs/repository_scope_policy.md`.
 
-## 0. Current Baseline: v0.8 (released 2026-06-09)
+## 0. Current Baseline: v0.9 (released 2026-06-11/12)
 
-`v0.8` is the current public-ready seed benchmark (release lineage v0.6.3 → v0.7 → v0.8):
+`v0.9` is the current public-ready seed benchmark and publication-candidate release (release lineage
+v0.6.3 → v0.7 → v0.8 → v0.9):
 
 - 1,997 verified QA (v0.8 regenerated all positional-cloze into natural questions and removed 14
-  unrepairable items; was 2,011 in the v0.6/v0.7 build).
+  unrepairable items; v0.9 keeps the same QA set).
 - 41 official announcements; 10 announcement providers; 9 announcement 시도; 12 task families.
 - 282 effective near-duplicate clusters; cluster-weighted accuracy is the headline metric.
-- Public split files: **published v0.8** = dev 1,608 / test_public 104 / test_hidden 285 (masked); the
-  **v0.9 branch** merges `test_hidden` into `test_public` → dev 1,608 / **test_public 389**, no hidden split
-  (not yet released).
-- Hugging Face `load_dataset()` verified; the dataset viewer serves the v0.8 parquet conversion.
-- GitHub CI green; Zenodo versioned DOI `10.5281/zenodo.20571211` (concept `10.5281/zenodo.20559127`).
+- Public split files: dev 1,608 / **test_public 389**; no hidden split. The former `test_hidden` 285 was
+  merged into `test_public` because it was not a true sealed leaderboard split.
+- Hugging Face/GitHub/Zenodo surfaces have been updated for v0.9.
+- GitHub `main == develop` at the v0.9 DOI-sync state; Zenodo versioned DOI
+  `10.5281/zenodo.20640480` (concept `10.5281/zenodo.20559127`).
+- Release-grade baselines are documented in `docs/baseline_results_v09.md`: closed-book, BM25 RAG, and
+  full-context over hosted OpenAI models, scored with the human-validated LLM-judge protocol.
 
 What `v0.8` repaired (see `CHANGELOG.md`, `docs/dataset_statistics_v08.md`):
 
@@ -31,10 +35,10 @@ What `v0.8` repaired (see `CHANGELOG.md`, `docs/dataset_statistics_v08.md`):
 
 It is still **not**:
 
-- fully human-validated (only an LLM-assisted grounding pass + targeted repairs so far);
-- sealed-hidden (the hidden split is masked, not a sealed leaderboard);
+- fully human-validated end-to-end (v0.9 has an n=80 human validation sample for the LLM-judge, but not a
+  full multi-annotator review of every QA item);
+- sealed-hidden (there is no hidden split in v0.9);
 - leaderboard-ready;
-- supported by release-grade model baseline tables (only v0.7 smoke diagnostics exist);
 - large enough for a strong v1.0 benchmark-paper claim.
 
 The `v0.7` baseline scaffold and smoke diagnostics remain available (provider-agnostic runner for OpenAI,
@@ -66,12 +70,12 @@ Avoid these claims:
 |---|---|---|---|
 | `v0.7` | Baseline scaffold + reproducible prediction protocol (smoke-level) | public research preview | ✅ released 2026-06-06 |
 | `v0.8` | QA quality repair (cloze regen + location/answer fixes; LLM-assisted review) | human-review repair build | ✅ released 2026-06-09 |
-| `v0.9` | Real baseline result tables + human-validation sample + source/QA expansion | paper-candidate dataset | ▶ next |
-| `v1.0` | Stable schema, sealed hidden protocol, baseline paper tables | paper-grade benchmark | planned |
+| `v0.9` | Split consolidation + release-grade baseline tables + LLM-judge validation sample | publication-candidate dataset | ✅ released 2026-06-11/12 |
+| `v1.0` | Stable schema, sealed hidden protocol, baseline tables | publication-grade benchmark | planned |
 
 Note: the original plan put "real baseline experiments" in v0.7 and "human review sign-off" in v0.8. In
 practice v0.7 shipped only smoke-level diagnostics and v0.8's review was LLM-assisted, so **release-grade
-baseline tables and a true human-validation sample are both carried forward into v0.9** (Sections 3-5).
+baseline tables and an LLM-judge human-validation sample were delivered in v0.9** (Sections 3-5).
 
 ## 3. v0.7: Baseline Experiments and Packaging — ✅ RELEASED (2026-06-06)
 
@@ -306,20 +310,17 @@ The boundary is detailed in `docs/repository_scope_policy.md`.
 
 ## 9. Immediate Next Tasks
 
-`v0.7` and `v0.8` are released; `main == develop` at the v0.8 DOI-sync state. Recommended order:
+`v0.9` is released and `main == develop` at the DOI-sync state. Recommended order:
 
-1. **Stand up release-grade baselines (Section 5, Priority 0.1).** Pick 3-5 systems and a fixed evaluation
-   slice; produce `{qa_id, prediction}` JSONL scored by `scripts/eval_harness_v06.py`; keep prompts,
-   predictions, and bundle text internal under `workspace_local/`. Draft `docs/baseline_results_v09.md`.
-   This is the highest-leverage single move.
-2. **Start a human-validation sample in parallel (Section 5, Priority 0.2)** — stratified by
-   task_type / provider / split; fill verdicts; report pass rates + inter-annotator agreement.
-3. **Clear v0.8 carry-overs (Section 5, Priority 0.3):** legal paraphrase precision (~20 items) and the
-   `region_sigungu` metadata sweep (~270 items).
-4. **Then expand** toward the v0.9 size/coverage targets (more non-LH announcements per provider,
-   underrepresented regions, better HWP/HWPX table extraction).
-5. Keep every change on `develop` behind the public-safe gates; tag a `v0.9` release (GitHub + HF + a new
-   Zenodo versioned DOI) only when baselines + validation + cleanups land and `docs/release_checklist.md`
-   passes.
-6. Defer the sealed-hidden track (Section 7) until after the v0.9 baselines; v1.0 must not claim
-   leaderboard readiness without it.
+1. **Keep manuscript and venue-planning work outside this public dataset repo.** This repository should
+   continue to hold public data, validation, release docs, and reproducible scripts only.
+2. **Maintain a private publication workspace.** Core claim: a copyright-safe Korean real-world
+   long-context/RAG benchmark over housing regulations, public announcements, public tables, and eligibility
+   rules. Preserve v0.9 caveats: no hidden split, not leaderboard-ready, no verified open-weight baseline.
+3. **Keep benchmark changes on `develop` behind public-safe gates.** Any future dataset change must pass
+   `validate_dataset.py`, `verify_qa.py`, `pre-commit`, and release-readiness checks before another tag.
+4. **Post-v0.9 optional improvements:** add a verified open-weight long-context baseline when public weights
+   and reproducible inference are actually available; lift full-context tier caps if budget permits; add a
+   second independent human annotator; expand toward the v1.0 size/coverage targets.
+5. Defer the sealed-hidden/leaderboard track (Section 7) until after the publication path is stable;
+   v1.0 must not claim leaderboard readiness without real private scoring infrastructure.
