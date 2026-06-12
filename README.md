@@ -16,22 +16,22 @@ tabular data (MOLIT 실거래 / HUG 분양이력), and housing statutes.
   merges the former `test_hidden` into `test_public` (389) and adds LLM-judge-scored baselines (§
   `docs/baseline_results_v09.md`); the underlying v0.8 build regenerated all positional-cloze questions into natural
   source-grounded questions, fixes location/answer errors, and removes 14 unrepairable items; it supersedes
-  the v0.6 build (the v0.7 "v0.6 unchanged" description no longer applies). See `CHANGELOG.md`.
-- **Canonical file:** `data/qa_v0.6_realistic_candidates.jsonl`. Splits: `data/qa_v0.6_dev.jsonl` (1,608),
+  earlier seed builds. See `CHANGELOG.md`.
+- **Canonical v0.9 file:** `data/qa_v0.6_realistic_candidates.jsonl` (historical filename retained for
+  compatibility). Splits: `data/qa_v0.6_dev.jsonl` (1,608),
   `data/qa_v0.6_test_public.jsonl` (389, answers included). v0.9 merged the former `test_hidden` (285) into
   `test_public`; `split_tags` mark the `ood_region` (116) / `ood_year` (50) generalization subsets.
-- **Quickstart:** [`docs/quickstart_v06.md`](docs/quickstart_v06.md) · **Stats:**
+- **Quickstart:** see [Quickstart / evaluation](#quickstart--evaluation) · **Stats:**
   [`docs/dataset_statistics_v08.md`](docs/dataset_statistics_v08.md) · **Baselines:**
-  [`docs/baseline_protocol_v06.md`](docs/baseline_protocol_v06.md) · **License:** [`LICENSE`](LICENSE) ·
+  [`docs/baseline_results_v09.md`](docs/baseline_results_v09.md) · **License:** [`LICENSE`](LICENSE) ·
   **Cite:** [`CITATION.cff`](CITATION.cff)
-- **Development workflow:** [`AGENTS.md`](AGENTS.md) · [`docs/agent_workflow.md`](docs/agent_workflow.md) ·
-  [`docs/v1_roadmap.md`](docs/v1_roadmap.md)
 
 This is a seed package, not a finished large-scale benchmark. It is structured so the dataset can grow into a paper-grade benchmark without redistributing copyrighted PDFs/HWPs.
 
 ## Current Release: v0.9 (split consolidation + baselines; 1,997 QA, on the v0.8 build)
 
-**Canonical set: `data/qa_v0.6_realistic_candidates.jsonl` — 1,997 verified QA** across 12 task families,
+**Canonical v0.9 set: `data/qa_v0.6_realistic_candidates.jsonl` — 1,997 verified QA**
+(historical filename retained for compatibility) across 12 task families,
 built over **41 official announcements** from 10 providers (LH, SH, GH, iH, JPDC, 부산도시공사,
 광주광역시도시공사, 대구도시개발공사, 대전도시공사, 충북개발공사), plus MOLIT 실거래 / HUG 분양이력
 tabular data and 3 housing statutes. It includes real table cell-grid QA, public-data predicate QA,
@@ -41,8 +41,8 @@ splits (`dev`/`test_public`) with announcement-level leakage verified at 0.
 
 The v0.8 human-review build regenerated all positional-cloze ("X 다음 값" / [위치 탐침]) questions into
 natural source-grounded questions or removed them (cloze-phrased 34% → ~0%; `question_style` now ∈
-real_user/professional_analyst, real_user+analyst 100%), and fixed location/answer errors — on top of the
-v0.6 quality pass that materializes **multi-provider** long-context bundles (32k–512k), clusters parametric
+real_user/professional_analyst, real_user+analyst 100%), and fixed location/answer errors — on top of prior
+quality passes that materialize **multi-provider** long-context bundles (32k–512k), clusters parametric
 near-duplicates (1,997 → 282 clusters) for cluster-weighted scoring, and defines a release split policy.
 Public release splits: `data/qa_v0.6_dev.jsonl` (1,608) and `data/qa_v0.6_test_public.jsonl` (389, answers
 included); v0.9 merged the former `test_hidden` (285) into `test_public` (no sealed split — it was never a
@@ -75,7 +75,7 @@ Scoring needs only the public files and the Python standard library (no third-pa
 
 ```bash
 # build locator-only prompt inputs (public-safe; no document text)
-python3 scripts/make_prompt_v06.py                        # -> data/qa_v0.6_prompts.jsonl
+python3 scripts/make_prompt_v06.py                        # -> data/qa_v0.6_prompts.jsonl (legacy filename)
 
 # score your predictions ({"qa_id","prediction"} JSONL); plain + cluster-weighted accuracy
 python3 scripts/eval_harness_v06.py --pred my_predictions.jsonl
@@ -86,8 +86,8 @@ python3 scripts/run_baseline_stub_v06.py                  # oracle/dummy/random/
 ```
 
 Full walkthrough (record fields, prediction format, dummy end-to-end example):
-`docs/quickstart_v06.md`. Full-context vs RAG vs table/tool protocol and trivial-baseline numbers:
-`docs/baseline_protocol_v06.md`. Count tables: `docs/dataset_statistics_v06.md`.
+`docs/quickstart_v06.md` (legacy filename, current public quickstart). Release-grade baseline results:
+`docs/baseline_results_v09.md`. Count tables: `docs/dataset_statistics_v08.md`.
 
 Optional developer setup with `uv`:
 
@@ -99,31 +99,6 @@ uv run pre-commit run --all-files
 
 The `uv` environment is for development, Hugging Face smoke tests, and local hooks. Public scoring and
 validation remain runnable with plain `python3`.
-
-## v0.7 research-preview release
-
-The `v0.7` release is a **research preview** built on the **same v0.6 dataset build (2,011 QA, unchanged;
-prior data release `v0.6.3`)**. It adds a provider-agnostic **baseline runner**, **full-context / RAG smoke
-docs**, **retrieval diagnostics**, and a **repository scope policy** — it does **not** change the dataset.
-These materials are **not** leaderboard-ready, human-validated, sealed-hidden, a final model ranking, or
-paper-grade. They run on small fixed smoke slices and are **not** a general dense-vs-BM25 conclusion. No
-raw source documents, paid-run outputs, full prompts, bundle text, predictions, provider logs, hidden gold,
-or keys are published; those stay internal under `workspace_local/` (see
-`docs/repository_scope_policy.md`).
-
-Baseline / scaffold docs — index: [`docs/baseline_results_v07.md`](docs/baseline_results_v07.md):
-
-- [`docs/baseline_results_v07.md`](docs/baseline_results_v07.md) — locator-only (closed-book) baseline + v0.7 index
-- [`docs/full_context_smoke_v07.md`](docs/full_context_smoke_v07.md) — full-context smoke (document access vs closed-book floor)
-- [`docs/rag_smoke_v07.md`](docs/rag_smoke_v07.md) — BM25 / oracle-page RAG smoke
-- [`docs/dense_hybrid_rag_smoke_v07.md`](docs/dense_hybrid_rag_smoke_v07.md) — BM25 vs dense vs hybrid retrieval comparison
-- [`docs/rag_page_diversity_diagnostics_v07.md`](docs/rag_page_diversity_diagnostics_v07.md) — page-diversity retrieval diagnostics
-- [`docs/rag_non_quote_retrieval_diagnostics_v07.md`](docs/rag_non_quote_retrieval_diagnostics_v07.md) — non-quote retrieval diagnostics
-
-Runner: `scripts/run_llm_baseline_v07.py` (provider-agnostic; outputs internal). Roadmap, scope, and
-release plan: [`docs/v1_roadmap.md`](docs/v1_roadmap.md),
-[`docs/repository_scope_policy.md`](docs/repository_scope_policy.md),
-[`docs/v0.7_release_plan.md`](docs/v0.7_release_plan.md).
 
 ## Research Framing
 
@@ -171,9 +146,9 @@ Use `workspace_local/` for that work:
 
 ## Files
 
-Canonical v0.6 data:
+Canonical v0.9 release files (historical `v0.6` filenames retained for compatibility):
 
-- `data/qa_v0.6_realistic_candidates.jsonl`: **canonical full set** (1,997 QA; realism + cluster + bundle metadata)
+- `data/qa_v0.6_realistic_candidates.jsonl`: **canonical v0.9 full set** (1,997 QA; realism + cluster + bundle metadata)
 - `data/qa_v0.6_dev.jsonl` (1,608) / `data/qa_v0.6_test_public.jsonl` (389): release splits, all answers included
   (v0.9 merged the former `test_hidden` into `test_public`; `split_tags` keep the `ood_region`/`ood_year` subsets)
 - `data/qa_v0.6_prompts.jsonl`: locator-only prompt inputs (generated by `make_prompt_v06.py`)
@@ -191,21 +166,19 @@ Scripts (scoring needs only the standard library):
 
 Docs:
 
-- `docs/quickstart_v06.md`: load → build prompts → score → baselines (with a runnable dummy example)
-- `docs/baseline_protocol_v06.md`: full-context vs RAG vs table/tool evaluation protocol (draft)
-- `docs/dataset_statistics_v06.md`: count tables (task/split/style/provider/region/bundle/cluster)
-- `docs/v0.6_quality_report.md`: realism / bundles / splits / verification report
+- `docs/quickstart_v06.md`: current public quickstart (legacy filename)
+- `docs/baseline_results_v09.md`: release-grade baseline results
+- `docs/dataset_statistics_v08.md`: current count tables (task/split/style/provider/region/bundle/cluster)
+- `docs/v0.6_quality_report.md`: historical realism / bundles / splits / verification report
 - `docs/release_checklist.md`: pre-tag gate checklist
 - `docs/source_selection_and_license_audit.md`: license and source policy
-- `docs/repository_scope_policy.md`: what belongs in this benchmark repo vs future experiment repos
-- `docs/agent_workflow.md`: Codex / Claude Code branch, verification, and handoff workflow
-- `docs/v1_roadmap.md`: post-v0.6.3 roadmap from baseline experiments to v1.0
-- `prompts/worker_corpus_build_prompt.md`: worker prompt for acquisition/license/extraction/annotation
+- `docs/repository_scope_policy.md`: benchmark repository scope and public-surface policy
 
 ## Recommended Paper Baselines
 
-See `docs/baseline_protocol_v06.md` for the full-context vs RAG vs table/tool protocol, the per-tier /
-per-position reporting cuts, and the trivial-baseline floors. Evaluate at least these systems:
+See `docs/baseline_results_v09.md` for the current release-grade baseline results and
+`docs/baseline_protocol_v06.md` for the historical full-context vs RAG vs table/tool protocol. For new
+experiments, report at least these system families:
 
 - Full-context prompting with 32K, 64K, 128K, 256K, and 512K budgets
 - BM25 RAG
