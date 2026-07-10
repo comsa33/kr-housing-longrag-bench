@@ -100,6 +100,78 @@ def hug_block_component() -> dict:
             "text": text, "tokens": toks(text)}
 
 
+def _needed_512k_refs():
+    """Scan the released QA for evidence the 512k mix bundle's items require: the specific statute
+    articles (cross_document_legal_reasoning) and MOLIT apt-trade-detail (lawd, ymd) slices
+    (cross_source_aggregation). The 512k bundle must embed these or those items are unanswerable
+    in the full-context regime (the announcement-heavy 512k mix historically dropped both, unlike
+    the 256k law-heavy mix)."""
+    import re
+    arts, molit = set(), set()
+    for fn in ("qa_v0.6_dev.jsonl", "qa_v0.6_test_public.jsonl"):
+        p = C.ROOT / "data" / fn
+        if not p.exists():
+            continue
+        for d in V2.load_jsonl(p):
+            if str(d.get("context_tier")) != "512k":
+                continue
+            ev = d.get("evidence") or []
+            if isinstance(ev, str):
+                try:
+                    ev = json.loads(ev)
+                except Exception:
+                    ev = []
+            for e in ev:
+                sid, loc = e.get("source_id", ""), e.get("locator", "")
+                if sid.startswith("law-"):
+                    m = re.search(r"제[0-9]+조(의[0-9]+)?", loc)
+                    if m:
+                        arts.add((sid, m.group(0)))
+                if "molit-apt-trade-detail[" in loc:
+                    m = re.search(r"_lawd_name=([^&\]]+).*?_deal_ymd=([0-9]+)", loc)
+                    if m:
+                        molit.add((m.group(1).strip(), m.group(2)))
+    return arts, molit
+
+
+def needed_law_components(arts) -> list:
+    """The specific statute articles the 512k items cite, as guaranteed components (not paddable)."""
+    out = []
+    by_src = {}
+    for sid, art in arts:
+        by_src.setdefault(sid, set()).add(art)
+    for sid, want in by_src.items():
+        for r in V2.load_jsonl(C.PROC / sid / "document_pages.jsonl"):
+            if r.get("unit_type") == "article" and r["article_label"] in want:
+                t = f"[법령 {sid} {r['article_label']}({r.get('title','')})]\n{r['text']}\n"
+                out.append({"type": "law_article", "id": f"{sid}::{r['article_label']}",
+                            "ann": None, "text": t, "tokens": toks(t)})
+    return out
+
+
+def needed_molit_component(molit):
+    """The MOLIT apt-trade-detail rows for the (lawd, ymd) slices the 512k cross_source items
+    aggregate over, embedded COMPLETE as one guaranteed block (like the HUG table) so counts/avgs
+    are recomputable from context."""
+    if not molit:
+        return None
+    rows = [r for r in C.molit_rows() if (r["_lawd_name"], str(r["_deal_ymd"])) in molit]
+    rows.sort(key=lambda r: (r["_lawd_name"], str(r["_deal_ymd"]), r["_row_id"]))
+    lines = [
+        "===== [참고자료] MOLIT 아파트 매매 실거래 상세 (국토교통부) =====",
+        f"총 {len(rows)}건. 각 행 = 매매 1건. '거래 건수'는 해당 시군구·거래연월 행의 개수이고, "
+        "'평균 거래금액'은 그 행들의 거래금액(만원) 평균입니다.",
+        "행ID | 시군구 읍면동 | 단지 | 전용면적 거래금액 | 거래연월",
+    ]
+    for r in rows:
+        lines.append(f"{r['_row_id']} | {r['_lawd_name']} {r['umdNm']} | {r['aptNm']} | "
+                     f"{r['excluUseAr']}㎡ {r['dealAmount']}만원 | {r['_deal_ymd']}")
+    lines.append("===== [참고자료 끝] =====")
+    text = "\n".join(lines) + "\n"
+    return {"type": "molit_trade_rows", "id": "molit_trade_detail_block", "ann": None,
+            "text": text, "tokens": toks(text)}
+
+
 DISTRACTORS: list = []
 
 
@@ -189,7 +261,25 @@ def build():
     # its gold is computed from these rows. (Prompt-level injection in fix_fc_hug_bundle_v09.py is now
     # redundant for bundles rebuilt from this script.)
     hug = hug_block_component()
-    manifest.append(assemble("mix_multiprovider_512k", "512k", "multiprovider_announcement_heavy", [hug] + interleaved, TIERS["512k"]))
+    # Guaranteed evidence for the 512k mix: the HUG table + the specific statute articles and MOLIT
+    # trade-detail slices that this bundle's cross_document_legal_reasoning / cross_source_aggregation
+    # items require. Historically the 512k mix was [hug] + interleaved, which already overshot the
+    # token target so the laws+rows DISTRACTOR padding never fired -> those items were unanswerable in
+    # full-context. We now embed the needed evidence up front and trim announcements to the target.
+    _arts, _molit = _needed_512k_refs()
+    ev = [hug] + needed_law_components(_arts)
+    _mc = needed_molit_component(_molit)
+    if _mc:
+        ev.append(_mc)
+    gtok = sum(c["tokens"] for c in ev)
+    il, cur = [], gtok
+    for c in interleaved:
+        if cur + c["tokens"] > TIERS["512k"]:
+            break
+        il.append(c)
+        cur += c["tokens"]
+    manifest.append(assemble("mix_multiprovider_512k", "512k", "multiprovider_evidence_complete",
+                             ev + il, TIERS["512k"], no_pad=True))
     manifest.append(assemble("mix_multiprovider_256k", "256k", "multiprovider_law_heavy", laws + interleaved, TIERS["256k"]))
     manifest.append(assemble("mix_multiprovider_32k", "32k", "multiprovider_compact", interleaved[:14], TIERS["32k"]))
 
