@@ -73,6 +73,15 @@ current script** — it remains documented because the *released* baseline predi
 equivalent prompt-level injection (identical row content). Only `mix_multiprovider_512k` changed on rebuild;
 the other 166 bundles are byte-identical.
 
+**Evidence-completeness extension (2026-07, §8.6).** A later ARR red-team found that the HUG embedding above
+covered only the HUG table — the 512k `mix_multiprovider_512k` bundle still omitted the **statute articles**
+and **MOLIT aggregation slices** that its `cross_document_legal_reasoning` and remaining
+`cross_source_aggregation` items require, so those items stayed unanswerable and strong models correctly
+abstained. `scripts/build_bundles_v06.py` was extended (@`8a9a497`) to embed those as guaranteed components as
+well, and the 512k full-context slice (25 `test_public` + 7 `dev`) was **re-run** on the corrected bundle,
+yielding the capability ladder of §8.6. This supersedes the prompt-level HUG patch for the 512k tier; again
+only `mix_multiprovider_512k` changed.
+
 ## 4. Models
 
 Five proprietary, hosted models (OpenAI), run via the Batch API. All are **API/hosted** — there is **no
@@ -91,8 +100,9 @@ tiers.
 
 > **⚠️ SUPERSEDED 2026-07-10 — the open-weight leg WAS run (EACL cycle).** Three genuinely open-weight models
 > (MiniMax-M3 — now public weights on HF, GLM-5.2, Qwen3.5) were evaluated on `test_public` via Ollama Cloud;
-> results are in §8.5 (headline + by-tier). Key finding: minimax-m3 and glm-5.2 both reach 76% at 512k
-> (matching gpt-5.5), qwen3.5 caps at 256K. The note below is the pre-2026-07 deferral rationale, kept for
+> results are in §8.5 (headline + by-tier). Key finding (after the evidence-completeness bundle fix, §8.6): the
+> 512k full-context tier is a **capability ladder** — gpt-5.5 96%, glm-5.2 92%, minimax-m3 64%, gpt-4.1-mini
+> 24% (n=25); qwen3.5 caps at 256K. The note below is the pre-2026-07 deferral rationale, kept for
 > history — MiniMax-M3's weights are no longer "announced but unavailable".
 >
 > **(historical) Open-weights leg — DEFERRED (not yet run).** An earlier plan used `minimax-m3:cloud` (Ollama Cloud) as
@@ -222,10 +232,10 @@ subsets of §3, n=188 = pilot 116 + test_public extension 72):
 
 | Model | closed-book | RAG (BM25) | full-context |
 |---|---|---|---|
-| gpt-4.1-mini | 18% / 31% (n=1997) | 57% / 43% (n=1540) | 79% / 68% (n=188) |
+| gpt-4.1-mini | 18% / 31% (n=1997) | 57% / 43% (n=1540) | 80% / 65% (n=188) |
 | gpt-5.4-mini | 17% / 20% (n=1997) | 56% / 39% (n=1540) | 92% / 86% (n=151\*) |
 | gpt-5.4-nano | 7% / 6% (n=1997) | 45% / 25% (n=1540) | 68% / 54% (n=151\*) |
-| **gpt-5.5** | **40% / 49%** (n=1997) | **60% / 43%** (n=1520) | **95% / 78%** (n=188) |
+| **gpt-5.5** | **40% / 49%** (n=1997) | **60% / 43%** (n=1520) | **98% / 94%** (n=188) |
 
 \* gpt-5.4-mini/nano have a **272k-token context window**, so they context-reject the 512k fc items (their fc
 n=151 excludes 512k) — a model property, reported as `✗ctx` in §8.2, not a wrong answer. gpt-4.1-mini (~1M)
@@ -239,20 +249,25 @@ Pooled, per tier (item counts: 32k 64 / 64k 34 / 128k 26 / 256k 32 / 512k 32):
 
 | Model | 32k | 64k | 128k | 256k | 512k |
 |---|---:|---:|---:|---:|---:|
-| gpt-4.1-mini | 97% | 91% | 88% | 75% | 25% |
+| gpt-4.1-mini | 97% | 91% | 88% | 75% | 31% |
 | gpt-5.4-mini | 98% | 88% | 88% | 85% | ✗ctx |
 | gpt-5.4-nano | 84% | 56% | 50% | 63% | ✗ctx |
-| **gpt-5.5** | **100%** | 97% | **100%** | 97% | **78%** |
+| **gpt-5.5** | **100%** | 97% | **100%** | 97% | **94%** |
 
-(512k numbers are **after the HUG-bundle fix of §8.6** — all 20 `cross_source_aggregation` items at 512k carry
-the HUG table. Pre-fix, gpt-5.5's 512k was deflated to 42% by an artifact, not a model failure.)
+(512k numbers are **after the evidence-completeness bundle fix of §8.6** — the `mix_multiprovider_512k` bundle
+now embeds the statute articles + MOLIT aggregation slices + HUG table that its cross_document_legal /
+cross_source_aggregation items need. Pre-fix, the 512k slice measured *answerability under missing evidence*,
+not capability — strong models correctly abstained on items whose evidence was absent, deflating gpt-5.5 to an
+artifactual floor.)
 
-**There is no "512k collapse."** gpt-5.5 holds at or near 100% from 32k to 256k and **78%** at 512k (now n=32,
-not 12). The residual 512k gap is a **genuine** model signal — multi-document legal/comparison hops — and the
-cross_source aggregation that used to be unanswerable now cleanly **separates the models** (§8.6): gpt-5.5
-aggregates the in-bundle HUG table correctly while gpt-4.1-mini cannot (**25%** at 512k). The **272k
-context-coverage tradeoff** (gpt-5.4 family ✗ at 512k vs gpt-5.5/gpt-4.1-mini covering it) is the other honest
-long-context finding.
+**There is no "512k collapse," and 512k is a capability *ladder*, not a tie.** gpt-5.5 holds at or near 100%
+from 32k to 256k and **94%** at 512k (now n=32, not 12), while the weaker gpt-4.1-mini rises only to **31%**.
+The residual 512k gap is a **genuine** model signal — multi-document legal aggregation over a 400k+ token
+context — that the evidence-complete bundle now cleanly **separates**: gpt-5.5 aggregates the in-bundle
+statute / MOLIT / HUG rows correctly while gpt-4.1-mini cannot. The held-out `test_public` 512k tier (incl.
+the open-weight models) sharpens this into a full ladder — **gpt-5.5 96 / glm-5.2 92 / minimax-m3 64 /
+gpt-4.1-mini 24** (n=25), reported in §8.5. The **272k context-coverage tradeoff** (gpt-5.4 family ✗ at 512k
+vs gpt-5.5/gpt-4.1-mini covering it) is the other honest long-context finding.
 
 ### 8.3 Retrieval quality (BM25, k=5, model-independent)
 
@@ -260,7 +275,7 @@ On the full split (n=1,255 items with gold pages): recall@5 ≈ **47.6%**, hit@5
 
 ### 8.4 Metric matters — `contains_all` is unreliable (a methodological result)
 
-The legacy `contains_all`/normalized-substring match (v0.7/v0.8) produces **systematic false negatives** when the prediction is correct but phrased or formatted differently from the gold (e.g. gold `"부산도시공사=부산광역시 / 한국토지주택공사=경기도"` vs a correct pred `"부산도시공사: 부산광역시 / …: 경기도"`). Three metrics on the same gpt-5.5 full-context predictions:
+The legacy `contains_all`/normalized-substring match (v0.7/v0.8) produces **systematic false negatives** when the prediction is correct but phrased or formatted differently from the gold (e.g. gold `"부산도시공사=부산광역시 / 한국토지주택공사=경기도"` vs a correct pred `"부산도시공사: 부산광역시 / …: 경기도"`). Three metrics on the same gpt-5.5 full-context predictions (**pre-fix bundle, n≈12 at 512k — this table isolates the METRIC axis only and is *not* comparable to the post-fix §8.2/§8.5 accuracies**):
 
 | Metric | ALL | 512k tier |
 |---|---:|---:|
@@ -268,11 +283,13 @@ The legacy `contains_all`/normalized-substring match (v0.7/v0.8) produces **syst
 | soft (em \| contains \| token-recall≥0.7; `score_answers_v09.py`) | 91.4% | 16.7% |
 | **LLM-judge** (semantic; `llm_judge_v09.py`) | **93.1%** | **41.7%** |
 
-These three columns are computed on the **pre-§8.6 predictions** (where the 512k cross_source items were
-unanswerable) precisely to isolate the metric gap; they are not the current headline. After the HUG-bundle
-fix the headline 512k judge is **75%** (§8.2). `contains_all` undercounts every model and, at the 512k tier,
-drove a **non-existent** "512k collapse" to 0%. All v0.9 headline numbers use the LLM-judge; soft + Wilson
-95% CIs are the reproducible deterministic reference. The LLM-judge itself is now **human-validated** (§9.0).
+These three columns are computed on the **pre-fix-bundle predictions** (the small n≈12 512k slice, before the
+evidence-completeness fix, where the cross_source/legal items were still unanswerable) precisely to isolate the
+**metric axis** — they are *not* comparable to the post-fix headline accuracies of §8.2/§8.5. `contains_all`
+undercounts every model and, at the 512k tier, drove a **non-existent** "512k collapse" to 0%; after the
+evidence-completeness bundle fix the post-fix headline 512k judge rises to **94%** pooled (§8.2). All v0.9
+headline numbers use the LLM-judge; soft + Wilson 95% CIs are the reproducible deterministic reference. The
+LLM-judge itself is now **human-validated** (§9.0).
 
 ### 8.5 Held-out split: test_public reported separately (dev ≠ test)
 
@@ -283,18 +300,19 @@ isolate the held-out headline.
 > **v0.9 split change:** `test_public` was enlarged 104 → **389** by merging the former `test_hidden` (see
 > dataset CHANGELOG; 512k tier 41 → 124, + `ood_region`/`ood_year` subsets). Baselines have been **extended to
 > the full 389** (cb/rag on all 389; fc on a tier-capped subset, now n=105 incl. **25 at 512k** vs 5 before).
-> The HUG-bundle fix of §8.6 was re-applied to the 16 cross_source items that the merge added at 512k.
+> The evidence-completeness bundle fix of §8.6 (embedding statute articles + MOLIT slices + HUG) was applied
+> to the full 512k full-context slice, re-run on the corrected bundle.
 
 **test_public — full 389 (LLM-judge, plain / cluster-weighted; cb shows the cw 95% CI):**
 
 | Model | closed-book | RAG (BM25) | full-context |
 |---|---|---|---|
-| gpt-4.1-mini | 20% / 39% [29–51%] (n=389) | 61% / 41% (n=386) | 73% / 70% (n=105) |
+| gpt-4.1-mini | 20% / 39% [29–51%] (n=389) | 61% / 41% (n=386) | 74% / 62% (n=105) |
 | gpt-5.4-mini | 20% / 29% [19–40%] (n=389) | 62% / 38% (n=386) | 91% / 90% (n=78\*) |
 | gpt-5.4-nano | 4% / 0% [0–6%] (n=389) | 47% / 18% (n=386) | 71% / 60% (n=78\*) |
-| **gpt-5.5** | **46% / 58%** [46–69%] (n=389) | 63% / 40% (n=386) | **93% / 59%** (n=105) |
-| minimax-m3 (open) | 8% / 8% [3–16%] (n=389) | 60% / 34% (n=386) | 91% / 60% (n=105) |
-| glm-5.2 (open) | 11% / 16% [10–27%] (n=389) | 59% / 28% (n=386) | 94% / 60% (n=105) |
+| **gpt-5.5** | **46% / 58%** [46–69%] (n=389) | 63% / 40% (n=386) | **98% / 91%** (n=105) |
+| minimax-m3 (open) | 8% / 8% [3–16%] (n=389) | 60% / 34% (n=386) | 89% / 90% (n=105) |
+| glm-5.2 (open) | 11% / 16% [10–27%] (n=389) | 59% / 28% (n=386) | 98% / 89% (n=105) |
 | qwen3.5 (open) | 5% / 0% [0–6%] (n=389) | 59% / 30% (n=386) | 100% / 100% (n=78†) |
 
 \* gpt-5.4-mini/nano (272k window) context-reject the 512k fc items, so their fc n is lower and excludes 512k.
@@ -308,18 +326,23 @@ judge) → `score_judge_v09.py` stack as the API rows.
 
 | Model | 32k | 64k | 128k | 256k | 512k |
 |---|---:|---:|---:|---:|---:|
-| gpt-4.1-mini | 96% (n27) | 100% (n19) | 83% (n12) | 77% (n22) | **20% (n25)** |
-| **gpt-5.5** | 100% (n27) | 100% (n19) | 100% (n12) | 95% (n22) | **76% (n25)** |
-| minimax-m3 (open) | 96% (n27) | 100% (n19) | 100% (n12) | 91% (n22) | **76% (n25)** |
-| glm-5.2 (open) | 100% (n27) | 100% (n19) | 100% (n12) | 100% (n22) | **76% (n25)** |
+| gpt-4.1-mini | 96% (n27) | 100% (n19) | 83% (n12) | 77% (n22) | **24% (n25)** |
+| **gpt-5.5** | 100% (n27) | 100% (n19) | 100% (n12) | 95% (n22) | **96% (n25)** |
+| minimax-m3 (open) | 96% (n27) | 100% (n19) | 100% (n12) | 91% (n22) | **64% (n25)** |
+| glm-5.2 (open) | 100% (n27) | 100% (n19) | 100% (n12) | 100% (n22) | **92% (n25)** |
 | qwen3.5 (open) | 100% (n27) | 100% (n19) | 100% (n12) | 100% (n20) | ✗ctx (256K cap) |
 
-The enlarged held-out set **confirms the §8.6 finding with real power**: at 512k (now n=25, not 5), **three
-models — gpt-5.5, minimax-m3, and glm-5.2 — all hold 76%** (19/25) while gpt-4.1-mini sits at **20%** (5/25).
-Two INDEPENDENT open-weight 1M-context models match the frontier at 512k, so the 76% level is reproducible
-across labs, not a single-model artifact; qwen3.5's 256K cap prevents it from attempting the tier. All models
-ingest the same HUG-augmented ~410k-token bundle, but only the strong long-context models aggregate over it. The split-level ranking matches the pooled table (gpt-5.5
-strongest; context monotonicity holds), so dev was not flattering the leaderboard. Two reporting notes:
+The enlarged held-out set **confirms the §8.6 finding with real power and resolves it into a capability
+ladder**: at 512k (now n=25, not 5) the post-fix, evidence-complete tier reads **gpt-5.5 96% (24/25) >
+glm-5.2 92% (23/25) > minimax-m3 64% (16/25) ≫ gpt-4.1-mini 24% (6/25)**. Crucially the weak gpt-4.1-mini
+**barely moves** with complete evidence in front of it (20% → 24%): it still cannot aggregate over a 400k+
+token context, so the 512k gap is a **real capability difference**, not the earlier answerability artifact. An
+independent open-weight 1M-context model (glm-5.2) tracks the frontier (92%) while another (minimax-m3) sits
+mid-ladder (64%), so the tier discriminates across the whole capability spectrum rather than saturating.
+Post-fix the errors are **model-idiosyncratic**, not a shared artifact: **no 512k item is failed by all of
+gpt-5.5 + glm-5.2 + minimax-m3**, and gpt-4.1-mini's failures form a **19/25 superset**. qwen3.5's 256K cap
+prevents it from attempting the tier. The split-level ranking matches the pooled table (gpt-5.5 strongest;
+context monotonicity holds), so dev was not flattering the leaderboard. Two reporting notes:
 
 1. **plain vs cluster-weighted diverges on this split** (e.g. gpt-4.1-mini cb 20% plain vs 39% cw): a few
    answerable clusters dominate the weighted score, so we report both.
@@ -330,37 +353,47 @@ strongest; context monotonicity holds), so dev was not flattering the leaderboar
 (a larger public held-out test is more valuable than a sealed set we cannot serve; a future release can
 re-carve a sealed split from grown data).
 
-### 8.6 HUG-bundle fix turns an artifact into a capability signal
+### 8.6 Evidence-completeness bundle fix turns an artifact into a capability ladder
 
-The four `cross_source_aggregation` items at the 512k tier ask an aggregate over the HUG (주택도시보증공사)
-sale-history table — e.g. *"how many 2023 사업장 in 경기도?"* (gold 61건) or *"average 총세대수"* (gold
-1,073세대). Their gold is computed from the HUG sale-history rows (623 valid; §3) that were **never embedded
-in the full-context bundle** (only the LH announcements were), so every model could only abstain and was
-scored wrong — a benchmark-construction artifact that pinned gpt-5.5's 512k to 42%.
+An ARR red-team found that the pre-fix `mix_multiprovider_512k` bundle **omitted the statute articles and
+MOLIT aggregation rows** its `cross_document_legal_reasoning` / `cross_source_aggregation` items require (only
+the 256k mix carried the `laws` block; the 512k mix already overshot its token target on `[hug] + interleaved`
+content, so its `laws + rows` padding never fired). So the pre-fix 512k full-context slice measured
+**answerability under missing evidence, not capability**: strong models correctly abstained
+("제공된 자료만으로는 확정할 수 없음") on items whose statute/rows were absent, while the weak gpt-4.1-mini
+occasionally "won" one by term-matching or parametric recall — pinning gpt-5.5's 512k to an artifactual ~42%.
 
-Full-context means *every source the question needs is in the bundle*, so this is a bundle bug, not a task
-design issue. We injected the HUG rows as a compact in-bundle table (`scripts/fix_fc_hug_bundle_v09.py`;
-verified to reproduce all four golds: 61 / 15 / 77 / 1,073) and re-ran the two models that can ingest the
-resulting ~410k-token prompt (gpt-4.1-mini, gpt-5.5; the 272k gpt-5.4 family still ✗ctx). LLM-judged result:
+Full-context means *every source the question needs is in the bundle*, so this is a **bundle-completeness bug,
+not a task-design issue**, and the fix is at the **bundle level, not a prompt-level patch**:
+`scripts/build_bundles_v06.py` (@8a9a497) now embeds the needed statute articles + MOLIT aggregation slices +
+the HUG (주택도시보증공사) sale-history table as **guaranteed** components of `mix_multiprovider_512k`
+(verified: 제5조의4 0→3 occurrences, a MOLIT block with exactly 137 rows for 대전동구202510, all 87
+announcement-page refs retained; every other bundle md5-unchanged). We re-ran the **512k full-context slice on
+the corrected bundle — 25 `test_public` items + 7 dev items** (qa_ids 0455, 0668, 0745, 1801, 1963, 1966,
+2011; gpt-4.1-mini & gpt-5.5 for the pooled leg, plus the open-weight models on test_public). LLM-judged
+post-fix 512k ladder (test_public, n=25):
 
-| Model | cross_source @512k, HUG **absent** (old) | HUG **present** (fixed) |
+| Model | pre-fix (missing evidence) | post-fix (evidence-complete) |
 |---|---:|---:|
-| gpt-4.1-mini | 0 / 4 (unanswerable) | **0 / 4** |
-| **gpt-5.5** | 0 / 4 (unanswerable) | **4 / 4** |
+| **gpt-5.5** | 19 / 25 (76%) | **24 / 25 (96%)** |
+| glm-5.2 (open) | 19 / 25 (76%) | **23 / 25 (92%)** |
+| minimax-m3 (open) | 19 / 25 (76%) | **16 / 25 (64%)** |
+| gpt-4.1-mini | 5 / 25 (20%) | **6 / 25 (24%)** |
 
-The fix **separates the models on a real capability**: with the table in front of it, gpt-5.5 aggregates
-(counts / averages rows by 지역·연도) correctly across a 410k-token context, while gpt-4.1-mini still cannot
-(it returns wrong counts like 38/600 or abstains) — genuine long-context aggregation, no longer an artifact.
-This is what lifts gpt-5.5's 512k tier off the artifact floor of 42% (pooled, it now reads **78%** in §8.2);
-gpt-4.1-mini is unchanged. The other 8 512k items were left byte-identical, so their predictions stand.
+The fix **separates the models on a real capability**: with the complete evidence in the bundle, gpt-5.5 and
+glm-5.2 aggregate (count / average rows by 지역·연도, apply the right statute) correctly across a 400k+ token
+context, minimax-m3 aggregates only partially, and the weak gpt-4.1-mini **barely moves** (20% → 24%) — it
+cannot aggregate over that context even with every source present. The pre-fix blunt "three models tie at 76%"
+was the answerability artifact; the post-fix **96 / 92 / 64 / 24** is a genuine capability ladder. Pooled, this
+lifts gpt-5.5's 512k tier from the artifact floor to **94%** and gpt-4.1-mini to **31%** (§8.2); the ≤256K fc
+cells are byte-identical (the fix only touched the 512k bundle), so those predictions stand.
 
-The **test_public extension** (§8.5) added 16 more cross_source items at 512k, so the **same prompt-level HUG
-fix was re-applied to all 20** (4 + 16). On the held-out 512k tier (now n=25) the result holds with real
-power: **gpt-5.5 76%** vs **gpt-4.1-mini 20%** — same separation, more items. The released predictions used a
-**prompt-level** injection, and the **canonical bundle now embeds the same HUG table by default** (§3), so the
-fix is permanent for future rebuilds.
+The **post-fix verdicts are merged into the canonical judged files** (`g55fc`, `gpt-4.1-mini_fc`,
+`fc_minimax-m3-cloud_tp`, `fc_glm-5.2-cloud_tp`) with `.pre_b1fix` backups, so `score_judge_v09.py` reproduces
+the numbers above. The pre-fix artifact baseline is archived in those `.pre_b1fix` backups and in
+`workspace_local/audit/baselines/PRE_VS_POST_FIX_512k.md`.
 
-> Caveats: LLM-judge is **human-validated** (§9.0: n=80, agreement 96.2 %, κ=0.924); §8.1–8.2 pool dev+test_public for power, with test_public broken out in §8.5 (now n=389, fc n=105); full-context rests on tier-capped subsets (§3) with the HUG-bundle fix applied to the **20** cross_source items at 512k (§8.6); all four models now cover the full 1,997 closed-book; no open-weights model is reported (leg deferred, §4).
+> Caveats: LLM-judge is **human-validated** (§9.0: n=80, agreement 96.2 %, κ=0.924); §8.1–8.2 pool dev+test_public for power, with test_public broken out in §8.5 (now n=389, fc n=105); full-context rests on tier-capped subsets (§3) with the evidence-completeness bundle fix applied to the 512k full-context slice (25 test_public + 7 dev, re-run on the corrected bundle; §8.6); all four API models now cover the full 1,997 closed-book; the three open-weight models are test_public only (§8.5).
 
 ## 9. Limitations and the path to paper-grade
 
@@ -399,8 +432,8 @@ This v0.9 set is a **reference baseline**, captioned **indicative**. Before a ca
 - ~~**Run baselines on the enlarged `test_public`**~~ — **DONE (§8.5)**: cb/rag extended to all 389, fc to a
   tier-capped n=105 (incl. 25 at 512k), HUG-fix re-applied to the 16 merged cross_source items. The held-out
   split now carries the headline with tight CIs and confirms the 512k finding at n=25. The canonical
-  `mix_multiprovider_512k` bundle now **embeds HUG by default** (§3/§8.6), so the cross_source artifact is
-  fixed at the dataset level too. The earlier gpt-5.5 closed-book quota-failures have been re-run, so all four
+  `mix_multiprovider_512k` bundle now **embeds the HUG table plus the needed statute articles and MOLIT
+  slices by default** (§3/§8.6), so the cross_source/legal evidence artifact is fixed at the dataset level too. The earlier gpt-5.5 closed-book quota-failures have been re-run, so all four
   models now cover the full 1,997 closed-book / 389 test_public.
 - **Lift the 512k/256k caps** so long-context-degradation claims rest on more than ~12 items per tier
   (tighter confidence intervals). Additive on this exact sample, and the merge already supplies the items.
@@ -414,11 +447,12 @@ This v0.9 set is a **reference baseline**, captioned **indicative**. Before a ca
   κ=0.924. Optional follow-up: a second independent annotator on the same CSV.
 - ~~**Report test_public separately** (dev ≠ test)~~ — **DONE (§8.5)** via `scripts/score_judge_v09.py`;
   the former hidden split was merged in (no local-model leg needed). Optional: grow test_public further (above).
-- ~~**Fix the cross_source HUG bundle**~~ — **DONE (§8.6), prompt-level *and* dataset-level.** The 20
-  cross_source 512k items were HUG-injected and re-judged; the canonical `mix_multiprovider_512k` bundle now
-  **embeds HUG by default** (`scripts/build_bundles_v06.py`), so this is fixed for anyone rebuilding the
-  dataset, not just our run. 512k is now a real signal — pooled **gpt-5.5 78% vs gpt-4.1-mini 25%** (n=32),
-  held-out test_public **76% vs 20%** (n=25).
+- ~~**Fix the cross_source / 512k evidence bundle**~~ — **DONE (§8.6), at the bundle level.** The
+  `mix_multiprovider_512k` bundle was missing the statute articles + MOLIT rows (+ HUG table) its items need;
+  `scripts/build_bundles_v06.py` (@8a9a497) now embeds all of them as guaranteed components, and the 512k
+  full-context slice (25 test_public + 7 dev) was re-run on the corrected bundle and re-judged. 512k is now a
+  real capability signal — pooled **gpt-5.5 94% vs gpt-4.1-mini 31%** (n=32), held-out test_public a full
+  ladder **gpt-5.5 96 / glm-5.2 92 / minimax-m3 64 / gpt-4.1-mini 24** (n=25).
 
 None of this requires rework: the seeded-nested sample + `--resume` + model-orthogonal scoring make every
 addition accumulate on top of what is reported here.
