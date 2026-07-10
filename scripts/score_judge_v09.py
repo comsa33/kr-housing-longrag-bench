@@ -23,11 +23,18 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 B = ROOT / "workspace_local" / "audit" / "baselines"
 MODELS = ["gpt-4.1-mini", "gpt-5.4-mini", "gpt-5.4-nano", "gpt-5.5"]
+# Open-weight models (EACL leg): test_public only, judged tags = "{regime}_{label}_tp".
+# These rows contribute to test_public and ALL only (no dev run), so dev shows "—".
+# qwen3.5 is added once its judged files land (fc ≤256K only — no 512k tier).
+OPEN = [("minimax-m3", "minimax-m3-cloud"), ("glm-5.2", "glm-5.2-cloud")]
+MODELS += [disp for disp, _ in OPEN]
 # (tag, model, regime); gpt-5.5 fc verdicts live under the "g55fc" tag
 TAGS = ([("g55fc", "gpt-5.5", "fc")]
         + [(f"{m}_{r}", m, r) for m in ("gpt-4.1-mini", "gpt-5.4-mini", "gpt-5.4-nano")
            for r in ("cb", "rag", "fc")]
-        + [("gpt-5.5_cb", "gpt-5.5", "cb"), ("gpt-5.5_rag", "gpt-5.5", "rag")])
+        + [("gpt-5.5_cb", "gpt-5.5", "cb"), ("gpt-5.5_rag", "gpt-5.5", "rag")]
+        + [(f"{r}_{label}_tp", disp, r) for disp, label in OPEN
+           for r in ("cb", "rag", "fc")])
 TIERS = ["32k", "64k", "128k", "256k", "512k"]
 
 
