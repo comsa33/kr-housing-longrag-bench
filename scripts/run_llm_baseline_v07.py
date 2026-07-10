@@ -120,7 +120,8 @@ class BaseProvider:
     name = "base"
 
     def __init__(self, model: str, temperature: float, max_output_tokens: int, mock: bool = False,
-                 reasoning: bool | None = None, num_ctx: int | None = None):
+                 reasoning: bool | None = None, num_ctx: int | None = None,
+                 think: bool | None = None):
         self.model = model
         self.temperature = temperature
         self.max_output_tokens = max_output_tokens
@@ -131,6 +132,11 @@ class BaseProvider:
         # ollama-only: context window. The ollama default (4096) silently TRUNCATES long full-context
         # bundles, so long-context runs must pass e.g. 65536. Ignored by hosted providers.
         self.num_ctx = num_ctx
+        # ollama-only: explicit chain-of-thought toggle mapped to ollama's top-level `think`.
+        # None = model default; True/False = force. Disable (False) for the short cb/rag regimes where
+        # reasoning models over-think and can exhaust --max-output-tokens on the thinking trace alone,
+        # leaving `response` empty (an artifact, not a real model failure). Ignored by hosted providers.
+        self.think = think
         # per-call extras (token usage, thinking trace, etc.) stashed by _generate, read by main()
         # to write the rich per-item call log. Reset at the start of every generate().
         self.last_meta: dict = {}
@@ -351,9 +357,10 @@ class OllamaProvider(BaseProvider):
         if self.num_ctx:
             # Without this, ollama defaults to num_ctx=4096 and silently truncates long bundles.
             options["num_ctx"] = self.num_ctx
-        body = json.dumps(
-            {"model": self.model, "prompt": prompt, "stream": False, "options": options}
-        ).encode("utf-8")
+        payload = {"model": self.model, "prompt": prompt, "stream": False, "options": options}
+        if self.think is not None:
+            payload["think"] = self.think  # ollama top-level toggle; omit to use the model default
+        body = json.dumps(payload).encode("utf-8")
         req = urllib.request.Request(
             f"{self.base_url()}/api/generate", data=body, headers={"Content-Type": "application/json"}
         )
@@ -384,13 +391,15 @@ PROVIDER_CLASSES = {
 
 
 _REASONING_OVERRIDE = {"auto": None, "on": True, "off": False}
+_THINK_OVERRIDE = {"auto": None, "on": True, "off": False}
 
 
 def make_provider(args) -> BaseProvider:
     cls = PROVIDER_CLASSES[args.provider]
     return cls(args.model, args.temperature, args.max_output_tokens, mock=args.mock,
                reasoning=_REASONING_OVERRIDE[getattr(args, "reasoning", "auto")],
-               num_ctx=getattr(args, "num_ctx", None))
+               num_ctx=getattr(args, "num_ctx", None),
+               think=_THINK_OVERRIDE[getattr(args, "think", "auto")])
 
 
 # --------------------------------------------------------------------------- io helpers
@@ -459,6 +468,11 @@ def parse_args(argv=None):
     ap.add_argument("--num-ctx", type=int, default=None,
                     help="ollama only: context window (e.g. 65536). The ollama default (4096) silently "
                          "truncates long full-context bundles, so set this for long-context runs.")
+    ap.add_argument("--think", choices=["auto", "on", "off"], default="auto",
+                    help="ollama only: force chain-of-thought on/off via ollama's top-level `think`. "
+                         "auto = model default. Use 'off' for cb/rag (reasoning models over-think short "
+                         "prompts and can exhaust --max-output-tokens on the thinking trace → empty output); "
+                         "keep 'auto'/'on' for full-context where the answer needs reasoning.")
     ap.add_argument("--reasoning", choices=["auto", "on", "off"], default="auto",
                     help="OpenAI/Azure token-param mode: auto = detect reasoning models (gpt-5*/o-series) "
                          "by name; on/off = force (use for Azure deployments whose name hides the model).")
