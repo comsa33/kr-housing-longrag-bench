@@ -89,7 +89,13 @@ The 272k window of the gpt-5.4 family is a real **quality-vs-context-coverage tr
 the 512k tier (recorded as `✗ctx`, an error, not a wrong answer), while gpt-4.1-mini and gpt-5.5 cover all
 tiers.
 
-> **Open-weights leg — DEFERRED (not yet run).** An earlier plan used `minimax-m3:cloud` (Ollama Cloud) as
+> **⚠️ SUPERSEDED 2026-07-10 — the open-weight leg WAS run (EACL cycle).** Three genuinely open-weight models
+> (MiniMax-M3 — now public weights on HF, GLM-5.2, Qwen3.5) were evaluated on `test_public` via Ollama Cloud;
+> results are in §8.5 (headline + by-tier). Key finding: minimax-m3 and glm-5.2 both reach 76% at 512k
+> (matching gpt-5.5), qwen3.5 caps at 256K. The note below is the pre-2026-07 deferral rationale, kept for
+> history — MiniMax-M3's weights are no longer "announced but unavailable".
+>
+> **(historical) Open-weights leg — DEFERRED (not yet run).** An earlier plan used `minimax-m3:cloud` (Ollama Cloud) as
 > the "open-weights" point, but as of 2026-06 MiniMax M3 is a **hosted endpoint whose weights are not
 > publicly released** (open-weight release was *announced* but not available); accessed via Ollama Cloud it
 > is a cloud API, not a locally-runnable open model. **It does not satisfy the open-weights / reproducibility
@@ -287,9 +293,16 @@ isolate the held-out headline.
 | gpt-5.4-mini | 20% / 29% [19–40%] (n=389) | 62% / 38% (n=386) | 91% / 90% (n=78\*) |
 | gpt-5.4-nano | 4% / 0% [0–6%] (n=389) | 47% / 18% (n=386) | 71% / 60% (n=78\*) |
 | **gpt-5.5** | **46% / 58%** [46–69%] (n=389) | 63% / 40% (n=386) | **93% / 59%** (n=105) |
+| minimax-m3 (open) | 8% / 8% [3–16%] (n=389) | 60% / 34% (n=386) | 91% / 60% (n=105) |
+| glm-5.2 (open) | 11% / 16% [10–27%] (n=389) | 59% / 28% (n=386) | 94% / 60% (n=105) |
+| qwen3.5 (open) | 5% / 0% [0–6%] (n=389) | 59% / 30% (n=386) | 100% / 100% (n=78†) |
 
 \* gpt-5.4-mini/nano (272k window) context-reject the 512k fc items, so their fc n is lower and excludes 512k.
-All four models now cover the full 389 closed-book (the earlier gpt-5.5 quota-failures were re-run).
+All four API models now cover the full 389 closed-book (the earlier gpt-5.5 quota-failures were re-run).
+† The three open-weight rows (EACL leg, 2026-07-10, served via Ollama Cloud) are **test_public only** (no dev
+run). qwen3.5 caps at 256K, so its fc excludes the 512k tier (n=78, ≤256K only) and its fc figure is **not**
+comparable to the n=105 models — use the by-tier table. Judged by the same `llm_judge_v09.py` (gpt-4.1-mini
+judge) → `score_judge_v09.py` stack as the API rows.
 
 **full-context by tier on test_public (LLM-judge, plain):**
 
@@ -297,10 +310,15 @@ All four models now cover the full 389 closed-book (the earlier gpt-5.5 quota-fa
 |---|---:|---:|---:|---:|---:|
 | gpt-4.1-mini | 96% (n27) | 100% (n19) | 83% (n12) | 77% (n22) | **20% (n25)** |
 | **gpt-5.5** | 100% (n27) | 100% (n19) | 100% (n12) | 95% (n22) | **76% (n25)** |
+| minimax-m3 (open) | 96% (n27) | 100% (n19) | 100% (n12) | 91% (n22) | **76% (n25)** |
+| glm-5.2 (open) | 100% (n27) | 100% (n19) | 100% (n12) | 100% (n22) | **76% (n25)** |
+| qwen3.5 (open) | 100% (n27) | 100% (n19) | 100% (n12) | 100% (n20) | ✗ctx (256K cap) |
 
-The enlarged held-out set **confirms the §8.6 finding with real power**: at 512k (now n=25, not 5), gpt-5.5
-holds **76%** while gpt-4.1-mini sits at **20%** — both ingest the same HUG-augmented 410k-token bundle, but
-only the frontier model aggregates over it. The split-level ranking matches the pooled table (gpt-5.5
+The enlarged held-out set **confirms the §8.6 finding with real power**: at 512k (now n=25, not 5), **three
+models — gpt-5.5, minimax-m3, and glm-5.2 — all hold 76%** (19/25) while gpt-4.1-mini sits at **20%** (5/25).
+Two INDEPENDENT open-weight 1M-context models match the frontier at 512k, so the 76% level is reproducible
+across labs, not a single-model artifact; qwen3.5's 256K cap prevents it from attempting the tier. All models
+ingest the same HUG-augmented ~410k-token bundle, but only the strong long-context models aggregate over it. The split-level ranking matches the pooled table (gpt-5.5
 strongest; context monotonicity holds), so dev was not flattering the leaderboard. Two reporting notes:
 
 1. **plain vs cluster-weighted diverges on this split** (e.g. gpt-4.1-mini cb 20% plain vs 39% cw): a few

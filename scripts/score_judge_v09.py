@@ -26,7 +26,7 @@ MODELS = ["gpt-4.1-mini", "gpt-5.4-mini", "gpt-5.4-nano", "gpt-5.5"]
 # Open-weight models (EACL leg): test_public only, judged tags = "{regime}_{label}_tp".
 # These rows contribute to test_public and ALL only (no dev run), so dev shows "—".
 # qwen3.5 is added once its judged files land (fc ≤256K only — no 512k tier).
-OPEN = [("minimax-m3", "minimax-m3-cloud"), ("glm-5.2", "glm-5.2-cloud")]
+OPEN = [("minimax-m3", "minimax-m3-cloud"), ("glm-5.2", "glm-5.2-cloud"), ("qwen3.5", "qwen3.5-cloud")]
 MODELS += [disp for disp, _ in OPEN]
 # (tag, model, regime); gpt-5.5 fc verdicts live under the "g55fc" tag
 TAGS = ([("g55fc", "gpt-5.5", "fc")]
