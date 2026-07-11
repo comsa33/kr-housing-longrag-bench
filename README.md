@@ -47,6 +47,15 @@ near-duplicates (1,997 → 282 clusters) for cluster-weighted scoring, and defin
 Public release splits: `data/qa_v0.6_dev.jsonl` (1,608) and `data/qa_v0.6_test_public.jsonl` (389, answers
 included); v0.9 merged the former `test_hidden` (285) into `test_public` (no sealed split — it was never a
 leaderboard hidden set), retaining `ood_region`/`ood_year` subsets via `split_tags`.
+The near-duplicate cluster structure is also released explicitly as
+`data/cluster_map.jsonl` (one line per cluster: `cluster_id`, `task_type`,
+`cluster_size`/`cluster_weight`, `released_member_count`, per-split counts, and
+the member `qa_id`s; 282 clusters over the 1,997 items — counted by released
+membership, 115 multi-item + 167 singleton). The same cluster fields are already
+on every QA record, so the map is a convenience index for auditing the grouping
+and reproducing cluster-weighted accuracy. `cluster_weight` = 1/`cluster_size`;
+for three clusters `cluster_size` (a pre-release candidate-pool count) exceeds
+`released_member_count`, so both are reported.
 See `CHANGELOG.md` and `docs/dataset_statistics.md`.
 
 **Scope claim — read carefully.** This is a **public-ready seed benchmark**. CI runs the public-safe gates
