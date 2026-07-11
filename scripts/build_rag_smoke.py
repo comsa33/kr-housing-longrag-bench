@@ -122,6 +122,112 @@ class DenseIndex:
         return [i for _, i in sims[:k]]
 
 
+# --- bge-m3 local dense retriever (B3: a STRONG multilingual/Korean dense baseline) ---------------
+# Unlike the OpenAI DenseIndex above, this runs a local sentence-transformers model (BAAI/bge-m3), so
+# it is free and offline once downloaded. bge-m3 is instruction-free and returns unit-normalized
+# embeddings, so cosine == dot product (same similarity convention as DenseIndex).
+BGE_MODEL_NAME = "BAAI/bge-m3"
+_BGE_MODEL = None
+
+
+def get_bge_model():
+    """Return a cached bge-m3 SentenceTransformer (loaded once). Device: $BGE_DEVICE, else auto
+    (mps/cuda/cpu). Fails with a clear message if sentence-transformers is missing."""
+    global _BGE_MODEL
+    if _BGE_MODEL is None:
+        try:
+            from sentence_transformers import SentenceTransformer  # lazy
+        except ImportError as exc:
+            raise SystemExit(
+                "dense_bge retrieval requires sentence-transformers + torch. Run with:\n"
+                "  uv run --with sentence-transformers --with torch python scripts/build_baseline_rag_dense.py ..."
+            ) from exc
+        import os
+        device = os.environ.get("BGE_DEVICE") or None  # None -> library auto-selects
+        _BGE_MODEL = SentenceTransformer(BGE_MODEL_NAME, device=device)
+    return _BGE_MODEL
+
+
+def bge_embed(texts: list):
+    """Encode texts with bge-m3, unit-normalized (cosine == dot). Returns a numpy (n, d) array."""
+    model = get_bge_model()
+    return model.encode(
+        texts, batch_size=32, normalize_embeddings=True,
+        show_progress_bar=False, convert_to_numpy=True,
+    )
+
+
+class BGEDenseIndex:
+    """Dense retrieval over bge-m3 chunk embeddings (cosine similarity via normalized dot product)."""
+
+    def __init__(self, docs: list):
+        self.vecs = bge_embed(docs)  # (n, d), unit-normalized
+
+    def top_k(self, query: str, k: int) -> list:
+        qv = bge_embed([query])[0]
+        sims = self.vecs @ qv  # cosine (both sides unit-normalized)
+        # deterministic tie-break by index (mirror DenseIndex's (-sim, i) ordering)
+        order = sorted(range(len(sims)), key=lambda i: (-float(sims[i]), i))
+        return order[:k]
+
+
+# --- bge-m3 via a local Ollama daemon (/api/embed) -----------------------------------------------
+# The DEFAULT dense backend for the B3 baseline. Ollama runs bge-m3 as a Metal-accelerated GGUF, which
+# is ~10x faster than the sentence-transformers path on this hardware (no pytorch-MPS scalar-sync
+# stalls) and needs only urllib (no torch/sentence-transformers). Same model (bge-m3, dim 1024) and
+# same unit-normalized cosine convention, so retrieval is equivalent to BGEDenseIndex.
+OLLAMA_EMBED_MODEL = "bge-m3"
+DENSE_BGE_LABEL = "bge-m3 (ollama /api/embed)"
+
+
+def ollama_embed(texts: list, batch_size: int = 96) -> list:
+    """Embed texts with bge-m3 via the local Ollama daemon's /api/embed (batched). Returns a list of
+    float vectors. Raises RuntimeError on a short/failed response so a silent under-count can't corrupt
+    the index."""
+    import os
+    import urllib.request
+    base = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434").rstrip("/")
+    model = os.environ.get("OLLAMA_EMBED_MODEL", OLLAMA_EMBED_MODEL)
+    vecs: list = []
+    for i in range(0, len(texts), batch_size):
+        batch = texts[i:i + batch_size]
+        body = json.dumps({"model": model, "input": batch}).encode("utf-8")
+        req = urllib.request.Request(
+            f"{base}/api/embed", data=body, headers={"Content-Type": "application/json"}
+        )
+        with urllib.request.urlopen(req, timeout=900) as r:
+            data = json.loads(r.read().decode("utf-8"))
+        emb = data.get("embeddings")
+        if not emb or len(emb) != len(batch):
+            raise RuntimeError(
+                f"ollama /api/embed returned {len(emb) if emb else 0} embeddings for {len(batch)} inputs "
+                f"(model={model}, error={data.get('error')}). Is the daemon up and `ollama pull {model}` done?"
+            )
+        vecs.extend(emb)
+    return vecs
+
+
+class OllamaBGEIndex:
+    """Dense retrieval over bge-m3 embeddings from a local Ollama daemon. bge-m3 returns unit-normalized
+    vectors (cosine == dot); we re-normalize defensively. numpy powers the top-k dot products."""
+
+    def __init__(self, docs: list):
+        import numpy as np
+        v = np.asarray(ollama_embed(docs), dtype=np.float32)
+        norms = np.linalg.norm(v, axis=1, keepdims=True)
+        norms[norms == 0] = 1.0
+        self.vecs = v / norms
+
+    def top_k(self, query: str, k: int) -> list:
+        import numpy as np
+        qv = np.asarray(ollama_embed([query])[0], dtype=np.float32)
+        qv = qv / (float(np.linalg.norm(qv)) or 1.0)
+        sims = self.vecs @ qv
+        # deterministic tie-break by index (mirror DenseIndex's (-sim, i) ordering)
+        order = sorted(range(len(sims)), key=lambda i: (-float(sims[i]), i))
+        return order[:k]
+
+
 def rrf(rankings: list, k: int = 60) -> list:
     """Reciprocal-rank fusion of several full rankings (list of ranked index lists)."""
     scores: dict = collections.defaultdict(float)
@@ -200,10 +306,14 @@ def rank_chunks(retriever: str, rec: dict, chunks: list, bid: str,
         bm25_cache[bid] = BM25([txt for _, txt in chunks])
     if retriever in ("dense", "hybrid") and bid not in dense_cache:
         dense_cache[bid] = DenseIndex([txt for _, txt in chunks])
+    if retriever == "dense_bge" and bid not in dense_cache:
+        dense_cache[bid] = OllamaBGEIndex([txt for _, txt in chunks])
+    if retriever == "dense_bge_st" and bid not in dense_cache:
+        dense_cache[bid] = BGEDenseIndex([txt for _, txt in chunks])
     n = len(chunks)
     if retriever == "bm25":
         return bm25_cache[bid].top_k(q, n)
-    if retriever == "dense":
+    if retriever in ("dense", "dense_bge", "dense_bge_st"):
         return dense_cache[bid].top_k(q, n)
     if retriever == "hybrid":
         return rrf([bm25_cache[bid].top_k(q, n), dense_cache[bid].top_k(q, n)])
@@ -224,9 +334,12 @@ def retrieve(retriever: str, rec: dict, chunks: list, k: int, bid: str,
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--retriever", choices=["bm25", "dense", "hybrid", "oracle"], required=True,
+    ap.add_argument("--retriever", choices=["bm25", "dense", "dense_bge", "dense_bge_st", "hybrid", "oracle"],
+                    required=True,
                     help="bm25/oracle need no extra deps; dense/hybrid need OPENAI_API_KEY and the "
-                         "optional baseline deps (uv sync --extra baseline)")
+                         "optional baseline deps (uv sync --extra baseline); dense_bge = bge-m3 via a "
+                         "local Ollama daemon (urllib only, fast); dense_bge_st = bge-m3 via "
+                         "sentence-transformers+torch (offline fallback)")
     ap.add_argument("--k", type=int, default=5,
                     help="top-k passages for bm25/dense/hybrid (oracle uses gold-page chunks); "
                          "dense/hybrid embeddings need OPENAI_API_KEY + uv sync --extra baseline")
