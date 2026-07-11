@@ -2,7 +2,7 @@
 
 This protocol describes how to evaluate three system classes on KR-Housing-LongRAG-Bench and how to read
 the trivial baselines. It is a **draft for the paper**, not a leaderboard spec — the `test_hidden` split
-is not yet served behind a sealed harness (see `docs/v0.6_quality_report.md` §4).
+is not yet served behind a sealed harness.
 
 ## 0. Inputs and scoring
 

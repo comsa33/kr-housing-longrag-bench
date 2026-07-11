@@ -135,5 +135,5 @@ python3 scripts/check_public_release_readiness.py --qa data/qa_v0.6_realistic_ca
 python3 scripts/check_question_realism_v06.py --qa data/qa_v0.6_realistic_candidates.jsonl
 ```
 
-See `docs/release_checklist.md` for the full pre-tag checklist and `docs/dataset_statistics_v06.md` for
+See `docs/dataset_statistics_v08.md` for
 the count tables.

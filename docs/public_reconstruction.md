@@ -94,4 +94,4 @@ expansion) is `data/v0.5_announcement_targets.jsonl`.
 Korean statutes/rules/official notices are non-protected works (Copyright Act Art. 7). Public-data
 entries used here are marked `이용허락범위 제한 없음`. LH 입주자모집공고 are official public-agency
 notices; the project still keeps their raw files internal and releases only URLs + locators + short
-answers. Do not redistribute the rebuilt raw files. See `docs/source_selection_and_license_audit.md`.
+answers. Do not redistribute the rebuilt raw files.

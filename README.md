@@ -62,7 +62,7 @@ claim is made — only what the gates verify.
 
 To **run** the benchmark with full long-context bundles, reconstruct the internal context locally from
 official URLs + your own API keys: `docs/public_reconstruction.md` and
-`python3 scripts/rebuild_v04_from_public_manifest.py --check`. Release gating: `docs/release_checklist.md`.
+`python3 scripts/rebuild_v04_from_public_manifest.py --check`.
 
 **Legacy build artifacts** (`qa_seed`, `qa_v0.2`–`qa_v0.5` candidates and their build/verify scripts) are
 **retained in place for reproducibility** — `validate_dataset.py` and `verify_qa.py` still validate every
@@ -166,13 +166,12 @@ Scripts (scoring needs only the standard library):
 
 Docs:
 
-- `docs/quickstart_v06.md`: current public quickstart (legacy filename)
+- `docs/quickstart_v06.md`: public quickstart (record fields, prediction format, end-to-end example)
+- `docs/evaluation_protocol.md`: regime and metric definitions
+- `docs/baseline_protocol_v06.md`: full-context vs RAG vs table/tool protocol
 - `docs/baseline_results_v09.md`: release-grade baseline results
-- `docs/dataset_statistics_v08.md`: current count tables (task/split/style/provider/region/bundle/cluster)
-- `docs/v0.6_quality_report.md`: historical realism / bundles / splits / verification report
-- `docs/release_checklist.md`: pre-tag gate checklist
-- `docs/source_selection_and_license_audit.md`: license and source policy
-- `docs/repository_scope_policy.md`: benchmark repository scope and public-surface policy
+- `docs/dataset_statistics_v08.md`: count tables (task/split/style/provider/region/bundle/cluster)
+- `docs/public_reconstruction.md`: rebuild the internal corpus from official sources
 
 ## Recommended Paper Baselines
 

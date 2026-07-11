@@ -3,8 +3,7 @@
 **Scope.** This document reports the **release-grade reference baselines** for the v0.9 build: **five models**
 × **three context regimes** (closed-book / RAG-BM25 / full-context), run via the **OpenAI Batch API** and
 scored by an **LLM-judge headline metric** (semantic equivalence, human-validated — §9.0), with deterministic
-soft/EM + Wilson 95% CIs as the reproducible reference (§8.4). It supersedes the v0.7 *smoke* diagnostics
-([`baseline_results_v07.md`](baseline_results_v07.md), a 22-item convenience slice, closed-book floor only).
+soft/EM + Wilson 95% CIs as the reproducible reference (§8.4). It supersedes the v0.7 *smoke* diagnostics.
 
 This is a **research-preview reference baseline**, **not** a sealed-hidden leaderboard and **not** a final
 model ranking. Per-tier long-context numbers are captioned **indicative**; see *Limitations and the path to
