@@ -14,7 +14,7 @@ tabular data (MOLIT 실거래 / HUG 분양이력), and housing statutes.
 - **Current release:** `v0.9` (split consolidation + release-grade baselines; **1,997 QA**, on the v0.8
   human-review build) — **public-ready seed benchmark, NOT leaderboard-ready** (see caveats below). v0.9
   merges the former `test_hidden` into `test_public` (389) and adds LLM-judge-scored baselines (§
-  `docs/baseline_results_v09.md`); the underlying v0.8 build regenerated all positional-cloze questions into natural
+  `docs/baseline_results.md`); the underlying v0.8 build regenerated all positional-cloze questions into natural
   source-grounded questions, fixes location/answer errors, and removes 14 unrepairable items; it supersedes
   earlier seed builds. See `CHANGELOG.md`.
 - **Canonical v0.9 file:** `data/qa_v0.6_realistic_candidates.jsonl` (historical filename retained for
@@ -22,8 +22,8 @@ tabular data (MOLIT 실거래 / HUG 분양이력), and housing statutes.
   `data/qa_v0.6_test_public.jsonl` (389, answers included). v0.9 merged the former `test_hidden` (285) into
   `test_public`; `split_tags` mark the `ood_region` (116) / `ood_year` (50) generalization subsets.
 - **Quickstart:** see [Quickstart / evaluation](#quickstart--evaluation) · **Stats:**
-  [`docs/dataset_statistics_v08.md`](docs/dataset_statistics_v08.md) · **Baselines:**
-  [`docs/baseline_results_v09.md`](docs/baseline_results_v09.md) · **License:** [`LICENSE`](LICENSE) ·
+  [`docs/dataset_statistics.md`](docs/dataset_statistics.md) · **Baselines:**
+  [`docs/baseline_results.md`](docs/baseline_results.md) · **License:** [`LICENSE`](LICENSE) ·
   **Cite:** [`CITATION.cff`](CITATION.cff)
 
 This is a seed package, not a finished large-scale benchmark. It is structured so the dataset can grow into a paper-grade benchmark without redistributing copyrighted PDFs/HWPs.
@@ -47,7 +47,7 @@ near-duplicates (1,997 → 282 clusters) for cluster-weighted scoring, and defin
 Public release splits: `data/qa_v0.6_dev.jsonl` (1,608) and `data/qa_v0.6_test_public.jsonl` (389, answers
 included); v0.9 merged the former `test_hidden` (285) into `test_public` (no sealed split — it was never a
 leaderboard hidden set), retaining `ood_region`/`ood_year` subsets via `split_tags`.
-See `CHANGELOG.md` and `docs/dataset_statistics_v08.md`.
+See `CHANGELOG.md` and `docs/dataset_statistics.md`.
 
 **Scope claim — read carefully.** This is a **public-ready seed benchmark**. CI runs the public-safe gates
 on every push/PR (`validate_dataset.py`, `check_public_release_readiness.py` → `public-ready`, realism +
@@ -62,7 +62,7 @@ claim is made — only what the gates verify.
 
 To **run** the benchmark with full long-context bundles, reconstruct the internal context locally from
 official URLs + your own API keys: `docs/public_reconstruction.md` and
-`python3 scripts/rebuild_v04_from_public_manifest.py --check`. Release gating: `docs/release_checklist.md`.
+`python3 scripts/rebuild_v04_from_public_manifest.py --check`.
 
 **Legacy build artifacts** (`qa_seed`, `qa_v0.2`–`qa_v0.5` candidates and their build/verify scripts) are
 **retained in place for reproducibility** — `validate_dataset.py` and `verify_qa.py` still validate every
@@ -75,19 +75,18 @@ Scoring needs only the public files and the Python standard library (no third-pa
 
 ```bash
 # build locator-only prompt inputs (public-safe; no document text)
-python3 scripts/make_prompt_v06.py                        # -> data/qa_v0.6_prompts.jsonl (legacy filename)
+python3 scripts/make_prompt.py                        # -> data/qa_v0.6_prompts.jsonl (legacy filename)
 
 # score your predictions ({"qa_id","prediction"} JSONL); plain + cluster-weighted accuracy
-python3 scripts/eval_harness_v06.py --pred my_predictions.jsonl
+python3 scripts/eval_harness.py --pred my_predictions.jsonl
 
 # sanity: scorer/gold wiring and trivial baselines
-python3 scripts/eval_harness_v06.py --self-test
-python3 scripts/run_baseline_stub_v06.py                  # oracle/dummy/random/echo (INTERNAL outputs)
+python3 scripts/eval_harness.py --self-test
 ```
 
 Full walkthrough (record fields, prediction format, dummy end-to-end example):
-`docs/quickstart_v06.md` (legacy filename, current public quickstart). Release-grade baseline results:
-`docs/baseline_results_v09.md`. Count tables: `docs/dataset_statistics_v08.md`.
+`docs/quickstart.md` (legacy filename, current public quickstart). Release-grade baseline results:
+`docs/baseline_results.md`. Count tables: `docs/dataset_statistics.md`.
 
 Optional developer setup with `uv`:
 
@@ -151,33 +150,31 @@ Canonical v0.9 release files (historical `v0.6` filenames retained for compatibi
 - `data/qa_v0.6_realistic_candidates.jsonl`: **canonical v0.9 full set** (1,997 QA; realism + cluster + bundle metadata)
 - `data/qa_v0.6_dev.jsonl` (1,608) / `data/qa_v0.6_test_public.jsonl` (389): release splits, all answers included
   (v0.9 merged the former `test_hidden` into `test_public`; `split_tags` keep the `ood_region`/`ood_year` subsets)
-- `data/qa_v0.6_prompts.jsonl`: locator-only prompt inputs (generated by `make_prompt_v06.py`)
+- `data/qa_v0.6_prompts.jsonl`: locator-only prompt inputs (generated by `make_prompt.py`)
 - `data/qa_v0.5_candidates.jsonl`: pre-realism input build (same qa_ids/answers)
 - `data/source_manifest.jsonl`: source registry with access URL, license basis, and inclusion policy
 - `data/task_schema.json`: JSON schema for QA examples
 
 Scripts (scoring needs only the standard library):
 
-- `scripts/make_prompt_v06.py`: QA → locator-only prompt inputs (`--inline-context` for local full-context)
-- `scripts/eval_harness_v06.py`: score predictions; plain + cluster-weighted accuracy (`--self-test`)
-- `scripts/run_baseline_stub_v06.py`: trivial oracle/dummy/random/echo baselines (INTERNAL outputs)
+- `scripts/make_prompt.py`: QA → locator-only prompt inputs (`--inline-context` for local full-context)
+- `scripts/eval_harness.py`: score predictions; plain + cluster-weighted accuracy (`--self-test`)
 - `scripts/validate_dataset.py` / `scripts/verify_qa.py`: schema + predicate-recompute/grounding gates
-- `scripts/check_public_release_readiness.py` / `scripts/check_question_realism_v06.py`: release gates
+- `scripts/check_public_release_readiness.py` / `scripts/check_question_realism.py`: release gates
 
 Docs:
 
-- `docs/quickstart_v06.md`: current public quickstart (legacy filename)
-- `docs/baseline_results_v09.md`: release-grade baseline results
-- `docs/dataset_statistics_v08.md`: current count tables (task/split/style/provider/region/bundle/cluster)
-- `docs/v0.6_quality_report.md`: historical realism / bundles / splits / verification report
-- `docs/release_checklist.md`: pre-tag gate checklist
-- `docs/source_selection_and_license_audit.md`: license and source policy
-- `docs/repository_scope_policy.md`: benchmark repository scope and public-surface policy
+- `docs/quickstart.md`: public quickstart (record fields, prediction format, end-to-end example)
+- `docs/evaluation_protocol.md`: regime and metric definitions
+- `docs/baseline_protocol.md`: full-context vs RAG vs table/tool protocol
+- `docs/baseline_results.md`: release-grade baseline results
+- `docs/dataset_statistics.md`: count tables (task/split/style/provider/region/bundle/cluster)
+- `docs/public_reconstruction.md`: rebuild the internal corpus from official sources
 
 ## Recommended Paper Baselines
 
-See `docs/baseline_results_v09.md` for the current release-grade baseline results and
-`docs/baseline_protocol_v06.md` for the historical full-context vs RAG vs table/tool protocol. For new
+See `docs/baseline_results.md` for the current release-grade baseline results and
+`docs/baseline_protocol.md` for the historical full-context vs RAG vs table/tool protocol. For new
 experiments, report at least these system families:
 
 - Full-context prompting with 32K, 64K, 128K, 256K, and 512K budgets

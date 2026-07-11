@@ -2,9 +2,9 @@
 """Build INTERNAL full-context (class A) prompt records for the v0.9 baseline.
 
 Reads the LOCKED full-context-eligible sample (baseline_sample_v09.fc.jsonl from
-scripts/build_baseline_sample_v09.py), joins each item to its split file for the
+scripts/build_baseline_sample.py), joins each item to its split file for the
 question text, embeds the ENTIRE bundle text at the item's context_tier, and emits
-records carrying a `prompt` field that scripts/run_llm_baseline_v07.py consumes
+records carrying a `prompt` field that scripts/run_llm_baseline.py consumes
 directly (its select_prompt() uses a record's `prompt` verbatim).
 
 Safety: output embeds raw bundle text → written ONLY under workspace_local/ (the
@@ -12,9 +12,9 @@ script refuses any --out outside it). Never publish this file or the bundle text
 Deterministic (sample order), no API calls.
 
 Usage:
-    python3 scripts/build_baseline_fullcontext_v09.py
+    python3 scripts/build_baseline_fullcontext.py
     # then, per split:
-    python3 scripts/run_llm_baseline_v07.py --provider openai --model gpt-4.1-mini \\
+    python3 scripts/run_llm_baseline.py --provider openai --model gpt-4.1-mini \\
         --split test_public --prompt-file workspace_local/audit/baselines/fullcontext_v09_prompts.jsonl \\
         --out workspace_local/audit/baselines/fc_gpt-4.1-mini_test_public.jsonl \\
         --max-output-tokens 256 --resume
@@ -38,7 +38,7 @@ DEFAULT_INSTR = "주어진 근거 자료로 질문에 답하라."
 
 
 def full_context_prompt(question: str, bundle_text: str, instr: str = DEFAULT_INSTR) -> str:
-    """Identical shape to build_full_context_smoke_v07.full_context_prompt()."""
+    """Identical shape to build_full_context_smoke.full_context_prompt()."""
     return (
         f"{instr}\n\n"
         f"[제공 문서] (아래 공고/번들 본문에서 근거를 찾으세요.)\n{bundle_text}\n\n"
@@ -67,7 +67,7 @@ def main() -> int:
 
     sample = Path(args.sample).resolve() if args.sample else FC_SAMPLE
     if not sample.exists():
-        raise SystemExit(f"missing {sample} — run scripts/build_baseline_sample_v09.py first")
+        raise SystemExit(f"missing {sample} — run scripts/build_baseline_sample.py first")
     fc = load_jsonl(sample)
 
     # qa_id -> question, from the split files (the slim sample has no question text).

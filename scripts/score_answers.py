@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """v0.9 answer scorer — paraphrase/format-robust matching + 95% CIs (lever 3).
 
-The legacy `eval_harness_v06.score` uses a strict normalized-substring match, which produces
+The legacy `eval_harness.score` uses a strict normalized-substring match, which produces
 false negatives when the prediction is correct but phrased differently from the gold (e.g. gold
 "부산도시공사=부산광역시 / 한국토지주택공사=경기도" vs pred "부산도시공사: 부산광역시 / ...: 경기도"). On the 512k
 tier alone that was ~7/12 false negatives, which fabricated a non-existent "512k collapse".
@@ -19,8 +19,8 @@ Each is reported with a Wilson 95% CI, plain and cluster-weighted, cut by split/
 question_style. LLM-judge (semantic equivalence) is a separate batch pass; this is the deterministic base.
 
 Usage:
-    python3 scripts/score_answers_v09.py --pred <preds.jsonl> --splits dev,test_public --pred-only
-    python3 scripts/score_answers_v09.py --pred <preds.jsonl> --ids-file <sample.jsonl> --recall-th 0.7
+    python3 scripts/score_answers.py --pred <preds.jsonl> --splits dev,test_public --pred-only
+    python3 scripts/score_answers.py --pred <preds.jsonl> --ids-file <sample.jsonl> --recall-th 0.7
 """
 from __future__ import annotations
 

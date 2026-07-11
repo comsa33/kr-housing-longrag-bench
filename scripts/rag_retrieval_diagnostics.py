@@ -11,7 +11,7 @@ For the same 22-item slice as the RAG smoke, measure BM25 retrieval QUALITY (not
 
 Reads internal bundle text + (optionally) internal prediction files under workspace_local/, but EMITS
 only aggregate stats + qa_ids (no bundle text), so the output is public-safe. Reuses the smoke's
-chunker/BM25 (scripts/build_rag_smoke_v07.py) and the harness scorer (scripts/eval_harness_v06.py).
+chunker/BM25 (scripts/build_rag_smoke.py) and the harness scorer (scripts/eval_harness.py).
 """
 from __future__ import annotations
 
@@ -24,8 +24,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-import build_rag_smoke_v07 as rb  # noqa: E402  (chunker + BM25)
-import eval_harness_v06 as eh      # noqa: E402  (canonical scorer)
+import build_rag_smoke as rb  # noqa: E402  (chunker + BM25)
+import eval_harness as eh      # noqa: E402  (canonical scorer)
 
 QA = ROOT / "data" / "qa_v0.6_realistic_candidates.jsonl"
 BUNDLES = ROOT / "workspace_local" / "processed" / "bundles-v06"

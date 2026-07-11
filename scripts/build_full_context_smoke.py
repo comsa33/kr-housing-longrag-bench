@@ -4,7 +4,7 @@
 Selects a few `test_public` QA that have a bundle and a SMALL context tier (32k/64k), embeds the actual
 bundle text (from workspace_local/processed/bundles-v06/<bundle_id>.txt) into a full-context prompt, and
 writes them to an INTERNAL file under workspace_local/audit/baselines/ so they can be fed to
-scripts/run_llm_baseline_v07.py (which uses a record's `prompt` field directly).
+scripts/run_llm_baseline.py (which uses a record's `prompt` field directly).
 
 Safety:
   * The output embeds raw bundle text, so it is written ONLY under workspace_local/ (gitignored). The

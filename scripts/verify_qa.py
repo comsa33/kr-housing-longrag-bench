@@ -25,7 +25,7 @@ import qa_common as V2
 import qa_v03_common as V3
 import qa_v04_common as V4
 import qa_v05_common as V5
-import providers_v05 as P5
+import providers as P5
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"

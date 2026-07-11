@@ -13,8 +13,8 @@ INTERNAL jsonl, and prints per-model aggregates (count, prompt/completion tokens
 Output is INTERNAL (workspace_local/, gitignored). Needs OPENAI_API_KEY.
 
 Usage:
-    python3 scripts/fetch_openai_completions_v09.py --since 1749513600
-    python3 scripts/fetch_openai_completions_v09.py --since 1749513600 --with-input
+    python3 scripts/fetch_openai_completions.py --since 1749513600
+    python3 scripts/fetch_openai_completions.py --since 1749513600 --with-input
 """
 from __future__ import annotations
 

@@ -17,11 +17,11 @@ window). NO gpt models here (they stay single-run; this study characterizes the
 open reasoning models' temp-0 non-determinism).
 
 Usage:
-    python3 scripts/run_variance_v09.py --model minimax-m3:cloud \
+    python3 scripts/run_variance.py --model minimax-m3:cloud \
         --label minimax-m3-cloud --rk r2
     # regimes default to all the model supports; qwen3.5 auto-skips fc_groupB (512k cap)
 
-Then judge each {regime}_{label}_tp_{rk}.jsonl with llm_judge_v09.py and compute
+Then judge each {regime}_{label}_tp_{rk}.jsonl with llm_judge.py and compute
 stats with the --stats mode of this script.
 """
 import argparse
@@ -31,7 +31,7 @@ import subprocess
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-RUNNER = os.path.join(ROOT, "scripts", "run_llm_baseline_v07.py")
+RUNNER = os.path.join(ROOT, "scripts", "run_llm_baseline.py")
 RO = os.path.join(ROOT, "workspace_local", "audit", "baselines", "run_open")
 PROMPTS = os.path.join(RO, "prompts")
 VO = os.path.join(RO, "variance")

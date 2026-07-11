@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """v0.7 provider-agnostic LLM baseline runner (scaffold).
 
-Generates prediction JSONL compatible with scripts/eval_harness_v06.py:
+Generates prediction JSONL compatible with scripts/eval_harness.py:
 
     {"qa_id": "...", "prediction": "..."}
 
@@ -27,9 +27,9 @@ This is a baseline *scaffold*. It does not assert leaderboard-ready, human-valid
 perfect, or hallucination-free results.
 
 Examples:
-    python3 scripts/run_llm_baseline_v07.py --provider openai --model gpt-4o-mini --split dev --limit 3 --dry-run
-    python3 scripts/run_llm_baseline_v07.py --provider ollama --model llama3.1 --split dev --limit 3 --mock
-    python3 scripts/eval_harness_v06.py --pred workspace_local/audit/baselines/<file>.jsonl
+    python3 scripts/run_llm_baseline.py --provider openai --model gpt-4o-mini --split dev --limit 3 --dry-run
+    python3 scripts/run_llm_baseline.py --provider ollama --model llama3.1 --split dev --limit 3 --mock
+    python3 scripts/eval_harness.py --pred workspace_local/audit/baselines/<file>.jsonl
 """
 from __future__ import annotations
 
@@ -108,7 +108,7 @@ def build_prompt(rec: dict) -> str:
 
 def select_prompt(rec: dict) -> str:
     """Use a pre-built `prompt` if the record carries one (e.g. INTERNAL full-context prompts that embed
-    bundle text, built by scripts/build_full_context_smoke_v07.py); otherwise build the locator-only
+    bundle text, built by scripts/build_full_context_smoke.py); otherwise build the locator-only
     prompt. The runner never embeds bundle text itself — full-context prompts are produced offline and
     kept under workspace_local/."""
     p = rec.get("prompt")
@@ -427,7 +427,7 @@ def resolve_out_path(args) -> Path:
 def load_prompt_records(args) -> list[dict]:
     path = ROOT / args.prompt_file if not Path(args.prompt_file).is_absolute() else Path(args.prompt_file)
     if not path.exists():
-        raise SystemExit(f"prompt file not found: {path} (run scripts/make_prompt_v06.py first)")
+        raise SystemExit(f"prompt file not found: {path} (run scripts/make_prompt.py first)")
     recs = []
     for line in path.open(encoding="utf-8"):
         if not line.strip():
@@ -597,7 +597,7 @@ def main(argv=None) -> int:
     print(f"== baseline run ({tag}) — {written} predictions written, {errors} errors ==")
     print(f"predictions: {out_path.relative_to(ROOT) if ROOT in out_path.parents else out_path}")
     print(f"metadata:    {meta_path.relative_to(ROOT) if ROOT in meta_path.parents else meta_path}")
-    print(f"score with:  python3 scripts/eval_harness_v06.py --pred {out_path.relative_to(ROOT) if ROOT in out_path.parents else out_path}")
+    print(f"score with:  python3 scripts/eval_harness.py --pred {out_path.relative_to(ROOT) if ROOT in out_path.parents else out_path}")
     return 0
 
 

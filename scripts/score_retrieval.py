@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Retrieval-quality metrics for the v0.9 RAG baseline (recall@k / hit@k).
 
-Reads a RAG prompt file produced by scripts/build_baseline_rag_v09.py (each record
+Reads a RAG prompt file produced by scripts/build_baseline_rag.py (each record
 carries `retrieved_page_ids` and `gold_page_ids`) and reports, over items that have
 gold pages:
 
@@ -15,7 +15,7 @@ independent), so it is scored from the prompt file, not from predictions.
 Internal-only inputs (bundle-derived); prints a table, writes nothing.
 
 Usage:
-    python3 scripts/score_retrieval_v09.py \\
+    python3 scripts/score_retrieval.py \\
         --rag workspace_local/audit/baselines/rag_bm25_v09_prompts.jsonl
 """
 from __future__ import annotations
@@ -39,7 +39,7 @@ def load_jsonl(path: Path) -> list[dict]:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--rag", required=True, help="RAG prompt JSONL from build_baseline_rag_v09.py")
+    ap.add_argument("--rag", required=True, help="RAG prompt JSONL from build_baseline_rag.py")
     args = ap.parse_args()
 
     rag_path = Path(args.rag) if Path(args.rag).is_absolute() else ROOT / args.rag

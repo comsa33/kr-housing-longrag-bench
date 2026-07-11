@@ -34,7 +34,7 @@ STEPS = {
     "acquire_lh": ("Download official LH 모집공고 PDFs/HWPs from the public target manifest",
                    ["acquire_lh_announcements_from_manifest.py"], []),
     "extract_lh": ("Extract LH announcement pages + numeric facts (pdftotext)",
-                   ["extract_lh_announcements_v04.py"], []),
+                   ["extract_lh_announcements.py"], []),
     "acquire_molit": ("Fetch MOLIT apartment trade-detail rows (data.go.kr open API)",
                       ["acquire_molit_apt_trade_detail_rows.py"], ["data_go_kr.key"]),
     "acquire_hug": ("Fetch HUG sale-history rows (HUG API)",

@@ -17,13 +17,13 @@ first build where QA content was substantively repaired: all positional-cloze (`
 questions were regenerated into natural source-grounded questions or removed, location mislabels and
 confirmed wrong answers were fixed, and 14 unrepairable items removed (2,011 → 1,997). It **supersedes the
 v0.6 build** — the v0.7 "v0.6 unchanged" description no longer applies. See `CHANGELOG.md` and
-`docs/dataset_statistics_v08.md`.
+`docs/dataset_statistics.md`.
 
 Canonical v0.6 files: `data/qa_v0.6_realistic_candidates.jsonl` (full set, realism + cluster + bundle
 metadata) and the release splits `data/qa_v0.6_dev.jsonl` (1,608) / `data/qa_v0.6_test_public.jsonl` (389,
 answers included). **v0.9: the former `test_hidden` split (285) was merged into `test_public`** — a larger
 public held-out test (389) is more valuable than a sealed set we cannot serve; the merged items keep their
-`split_tags` so the `ood_region` (116) and `ood_year` (50) subsets remain reportable. Scoring: `scripts/eval_harness_v06.py`
+`split_tags` so the `ood_region` (116) and `ood_year` (50) subsets remain reportable. Scoring: `scripts/eval_harness.py`
 (plain + cluster-weighted accuracy). `data/qa_v0.5_candidates.jsonl` is the pre-realism build (same
 qa_ids/answers; input to the realism pass).
 
@@ -38,9 +38,9 @@ Verification: `validate_dataset.py` = 0; `verify_qa.py` = 0 (1,997/1,997, split-
 `check_public_release_readiness.py` = 0; realism + public-surface scans = 0. See `docs/v0.5_batch_report.md`
 (source expansion) and `docs/v0.6_quality_report.md` (realism / bundles / splits).
 
-Usage: `docs/quickstart_v06.md` (load → build prompts → score → baselines), `docs/baseline_protocol_v06.md`
+Usage: `docs/quickstart.md` (load → build prompts → score → baselines), `docs/baseline_protocol.md`
 (full-context vs RAG vs table/tool protocol), `docs/dataset_statistics_v06.md` (count tables). Scoring:
-`python3 scripts/eval_harness_v06.py --pred <predictions>.jsonl` (plain + cluster-weighted accuracy).
+`python3 scripts/eval_harness.py --pred <predictions>.jsonl` (plain + cluster-weighted accuracy).
 
 v0.7 research-preview release: the `v0.7` release adds a provider-agnostic **baseline runner**,
 **full-context / RAG smoke docs**, **retrieval diagnostics**, and a **repository scope policy** (index:

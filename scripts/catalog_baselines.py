@@ -6,7 +6,7 @@ predictions / call-logs / run-meta / drivers / other), and writes an INDEX.md wi
 a naming legend and a predictions-status table (regime x model x split -> counts,
 empties). Safe to run anytime (read-only scan; only writes INDEX.md). Re-run to refresh.
 
-Usage:  python3 scripts/catalog_baselines_v09.py
+Usage:  python3 scripts/catalog_baselines.py
 """
 from __future__ import annotations
 
@@ -26,7 +26,7 @@ V09_MODELS = {"gpt-4.1-mini", "minimax-m3-cloud"}
 LEGEND = """\
 # v0.9 baseline artifacts — INDEX
 
-All files here are INTERNAL (gitignored). Public results live in `docs/baseline_results_v09.md`.
+All files here are INTERNAL (gitignored). Public results live in `docs/baseline_results.md`.
 
 ## Naming legend
 - `baseline_sample_v09.jsonl` — the locked 304-item evaluation sample (seed 20260610).
@@ -41,7 +41,7 @@ All files here are INTERNAL (gitignored). Public results live in `docs/baseline_
 - `run_v09_*.sh` / `score_v09.sh` — run + scoring drivers.
 
 To score: `bash workspace_local/audit/baselines/score_v09.sh`.
-To refresh this index: `python3 scripts/catalog_baselines_v09.py`.
+To refresh this index: `python3 scripts/catalog_baselines.py`.
 """
 
 

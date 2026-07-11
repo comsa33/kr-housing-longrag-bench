@@ -8,18 +8,18 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 OUT="${1:-$ROOT/dist/kr-housing-longrag-bench-package}"
 BUNDLES="$ROOT/workspace_local/processed/bundles-v06"
-EVAL_SCRIPTS=(attach_bundles_v06 build_baseline_fullcontext_v09 build_baseline_rag_v09 \
-  build_baseline_sample_v09 make_prompt_v06 run_llm_baseline_v07 run_batch_baseline_v09 \
-  fetch_openai_completions_v09 providers_v05 llm_judge_v09 score_judge_v09 score_answers_v09 \
-  score_retrieval_v09 run_variance_v09 rag_retrieval_diagnostics_v07 eval_harness_v06 \
-  catalog_baselines_v09 validate_dataset verify_qa qa_common qa_v03_common qa_v04_common qa_v05_common)
+EVAL_SCRIPTS=(attach_bundles build_baseline_fullcontext build_baseline_rag \
+  build_baseline_sample make_prompt run_llm_baseline run_batch_baseline \
+  fetch_openai_completions providers llm_judge score_judge score_answers \
+  score_retrieval run_variance rag_retrieval_diagnostics eval_harness \
+  catalog_baselines validate_dataset verify_qa qa_common qa_v03_common qa_v04_common qa_v05_common)
 rm -rf "$OUT"
 mkdir -p "$OUT/data" "$OUT/scripts" "$OUT/docs" "$OUT/workspace_local/processed/bundles-v06"
 cp "$ROOT"/data/*.jsonl "$ROOT"/data/*.json "$OUT/data/"
 cp "$BUNDLES"/*.txt "$OUT/workspace_local/processed/bundles-v06/" 2>/dev/null || true
 cp "$BUNDLES"/*.jsonl "$OUT/workspace_local/processed/bundles-v06/" 2>/dev/null || true
 for s in "${EVAL_SCRIPTS[@]}"; do cp "$ROOT/scripts/$s.py" "$OUT/scripts/"; done
-for d in evaluation_protocol baseline_protocol_v06 public_reconstruction quickstart_v06 license_audit_v09; do
+for d in evaluation_protocol baseline_protocol public_reconstruction quickstart license_audit_v09; do
   [ -f "$ROOT/docs/$d.md" ] && cp "$ROOT/docs/$d.md" "$OUT/docs/"
 done
 mkdir -p "$OUT/workspace_local/audit/baselines"

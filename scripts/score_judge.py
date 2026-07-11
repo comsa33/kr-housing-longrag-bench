@@ -9,8 +9,8 @@ broken down by context_tier within each split.
 Judge verdict files carry only {qa_id, judge_correct}; split / task_type / context_tier /
 cluster_weight are joined from the gold split files (public splits only — hidden never here).
 
-    python3 scripts/score_judge_v09.py                 # all models, by split (+ fc tier)
-    python3 scripts/score_judge_v09.py --splits test_public
+    python3 scripts/score_judge.py                 # all models, by split (+ fc tier)
+    python3 scripts/score_judge.py --splits test_public
 """
 from __future__ import annotations
 

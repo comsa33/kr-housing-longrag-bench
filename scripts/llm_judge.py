@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """v0.9 LLM-judge — semantic-equivalence scoring of one regime's predictions (lever 3B).
 
-Deterministic string metrics (score_answers_v09) cannot tell whether a legal paraphrase or a
+Deterministic string metrics (score_answers) cannot tell whether a legal paraphrase or a
 reordered comparison answer is *semantically* correct — which fabricated a false "512k collapse".
 This judges each prediction against the gold with an LLM (correct / incorrect / unanswerable),
 via the OpenAI Batch API (~50% cheaper, qa_id-native via custom_id, async <24h).

@@ -15,13 +15,13 @@ repos:
 
       - id: question-realism
         name: check v0.6 question realism
-        entry: python3 scripts/check_question_realism_v06.py --qa data/qa_v0.6_realistic_candidates.jsonl
+        entry: python3 scripts/check_question_realism.py --qa data/qa_v0.6_realistic_candidates.jsonl
         language: system
         pass_filenames: false
 
       - id: eval-harness-self-test
         name: eval harness self-test
-        entry: python3 scripts/eval_harness_v06.py --self-test
+        entry: python3 scripts/eval_harness.py --self-test
         language: system
         pass_filenames: false
 
