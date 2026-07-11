@@ -69,10 +69,10 @@ The v0.8 regeneration eliminated the templated positional-cloze style entirely. 
 
 ## 6. Notes
 
-- Cluster-weighted accuracy remains the headline metric (`scripts/eval_harness_v06.py`); the regeneration
+- Cluster-weighted accuracy remains the headline metric (`scripts/eval_harness.py`); the regeneration
   diversified former near-duplicate cloze families into distinct natural questions where the page supported
   it, but some parametric near-duplicates remain (clustered, weight = 1/size).
 - All v0.8 question/answer/evaluation changes were propagated to the pre-realism source
-  `data/qa_v0.5_candidates.jsonl` so the realism invariant (`check_question_realism_v06.py`) holds.
+  `data/qa_v0.5_candidates.jsonl` so the realism invariant (`check_question_realism.py`) holds.
 - Verification: `validate_dataset.py` = 0, `verify_qa.py` = 0 (1,997/1,997), `check_public_release_readiness.py`
-  = public-ready, `check_question_realism_v06.py` = 0 failures.
+  = public-ready, `check_question_realism.py` = 0 failures.

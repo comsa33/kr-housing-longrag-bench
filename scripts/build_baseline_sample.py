@@ -17,8 +17,8 @@ under workspace_local/audit/baselines/ (gitignored). The reproducible artifact
 that ships is THIS script + its seed, not the drawn file.
 
 Usage:
-    python3 scripts/build_baseline_sample_v09.py                 # default target 200, seed pinned
-    python3 scripts/build_baseline_sample_v09.py --dev-target 200 --per-cluster 1 --seed 20260610
+    python3 scripts/build_baseline_sample.py                 # default target 200, seed pinned
+    python3 scripts/build_baseline_sample.py --dev-target 200 --per-cluster 1 --seed 20260610
 """
 from __future__ import annotations
 

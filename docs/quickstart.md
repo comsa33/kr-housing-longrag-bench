@@ -48,7 +48,7 @@ Scoring and prompt-building (§3–§5) need **no** third-party packages — sta
 ## 3. Build prompt inputs
 
 ```bash
-python3 scripts/make_prompt_v06.py
+python3 scripts/make_prompt.py
 # -> data/qa_v0.6_prompts.jsonl  (locator-only, public-safe)
 ```
 
@@ -58,7 +58,7 @@ Each record carries `instruction`, `question`, and a `context_spec` describing *
 local full-context run (INTERNAL output under `workspace_local/`):
 
 ```bash
-python3 scripts/make_prompt_v06.py --inline-context     # requires rebuilt bundles
+python3 scripts/make_prompt.py --inline-context     # requires rebuilt bundles
 ```
 
 ## 4. Score predictions
@@ -72,7 +72,7 @@ A prediction file is JSONL, one object per QA:
 Run your model over `qa_v0.6_prompts.jsonl`, write predictions, then:
 
 ```bash
-python3 scripts/eval_harness_v06.py --pred my_predictions.jsonl
+python3 scripts/eval_harness.py --pred my_predictions.jsonl
 ```
 
 The harness reports plain **and cluster-weighted** accuracy by split / task_type / question_style, scored
@@ -80,7 +80,7 @@ per `evaluation.metric` (`exact_numbers` / `boolean_and_reason` / contained-answ
 loads gold from the internal answers file automatically. To score only some splits:
 
 ```bash
-python3 scripts/eval_harness_v06.py --pred my_predictions.jsonl --splits dev,test_public
+python3 scripts/eval_harness.py --pred my_predictions.jsonl --splits dev,test_public
 ```
 
 ## 5. Self-test + trivial baselines
@@ -89,20 +89,19 @@ Confirm the scorer/gold wiring (gold-as-prediction → 100%). In a clean public 
 `dev` + `test_public`; with the internal hidden-answer file present it covers all 2,011 items:
 
 ```bash
-python3 scripts/eval_harness_v06.py --self-test
+python3 scripts/eval_harness.py --self-test
 ```
 
 Generate reference floors/ceiling (written to `workspace_local/audit/`, INTERNAL — `oracle`/`random` are
 derived from gold):
 
 ```bash
-python3 scripts/run_baseline_stub_v06.py
-python3 scripts/eval_harness_v06.py --pred workspace_local/audit/baseline_oracle_v06.jsonl   # ~100%
-python3 scripts/eval_harness_v06.py --pred workspace_local/audit/baseline_dummy_v06.jsonl    # ~5%
+python3 scripts/eval_harness.py --pred workspace_local/audit/baseline_oracle_v06.jsonl   # ~100%
+python3 scripts/eval_harness.py --pred workspace_local/audit/baseline_dummy_v06.jsonl    # ~5%
 ```
 
 Reference numbers (all splits): oracle 100.0% / dummy 5.3% / echo 2.5% / random 1.4% (plain). See
-`docs/baseline_protocol_v06.md` for the full-context vs RAG vs table/tool protocol.
+`docs/baseline_protocol.md` for the full-context vs RAG vs table/tool protocol.
 
 ## 6. Dummy prediction example (end-to-end)
 
@@ -120,7 +119,7 @@ out.close()
 PY
 
 # 2) score it (dev only)
-python3 scripts/eval_harness_v06.py --pred my_predictions.jsonl --splits dev
+python3 scripts/eval_harness.py --pred my_predictions.jsonl --splits dev
 ```
 
 This scores only the answerability items (the fixed "unanswerable" string), demonstrating the
@@ -132,8 +131,8 @@ prediction → scoring loop end to end.
 python3 scripts/validate_dataset.py
 python3 scripts/verify_qa.py --qa data/qa_v0.6_realistic_candidates.jsonl
 python3 scripts/check_public_release_readiness.py --qa data/qa_v0.6_realistic_candidates.jsonl --allow-dev
-python3 scripts/check_question_realism_v06.py --qa data/qa_v0.6_realistic_candidates.jsonl
+python3 scripts/check_question_realism.py --qa data/qa_v0.6_realistic_candidates.jsonl
 ```
 
-See `docs/dataset_statistics_v08.md` for
+See `docs/dataset_statistics.md` for
 the count tables.

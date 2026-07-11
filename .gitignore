@@ -20,3 +20,4 @@ workspace_local/secrets/*
 __pycache__/
 *.pyc
 .DS_Store
+.omc/

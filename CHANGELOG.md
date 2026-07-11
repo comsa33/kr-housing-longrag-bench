@@ -15,11 +15,11 @@ Same 1,997 QA and schema as v0.8; this is a split-policy + evaluation change, no
 ### Removed
 - `data/qa_v0.6_test_hidden_questions.jsonl` (masked-answer hidden file) — no longer a separate split.
 
-### Added (evaluation, see `docs/baseline_results_v09.md`)
+### Added (evaluation, see `docs/baseline_results.md`)
 - Release-grade baselines: 5 models × 3 regimes (closed-book / RAG-BM25 / full-context) via the OpenAI
   Batch API, **LLM-judge headline metric human-validated** (n=80, agreement 96.2 %, Cohen's κ=0.924).
 - **HUG bundle fix (dataset level):** `mix_multiprovider_512k` — the bundle every `cross_source_aggregation`
-  item references — now **embeds the complete HUG sale-history table** (`build_bundles_v06.py`), so these
+  item references — now **embeds the complete HUG sale-history table** (`build_bundles.py`), so these
   questions are answerable in the full-context regime instead of being an unanswerable artifact. The fix
   turns the 512k tier into a real capability signal (gpt-5.5 76% vs gpt-4.1-mini 20% at n=25). Only that one
   bundle changed on rebuild; the other 166 are byte-identical.
@@ -56,7 +56,7 @@ pass (gpt-5.4 grounding triage + cross-model verification + source-grounded fixe
 ### Tooling
 - Provider-agnostic triage/verification runner (`run_triage_v08.py`), regeneration + integration pipeline,
   and gates all green: `validate_dataset.py`, `verify_qa.py` (1,997/1,997), `check_public_release_readiness.py`
-  (public-ready), `check_question_realism_v06.py` (0 failures).
+  (public-ready), `check_question_realism.py` (0 failures).
 
 ## v0.7 — research preview (over v0.6 build, 2,011 QA)
 Added a provider-agnostic baseline runner, full-context / RAG smoke diagnostics, retrieval diagnostics, and

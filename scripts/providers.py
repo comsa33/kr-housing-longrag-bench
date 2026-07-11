@@ -3,7 +3,7 @@
 
 Unifies all announcements behind one interface (pages, cells, tables, region, housing_type, split,
 grounding) so QA generation and verification work across providers. LH-v04 pages/cells come from
-qa_v04_common / extract_table_cells_v05; new providers from ingest_providers_v05 outputs.
+qa_v04_common / extract_table_cells; new providers from ingest_providers outputs.
 """
 from __future__ import annotations
 

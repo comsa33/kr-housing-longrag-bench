@@ -4,17 +4,17 @@
 These items ask an aggregate over HUG (주택도시보증공사) sale-history (e.g. "2023 경기도 분양 사업장
 건수") whose gold is computed from a structured table that was NEVER embedded in the full-context
 bundle — only the LH announcements were. So the model could not answer in the fc regime and was
-scored wrong, artificially deflating the 512k fc number (see baseline_results_v09.md §8.2/§8.5).
+scored wrong, artificially deflating the 512k fc number (see baseline_results.md §8.2/§8.5).
 
 This is a full-context regime by definition: every source the question needs must be in the bundle.
 We therefore inject the HUG rows as a compact readable table (624 raw rows; 623 are valid — one empty
 대구-2023 placeholder, immaterial: all four golds reproduce identically and no gold references it) into the
-4 prompts, just before the question. The canonical bundle (build_bundles_v06.py) embeds the 623 valid rows.
+4 prompts, just before the question. The canonical bundle (build_bundles.py) embeds the 623 valid rows.
 Only the cross_source items are touched; the other 512k items are left byte-identical so their already-
 run predictions stay valid. Output: a 4-item prompt file to re-run on the models that can ingest 512k
 (gpt-4.1-mini, gpt-5.5; the 272k-window gpt-5.4 family still ✗ctx and need no re-run).
 
-    python3 scripts/fix_fc_hug_bundle_v09.py
+    python3 scripts/fix_fc_hug_bundle.py
     -> workspace_local/audit/baselines/fullcontext_v09_prompts.hugfix.jsonl  (4 items)
 """
 from __future__ import annotations

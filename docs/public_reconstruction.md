@@ -40,7 +40,7 @@ The driver runs these steps in order (each is an independent script you can run 
 | Step | Script | Fetches from | Output (internal) |
 |---|---|---|---|
 | `acquire_lh` | `acquire_lh_announcements_from_manifest.py` | official LH pages in the target manifest | `workspace_local/raw/lh-sale-announcements-v04/**` |
-| `extract_lh` | `extract_lh_announcements_v04.py` | (local PDFs) | `…/processed/lh-sale-announcements-v04/**`, `audit/index_lh_v04.json` |
+| `extract_lh` | `extract_lh_announcements.py` | (local PDFs) | `…/processed/lh-sale-announcements-v04/**`, `audit/index_lh_v04.json` |
 | `acquire_molit` | `acquire_molit_apt_trade_detail_rows.py` | data.go.kr (your key) | `…/processed/molit-apt-trade-detail/rows_v0.3.jsonl` |
 | `acquire_hug` | `acquire_hug_sale_history_rows.py` | HUG API (your key) | `…/processed/hug-sale-history/rows_v0.3.jsonl` |
 | `indexes` | `build_v03_indexes.py` | (local) | `audit/index_{molit,hug,lh}.json` |
@@ -77,7 +77,7 @@ pipeline that executes `gold_predicate`-style queries against the rebuilt rows.
 After the steps above, also run:
 
 ```bash
-python3 scripts/extract_table_cells_v05.py      # PyMuPDF table cells -> workspace_local (internal)
+python3 scripts/extract_table_cells.py      # PyMuPDF table cells -> workspace_local (internal)
 python3 scripts/build_qa_v05_det.py             # new cell/eligibility/schedule/correction QA
 python3 scripts/assemble_qa_v05.py              # -> data/qa_v0.5_candidates.jsonl (+ split assignment)
 python3 scripts/verify_qa.py                     # includes v0.5 checks + split-leakage

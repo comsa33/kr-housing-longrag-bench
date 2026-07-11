@@ -14,9 +14,9 @@ prompt sets as the sync runner, restricted to the locked 304-item sample. Intern
 dev/test_public only, never hidden.
 
 Usage:
-    python3 scripts/run_batch_baseline_v09.py submit --model gpt-4.1-nano --regimes cb,rag,fc
-    python3 scripts/run_batch_baseline_v09.py status --model gpt-4.1-nano
-    python3 scripts/run_batch_baseline_v09.py fetch  --model gpt-4.1-nano
+    python3 scripts/run_batch_baseline.py submit --model gpt-4.1-nano --regimes cb,rag,fc
+    python3 scripts/run_batch_baseline.py status --model gpt-4.1-nano
+    python3 scripts/run_batch_baseline.py fetch  --model gpt-4.1-nano
 """
 from __future__ import annotations
 
@@ -27,7 +27,7 @@ from collections import defaultdict
 from pathlib import Path
 
 # reuse the sync runner's prompt builder + param switching (same scripts/ dir)
-from run_llm_baseline_v07 import select_prompt, _openai_chat_kwargs, _REASONING_OVERRIDE  # noqa: E402
+from run_llm_baseline import select_prompt, _openai_chat_kwargs, _REASONING_OVERRIDE  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 B = ROOT / "workspace_local" / "audit" / "baselines"

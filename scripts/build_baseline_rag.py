@@ -6,7 +6,7 @@ file for the question + gold page_ids, runs pure-python Okapi BM25 over the item
 bundle pages, embeds the top-k retrieved passages into a runner-ready `prompt`, and
 records the retrieved vs gold page_ids so the scorer can compute retrieval recall@k.
 
-Reuses the dep-free retrieval stack from build_rag_smoke_v07.py (BM25, page-aware
+Reuses the dep-free retrieval stack from build_rag_smoke.py (BM25, page-aware
 chunking, rag_prompt). RAG covers the sample items that HAVE a bundle on disk
 (retrieval needs a corpus); bundle-less items — e.g. answerability_detection with no
 haystack — are reported and skipped (they still run in the closed-book regime).
@@ -15,9 +15,9 @@ Safety: retrieved passages are raw bundle text → output ONLY under workspace_l
 (refuses any --out outside it). Deterministic. No API calls (BM25 is local).
 
 Usage:
-    python3 scripts/build_baseline_rag_v09.py            # k=5, chunk 1200 chars, BM25
+    python3 scripts/build_baseline_rag.py            # k=5, chunk 1200 chars, BM25
     # then per split:
-    python3 scripts/run_llm_baseline_v07.py --provider openai --model gpt-4.1-mini \\
+    python3 scripts/run_llm_baseline.py --provider openai --model gpt-4.1-mini \\
         --split test_public --prompt-file workspace_local/audit/baselines/rag_bm25_v09_prompts.jsonl \\
         --out workspace_local/audit/baselines/rag_gpt-4.1-mini_test_public.jsonl --resume
 """
@@ -28,8 +28,8 @@ import collections
 import json
 from pathlib import Path
 
-# Reuse the dep-free retrieval stack (same scripts/ dir; build_rag_smoke_v07's main is guarded).
-from build_rag_smoke_v07 import split_chunks, retrieve, rag_prompt  # noqa: E402
+# Reuse the dep-free retrieval stack (same scripts/ dir; build_rag_smoke's main is guarded).
+from build_rag_smoke import split_chunks, retrieve, rag_prompt  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 SAMPLE = ROOT / "workspace_local" / "audit" / "baselines" / "baseline_sample_v09.jsonl"
@@ -73,7 +73,7 @@ def main() -> int:
     if not sample_path.is_absolute():
         sample_path = ROOT / sample_path
     if not sample_path.exists():
-        raise SystemExit(f"missing sample {sample_path} — run scripts/build_baseline_sample_v09.py first")
+        raise SystemExit(f"missing sample {sample_path} — run scripts/build_baseline_sample.py first")
 
     sample = load_jsonl(sample_path)
     # qa_id -> full QA record (need question + gold page_ids + instruction).

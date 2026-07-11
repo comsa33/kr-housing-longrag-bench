@@ -26,7 +26,7 @@ clusters are scored with **cluster-weighted** accuracy so repetition cannot infl
 - **full-context** is **tier-capped** (cost control — §3): the embedded haystack at the 512k tier is ~393k
   tokens, so a handful of items dominate the bill.
 
-A 304-item seeded *pilot* sample (`build_baseline_sample_v09.py`, seed `20260610`: test_public 104 + dev 200
+A 304-item seeded *pilot* sample (`build_baseline_sample.py`, seed `20260610`: test_public 104 + dev 200
 stratified) was used to bring up and validate the pipeline; it is **superseded** by the full-split runs above
 and is retained only as the seed-nested source for the tier-capped full-context subsets (§3). The drawn pilot
 files live INTERNAL under `workspace_local/audit/baselines/`.
@@ -64,9 +64,9 @@ business name / household count and is dropped; no evaluated gold references it,
 **identical** golds). The canonical bundles did **not** embed this table → these items were unanswerable in
 the full-context regime (a benchmark-construction artifact, §8.6). The fix is applied **at the prompt level to
 the cross_source full-context items only** (the original 4 + the 16 the merge added at 512k = 20 prompts) via
-`scripts/fix_fc_hug_bundle_v09.py` (which embeds the 624 raw rows — immaterial vs the 623 valid). Non-
+`scripts/fix_fc_hug_bundle.py` (which embeds the 624 raw rows — immaterial vs the 623 valid). Non-
 cross_source full-context prompts are unchanged. **The canonical bundle now embeds HUG by default:**
-`scripts/build_bundles_v06.py` includes the complete **623 valid-row** HUG table as a guaranteed component of
+`scripts/build_bundles.py` includes the complete **623 valid-row** HUG table as a guaranteed component of
 `mix_multiprovider_512k` (the bundle every cross_source item references), verified to reproduce all four golds. So the prompt-level patch above is **redundant for bundles rebuilt from the
 current script** — it remains documented because the *released* baseline predictions were produced with the
 equivalent prompt-level injection (identical row content). Only `mix_multiprovider_512k` changed on rebuild;
@@ -76,7 +76,7 @@ the other 166 bundles are byte-identical.
 covered only the HUG table — the 512k `mix_multiprovider_512k` bundle still omitted the **statute articles**
 and **MOLIT aggregation slices** that its `cross_document_legal_reasoning` and remaining
 `cross_source_aggregation` items require, so those items stayed unanswerable and strong models correctly
-abstained. `scripts/build_bundles_v06.py` was extended (@`8a9a497`) to embed those as guaranteed components as
+abstained. `scripts/build_bundles.py` was extended (@`8a9a497`) to embed those as guaranteed components as
 well, and the 512k full-context slice (25 `test_public` + 7 `dev`) was **re-run** on the corrected bundle,
 yielding the capability ladder of §8.6. This supersedes the prompt-level HUG patch for the 512k tier; again
 only `mix_multiprovider_512k` changed.
@@ -172,57 +172,57 @@ the headline; deterministic soft/EM + Wilson CIs are the reproducible reference.
 export OPENAI_API_KEY=...   # from workspace_local/secrets/openai_api.key
 
 # 1. build the regime prompt sets (deterministic; INTERNAL output)
-python3 scripts/build_baseline_rag_v09.py --sample <split-or-sample>.jsonl --out .../rag_..._prompts.jsonl
-python3 scripts/build_baseline_fullcontext_v09.py --sample <fc-subset>.jsonl --out .../fc_..._prompts.jsonl
+python3 scripts/build_baseline_rag.py --sample <split-or-sample>.jsonl --out .../rag_..._prompts.jsonl
+python3 scripts/build_baseline_fullcontext.py --sample <fc-subset>.jsonl --out .../fc_..._prompts.jsonl
 #   cross_source full-context prompts then get HUG injected:
-python3 scripts/fix_fc_hug_bundle_v09.py            # HUG rows (623 valid) -> the cross_source fc prompts (§3)
+python3 scripts/fix_fc_hug_bundle.py            # HUG rows (623 valid) -> the cross_source fc prompts (§3)
 
 # 2. run each model x regime via the Batch API (submit -> status -> fetch). custom_id = <regime>__<split>__<qa_id>
-python3 scripts/run_batch_baseline_v09.py submit --model gpt-5.5 --regimes cb,rag,fc --max-output-tokens 4000
-python3 scripts/run_batch_baseline_v09.py status --model gpt-5.5
-python3 scripts/run_batch_baseline_v09.py fetch  --model gpt-5.5   # writes <regime>_<model>_<split>.jsonl + .calls.jsonl
+python3 scripts/run_batch_baseline.py submit --model gpt-5.5 --regimes cb,rag,fc --max-output-tokens 4000
+python3 scripts/run_batch_baseline.py status --model gpt-5.5
+python3 scripts/run_batch_baseline.py fetch  --model gpt-5.5   # writes <regime>_<model>_<split>.jsonl + .calls.jsonl
 #   partial/extension runs: --prompt-file <subset> --track-suffix _foo --out-suffix _foo (no clobber)
 #   ⚠️ do NOT re-run gpt-5.5 on cb/rag (reasoning-output cost — §5)
 
 # 3. LLM-judge (headline) — semantic equivalence, judge = gpt-4.1-mini, public splits only, per regime
-python3 scripts/llm_judge_v09.py submit --pred <one-regime merged preds>.jsonl --tag <tag>
-python3 scripts/llm_judge_v09.py fetch  --tag <tag>            # writes <tag>.judged.jsonl
+python3 scripts/llm_judge.py submit --pred <one-regime merged preds>.jsonl --tag <tag>
+python3 scripts/llm_judge.py fetch  --tag <tag>            # writes <tag>.judged.jsonl
 
 # 4. score: judge accuracy by split (+ Wilson CI, fc by tier) and the deterministic soft/EM reference
-python3 scripts/score_judge_v09.py   --splits ALL,dev,test_public     # LLM-judge, plain + cluster-weighted
-python3 scripts/score_answers_v09.py --pred <preds>.jsonl --pred-only # soft|EM|contains|recall + Wilson CI
-python3 scripts/score_retrieval_v09.py --rag .../rag_..._prompts.jsonl # BM25 recall@k / hit@k (model-independent)
+python3 scripts/score_judge.py   --splits ALL,dev,test_public     # LLM-judge, plain + cluster-weighted
+python3 scripts/score_answers.py --pred <preds>.jsonl --pred-only # soft|EM|contains|recall + Wilson CI
+python3 scripts/score_retrieval.py --rag .../rag_..._prompts.jsonl # BM25 recall@k / hit@k (model-independent)
 
 # navigate INTERNAL artifacts (naming legend + per-file status)
-python3 scripts/catalog_baselines_v09.py            # -> workspace_local/audit/baselines/INDEX.md
+python3 scripts/catalog_baselines.py            # -> workspace_local/audit/baselines/INDEX.md
 ```
 
 **Artifact layout (INTERNAL, under `workspace_local/audit/baselines/`, gitignored).** Predictions are
 `<regime>_<model>_<split>.jsonl` with `{qa_id, prediction}` (regime ∈ cb/rag/fc); each run also writes a
 rich `<…>.calls.jsonl` (tokens, latency, and for reasoning models the `thinking` trace, joinable by
 qa_id), a `<…>.meta.json`, and a `<…>.log`. Input prompts are `<regime>_v09_prompts.jsonl`. Run
-`catalog_baselines_v09.py` to (re)generate `INDEX.md`, which lists every artifact with counts and status.
+`catalog_baselines.py` to (re)generate `INDEX.md`, which lists every artifact with counts and status.
 
 ## 7. Metrics (the v0.9 reported set)
 
-- **Headline — LLM-judge** (`scripts/llm_judge_v09.py`, `scripts/score_judge_v09.py`): semantic-equivalence
+- **Headline — LLM-judge** (`scripts/llm_judge.py`, `scripts/score_judge.py`): semantic-equivalence
   judgement (correct / incorrect / unanswerable; judge = gpt-4.1-mini, public splits only), reported **plain
   + cluster-weighted** with a **Wilson 95% CI**, cut by split / task_type / context_tier. It replaced the
   legacy substring match, which **systematically undercounts** paraphrases/format (§8.4). The judge is
   **human-validated**: n=80 blind, agreement 96.2 %, Cohen's κ=0.924 (§9.0).
-- **Deterministic reference** (`scripts/score_answers_v09.py`): **soft** (EM | contains | token-recall ≥
+- **Deterministic reference** (`scripts/score_answers.py`): **soft** (EM | contains | token-recall ≥
   0.7), plus EM / contains / numeric, each with a Wilson 95% CI, plain + cluster-weighted. Reproducible
   without an API; tracks the judge closely and is the fallback for anyone re-scoring offline.
 - **Cluster-weighted** is the headline cut for both: it discounts near-duplicate `cluster_id` clusters so a
   few repeated items cannot inflate the score. **Abstention** is captured by `task:answerability_detection`.
-- **Retrieval quality** for RAG (`scripts/score_retrieval_v09.py`): **recall@k** / **hit@k**, plain +
+- **Retrieval quality** for RAG (`scripts/score_retrieval.py`): **recall@k** / **hit@k**, plain +
   cluster-weighted, cut by split / task_type / context_tier. Model-independent (a property of BM25).
 - **Deferred extensions:** evidence-position cut; multi-answer set-F1; a second independent human annotator
   for the judge (the κ above is judge-vs-creator, not inter-human). All additive on the same predictions.
 
 ## 8. Results
 
-Run 2026-06-11 via the OpenAI Batch API (`temperature=0`; reasoning models at default effort, `max_completion_tokens=4000`; BM25 `k=5`). **The headline metric is the LLM-judge** (semantic equivalence, `scripts/llm_judge_v09.py`, judge = gpt-4.1-mini) — see §8.4 for why the legacy `contains_all` metric is unreliable. cb/rag are scored on the full dev+test_public; full-context (fc) on the tier-capped subsets of §3 (pilot 116 for the pooled tables; test_public extended to n=105). No open-weights model is reported (the leg is deferred — see §4).
+Run 2026-06-11 via the OpenAI Batch API (`temperature=0`; reasoning models at default effort, `max_completion_tokens=4000`; BM25 `k=5`). **The headline metric is the LLM-judge** (semantic equivalence, `scripts/llm_judge.py`, judge = gpt-4.1-mini) — see §8.4 for why the legacy `contains_all` metric is unreliable. cb/rag are scored on the full dev+test_public; full-context (fc) on the tier-capped subsets of §3 (pilot 116 for the pooled tables; test_public extended to n=105). No open-weights model is reported (the leg is deferred — see §4).
 
 ### 8.1 Five models × three regimes (LLM-judge; plain / cluster-weighted)
 
@@ -270,7 +270,7 @@ vs gpt-5.5/gpt-4.1-mini covering it) is the other honest long-context finding.
 
 ### 8.3 Retrieval quality (BM25, k=5, model-independent)
 
-On the full split (n=1,255 items with gold pages): recall@5 ≈ **47.6%**, hit@5 ≈ 48.8% (cw-recall 52.1%). Per-task highs (`long_distance_retrieval` ≈ 98%, `eligibility_reasoning` ≈ 74%) vs lows (`schedule_reasoning` ≈ 11%, `multi_document_comparison` ≈ 13%) — BM25 is weakest where evidence is scattered across documents. Full breakdown via `scripts/score_retrieval_v09.py`.
+On the full split (n=1,255 items with gold pages): recall@5 ≈ **47.6%**, hit@5 ≈ 48.8% (cw-recall 52.1%). Per-task highs (`long_distance_retrieval` ≈ 98%, `eligibility_reasoning` ≈ 74%) vs lows (`schedule_reasoning` ≈ 11%, `multi_document_comparison` ≈ 13%) — BM25 is weakest where evidence is scattered across documents. Full breakdown via `scripts/score_retrieval.py`.
 
 ### 8.4 Metric matters — `contains_all` is unreliable (a methodological result)
 
@@ -279,8 +279,8 @@ The legacy `contains_all`/normalized-substring match (v0.7/v0.8) produces **syst
 | Metric | ALL | 512k tier |
 |---|---:|---:|
 | `contains_all` (legacy) | 87.9% | **0%** ← fabricated "collapse" |
-| soft (em \| contains \| token-recall≥0.7; `score_answers_v09.py`) | 91.4% | 16.7% |
-| **LLM-judge** (semantic; `llm_judge_v09.py`) | **93.1%** | **41.7%** |
+| soft (em \| contains \| token-recall≥0.7; `score_answers.py`) | 91.4% | 16.7% |
+| **LLM-judge** (semantic; `llm_judge.py`) | **93.1%** | **41.7%** |
 
 These three columns are computed on the **pre-fix-bundle predictions** (the small n≈12 512k slice, before the
 evidence-completeness fix, where the cross_source/legal items were still unanswerable) precisely to isolate the
@@ -293,7 +293,7 @@ LLM-judge itself is now **human-validated** (§9.0).
 ### 8.5 Held-out split: test_public reported separately (dev ≠ test)
 
 §8.1–8.2 pool `dev` (development, 1,608) with `test_public` — convenient but a development-set red flag for a
-paper. The **same** LLM-judge verdicts, cut by split with a Wilson 95% CI (`scripts/score_judge_v09.py`),
+paper. The **same** LLM-judge verdicts, cut by split with a Wilson 95% CI (`scripts/score_judge.py`),
 isolate the held-out headline.
 
 > **v0.9 split change:** `test_public` was enlarged 104 → **389** by merging the former `test_hidden` (see
@@ -318,8 +318,8 @@ isolate the held-out headline.
 All four API models now cover the full 389 closed-book (the earlier gpt-5.5 quota-failures were re-run).
 † The three open-weight rows (EACL leg, 2026-07-10, served via Ollama Cloud) are **test_public only** (no dev
 run). qwen3.5 caps at 256K, so its fc excludes the 512k tier (n=78, ≤256K only) and its fc figure is **not**
-comparable to the n=105 models — use the by-tier table. Judged by the same `llm_judge_v09.py` (gpt-4.1-mini
-judge) → `score_judge_v09.py` stack as the API rows.
+comparable to the n=105 models — use the by-tier table. Judged by the same `llm_judge.py` (gpt-4.1-mini
+judge) → `score_judge.py` stack as the API rows.
 
 **full-context by tier on test_public (LLM-judge, plain):**
 
@@ -364,7 +364,7 @@ occasionally "won" one by term-matching or parametric recall — pinning gpt-5.5
 
 Full-context means *every source the question needs is in the bundle*, so this is a **bundle-completeness bug,
 not a task-design issue**, and the fix is at the **bundle level, not a prompt-level patch**:
-`scripts/build_bundles_v06.py` (@8a9a497) now embeds the needed statute articles + MOLIT aggregation slices +
+`scripts/build_bundles.py` (@8a9a497) now embeds the needed statute articles + MOLIT aggregation slices +
 the HUG (주택도시보증공사) sale-history table as **guaranteed** components of `mix_multiprovider_512k`
 (verified: 제5조의4 0→3 occurrences, a MOLIT block with exactly 137 rows for 대전동구202510, all 87
 announcement-page refs retained; every other bundle md5-unchanged). We re-ran the **512k full-context slice on
@@ -388,7 +388,7 @@ lifts gpt-5.5's 512k tier from the artifact floor to **94%** and gpt-4.1-mini to
 cells are byte-identical (the fix only touched the 512k bundle), so those predictions stand.
 
 The **post-fix verdicts are merged into the canonical judged files** (`g55fc`, `gpt-4.1-mini_fc`,
-`fc_minimax-m3-cloud_tp`, `fc_glm-5.2-cloud_tp`) with `.pre_b1fix` backups, so `score_judge_v09.py` reproduces
+`fc_minimax-m3-cloud_tp`, `fc_glm-5.2-cloud_tp`) with `.pre_b1fix` backups, so `score_judge.py` reproduces
 the numbers above. The pre-fix artifact baseline is archived in those `.pre_b1fix` backups and in
 `workspace_local/audit/baselines/PRE_VS_POST_FIX_512k.md`.
 
@@ -444,11 +444,11 @@ This v0.9 set is a **reference baseline**, captioned **indicative**. Before a ca
 - **Add dense / hybrid RAG** alongside BM25 (the v0.7 retrieval diagnostics tooling already exists).
 - ~~**Human-validate the eval** on a stratified sample~~ — **DONE (§9.0)**: n=80, agreement 96.2 %,
   κ=0.924. Optional follow-up: a second independent annotator on the same CSV.
-- ~~**Report test_public separately** (dev ≠ test)~~ — **DONE (§8.5)** via `scripts/score_judge_v09.py`;
+- ~~**Report test_public separately** (dev ≠ test)~~ — **DONE (§8.5)** via `scripts/score_judge.py`;
   the former hidden split was merged in (no local-model leg needed). Optional: grow test_public further (above).
 - ~~**Fix the cross_source / 512k evidence bundle**~~ — **DONE (§8.6), at the bundle level.** The
   `mix_multiprovider_512k` bundle was missing the statute articles + MOLIT rows (+ HUG table) its items need;
-  `scripts/build_bundles_v06.py` (@8a9a497) now embeds all of them as guaranteed components, and the 512k
+  `scripts/build_bundles.py` (@8a9a497) now embeds all of them as guaranteed components, and the 512k
   full-context slice (25 test_public + 7 dev) was re-run on the corrected bundle and re-judged. 512k is now a
   real capability signal — pooled **gpt-5.5 94% vs gpt-4.1-mini 31%** (n=32), held-out test_public a full
   ladder **gpt-5.5 96 / glm-5.2 92 / minimax-m3 64 / gpt-4.1-mini 24** (n=25).

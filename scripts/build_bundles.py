@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """v0.6 multi-provider long-context bundles (internal). Resolves the v0.4/v0.5 LH-only bundle limit.
 
-Builds, over ALL 41 announcements across 10 providers (providers_v05):
+Builds, over ALL 41 announcements across 10 providers (providers):
   - <ann>__early_<tier>  : announcement first -> its early pages sit 'early'   (long_context_retrieval)
   - <ann>__late_<tier>   : distractors first, announcement tail last -> 'late'  (long_distance_retrieval)
   - mix_multiprovider_<tier> : interleaved lead pages from MANY providers + law/row distractors
@@ -19,7 +19,7 @@ import tiktoken
 
 import qa_common as V2
 import qa_v03_common as C
-import providers_v05 as P
+import providers as P
 
 ENC = tiktoken.get_encoding("cl100k_base")
 BUNDLES = C.ROOT / "workspace_local" / "processed" / "bundles-v06"
@@ -258,7 +258,7 @@ def build():
         i += 1
     # The HUG sale-history table is embedded COMPLETE and guaranteed (not as a paddable distractor) in the
     # 512k multi-provider mix — this is the bundle that every cross_source_aggregation item references, and
-    # its gold is computed from these rows. (Prompt-level injection in fix_fc_hug_bundle_v09.py is now
+    # its gold is computed from these rows. (Prompt-level injection in fix_fc_hug_bundle.py is now
     # redundant for bundles rebuilt from this script.)
     hug = hug_block_component()
     # Guaranteed evidence for the 512k mix: the HUG table + the specific statute articles and MOLIT
