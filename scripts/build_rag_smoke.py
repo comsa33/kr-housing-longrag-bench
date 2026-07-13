@@ -260,6 +260,13 @@ def split_pages(text: str) -> list:
         # no page markers: treat the whole bundle as one page so BM25 still works (oracle won't match
         # this synthetic page_id, which is correct — it has no gold page to point at).
         return [("unknown-p001", text.strip())] if text.strip() else []
+    # Capture any text BEFORE the first page marker (e.g. shared reference tables placed in a bundle
+    # preamble) as a synthetic page, so RAG indexes the same corpus the full-context model sees.
+    # Without this, unmarked preamble content is silently dropped and can never be retrieved.
+    # The synthetic page_id has no gold page to point at, so oracle correctly never matches it.
+    preamble = text[: ms[0].start()].strip()
+    if preamble:
+        out.append(("preamble-p000", preamble))
     for i, m in enumerate(ms):
         start = m.end()
         end = ms[i + 1].start() if i + 1 < len(ms) else len(text)
