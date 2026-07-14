@@ -270,7 +270,7 @@ vs gpt-5.5/gpt-4.1-mini covering it) is the other honest long-context finding.
 
 ### 8.3 Retrieval quality (BM25, k=5, model-independent)
 
-On the full split (n=1,255 items with gold pages): recall@5 ≈ **47.6%**, hit@5 ≈ 48.8% (cw-recall 52.1%). Per-task highs (`long_distance_retrieval` ≈ 98%, `eligibility_reasoning` ≈ 74%) vs lows (`schedule_reasoning` ≈ 11%, `multi_document_comparison` ≈ 13%) — BM25 is weakest where evidence is scattered across documents. Full breakdown via `scripts/score_retrieval.py`.
+On the full split (n=1,540 items with gold pages): recall@5 ≈ **51.6%**, hit@5 ≈ 52.4%. Per-task highs (`long_distance_retrieval` ≈ 97%, `eligibility_reasoning` ≈ 69%) vs lows (`multi_document_comparison` ≈ 7%, `schedule_reasoning` ≈ 16%) — BM25 is weakest where evidence is scattered across documents. Full breakdown via `scripts/score_retrieval.py`. (UPDATED 2026-07-13 to the preamble-fix chunker, which indexes the bundle preamble `split_pages` had silently dropped; the earlier pre-fix headline was n=1,255, recall@5 ≈ 47.6%, hit@5 ≈ 48.8%.)
 
 ### 8.4 Metric matters — `contains_all` is unreliable (a methodological result)
 
