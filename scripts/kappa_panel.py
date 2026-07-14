@@ -19,13 +19,15 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 B = ROOT / "workspace_local" / "audit" / "baselines"
 
-# display name -> (ollama model tag, filesystem label used by run_judge_panel.sh)
+# display name -> (lab, filesystem label of the panel_<label>_*.judged.jsonl files).
+# The primary judge is read from files too (panel_gpt-4.1-mini_*), so every row is
+# data-driven and reproducible from the shipped verdicts --- no hardcoded numbers.
 JUDGES = [
-    ("gpt-4.1-mini", None, None),  # primary judge: fixed reference row
-    ("gemma4:31b", "gemma4:31b", "gemma4_31b"),
-    ("deepseek-v3.2", "deepseek-v3.2", "deepseek-v3.2"),
-    ("kimi-k2.6", "kimi-k2.6", "kimi-k2.6"),
-    ("mistral-large-3", "mistral-large-3:675b", "mistral-large-3_675b"),
+    ("gpt-4.1-mini", "OpenAI", "gpt-4.1-mini"),  # primary judge (also a baseline)
+    ("gemma4:31b", "Google", "gemma4_31b"),
+    ("deepseek-v3.2", "DeepSeek", "deepseek-v3.2"),
+    ("kimi-k2.6", "Moonshot", "kimi-k2.6"),
+    ("mistral-large-3", "Mistral", "mistral-large-3_675b"),
 ]
 MODELS = ["gpt-5.5", "glm-5.2", "minimax-m3", "gpt-4.1-mini"]
 
@@ -59,13 +61,8 @@ def main() -> int:
         d = json.loads(l)
         human[d["qa_id"]] = 1 if d.get("human") == "Y" else 0
 
-    print(f"{'judge':22} {'kappa':>6} {'agree':>7}   " + "  ".join(f"{m:>12}" for m in MODELS))
-    for disp, tag, label in JUDGES:
-        if label is None:
-            # primary judge reference: kappa from the paper's validated sample + tab:agg ladder
-            print(f"{disp:22} {0.924:6.3f} {96.2:6.1f}%   "
-                  + "  ".join(f"{v:>12}" for v in ["99 (80/81)", "88 (71/81)", "68 (55/81)", "9 (7/81)"]))
-            continue
+    print(f"{'judge':22} {'lab':>9} {'kappa':>6} {'agree':>7}   " + "  ".join(f"{m:>12}" for m in MODELS))
+    for disp, lab, label in JUDGES:
         hv = load_verdicts(B / f"panel_{label}_human80.judged.jsonl")
         ids = [q for q in human if q in hv]
         po, k = cohen_kappa([human[q] for q in ids], [hv[q] for q in ids])
@@ -76,7 +73,7 @@ def main() -> int:
             c = sum(av.values())
             cells.append(f"{round(c/n*100) if n else 0} ({c}/{n})")
         flag = "" if len(ids) == 80 else f"  [human n={len(ids)}/80]"
-        print(f"{disp:22} {k:6.3f} {po*100:6.1f}%   " + "  ".join(f"{v:>12}" for v in cells) + flag)
+        print(f"{disp:22} {lab:>9} {k:6.3f} {po*100:6.1f}%   " + "  ".join(f"{v:>12}" for v in cells) + flag)
     return 0
 
 
