@@ -424,6 +424,36 @@ lenient 1 ×):
 independent annotator on the same n=80 CSV remains a nice-to-have for camera-ready. Artifacts:
 `workspace_local/audit/baselines/judge_validation.csv` (filled) + `judge_validation.key.jsonl` (verdicts).
 
+### 9.0.1 Independent-judge cross-check (DONE — 2026-07-14; rules out judge self-preference)
+
+The primary judge (`gpt-4.1-mini`) is itself an evaluated baseline, so the 512k capability gap could in
+principle be a self-preference artifact. To rule this out we re-scored **the same** predictions with four
+non-OpenAI judges served on **Ollama Cloud**, each from a different lab and none an evaluated baseline, using
+the primary judge's **exact** prompt: `gemma4:31b` (Google), `deepseek-v3.2` (DeepSeek), `kimi-k2.6`
+(Moonshot), `mistral-large-3:675b` (Mistral). Unlike the first ad-hoc run, every verdict is archived and the
+panel is fully reproducible:
+
+```
+python3 scripts/judge_panel_ollama.py --judge-model <model> --input <panel_items>.jsonl --out <tag>.judged.jsonl --resume
+python3 scripts/kappa_panel.py    # κ vs the n=80 human sample + the 81-item aggregation ladder
+# driver: workspace_local/audit/baselines/run_judge_panel.sh   (verdicts: panel_<judge>_*.judged.jsonl, gitignored like all runs)
+```
+
+Each judge was validated on the **same n=80 human sample** (judged per row: two qa_ids recur with different
+model predictions, so n=80 rows, 78 unique qa_ids). All five judges reproduce the **same capability ladder**
+on the 81-item cross-source-aggregation slice, so the gap is a property of the task, not the judge:
+
+| judge | lab | κ (n=80) | agree | gpt-5.5 | glm-5.2 | minimax-m3 | gpt-4.1-mini |
+|---|---|---:|---:|---:|---:|---:|---:|
+| gpt-4.1-mini (primary) | OpenAI | 0.924 | 96.2% | 99 (80/81) | 88 (71/81) | 68 (55/81) | 9 (7/81) |
+| gemma4:31b | Google | 0.949 | 97.5% | 100 (81/81) | 88 (71/81) | 67 (54/81) | 9 (7/81) |
+| deepseek-v3.2 | DeepSeek | 0.898 | 95.0% | 98 (79/81) | 85 (69/81) | 68 (55/81) | 9 (7/81) |
+| kimi-k2.6 | Moonshot | 0.975 | 98.8% | 100 (81/81) | 89 (72/81) | 69 (56/81) | 9 (7/81) |
+| mistral-large-3 | Mistral | 0.949 | 97.5% | 98 (79/81) | 85 (69/81) | 68 (55/81) | 9 (7/81) |
+
+Every judge posts gpt-5.5 ≈ 98–100 %, gpt-4.1-mini = 9 %, and the two open-weight models in between (κ range
+0.90–0.98, comparable to the primary judge's 0.92). The paper's Appendix (judge panel) reports this table.
+
 ### 9.1 Remaining path to paper-grade
 
 This v0.9 set is a **reference baseline**, captioned **indicative**. Before a camera-ready paper claim:
