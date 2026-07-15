@@ -32,6 +32,8 @@ ROOT = Path(__file__).resolve().parents[1]
 GOLD = {
     "dev": ROOT / "data" / "qa_v0.6_dev.jsonl",
     "test_public": ROOT / "data" / "qa_v0.6_test_public.jsonl",
+    # test_hidden: retired in v0.9 (merged into test_public); this file does not ship. Kept as a
+    # dormant, forward-compatible path — load_jsonl() returns [] when it is absent, so scoring skips it.
     "test_hidden": ROOT / "workspace_local" / "audit" / "qa_v0.6_test_hidden_answers.jsonl",
 }
 UNANS = ["확정할 수 없", "답할 수 없", "알 수 없", "unanswerable", "근거가 없", "없음", "제공된 자료"]
@@ -89,7 +91,7 @@ def read_ids(path: Path) -> set:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--pred", default=None, help="JSONL of {qa_id, prediction}")
-    ap.add_argument("--splits", default="dev,test_public,test_hidden")
+    ap.add_argument("--splits", default="dev,test_public")  # test_hidden retired in v0.9 (no hidden split ships)
     ap.add_argument("--self-test", action="store_true", help="use gold answer as the prediction (sanity)")
     ap.add_argument("--ids-file", default=None,
                     help="restrict scoring to qa_ids in this file (one per line, or any JSONL with a qa_id field)")

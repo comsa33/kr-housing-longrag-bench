@@ -19,8 +19,9 @@ import qa_v04_common as Q
 PROVIDER_LH = "한국토지주택공사"
 
 # Announcement-level split assignment (each announcement in exactly one eval/dev split).
-# test_hidden holds the two non-경기 announcements (region generalization, answers internal);
+# (v0.5 build) test_hidden held the two non-경기 announcements (region generalization);
 # test_public holds two recent 경기 announcements; the rest are dev.
+# NOTE: v0.9 merged the former test_hidden into test_public (no hidden split ships); kept for build provenance.
 ANN_SPLIT = {
     "lh-daedong2-b1-public-sale-20251017": ("test_hidden", ["ood_region"]),       # 대전
     "lh-announce-0000061016-public-sale-2025q4": ("test_hidden", ["ood_region"]),  # 충북 청주

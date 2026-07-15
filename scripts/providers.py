@@ -25,7 +25,9 @@ PROVIDER_NAME = {
     "sh-announcements": "서울주택도시공사", "gh-announcements": "경기주택도시공사",
     "ih-announcements": "인천도시공사", "jpdc-announcements": "제주특별자치도개발공사",
 }
-# new-provider split policy: iH + JPDC fully held out as ood_provider (test_hidden); SH + GH -> dev
+# new-provider split policy (v0.5 build): iH + JPDC held out as ood_provider (then labelled test_hidden); SH + GH -> dev.
+# NOTE: v0.9 merged the former test_hidden into test_public (no hidden split ships); these hold-outs now live in
+# test_public via split_tags. Kept for build provenance / a possible future re-carve.
 NEW_PROVIDER_SPLIT = {"ih-announcements": ("test_hidden", ["ood_provider"]),
                       "jpdc-announcements": ("test_hidden", ["ood_provider"]),
                       "sh-announcements": ("dev", []), "gh-announcements": ("dev", [])}
