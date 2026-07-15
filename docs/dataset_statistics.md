@@ -45,6 +45,10 @@ statutes. Supersedes the v0.6 build (2,011 QA); see `CHANGELOG.md`.
 | test_public | 105 | **104** |
 | test_hidden | 288 | **285** |
 
+> **v0.9 (released, current):** the former `test_hidden` (285) was merged into `test_public` → a single
+> public held-out split of **389** (dev stays **1,608**). There is **no sealed hidden split** — it was
+> never a leaderboard set (see `CHANGELOG.md`). The paper's baselines use this v0.9 split.
+
 ## 4. Question style
 
 | question_style | count | % |

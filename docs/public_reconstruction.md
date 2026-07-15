@@ -66,14 +66,16 @@ Each QA item carries the locators needed to rebuild its evidence deterministical
 ## Running the experiments
 
 With the rebuild complete you have, per QA item: the question, the gold answer, the exact context
-bundle file, and the evidence position. Suggested baselines (see `docs/evaluation_protocol.md`):
-full-context at 32k/64k/128k/256k/512k, BM25 / dense / hybrid / hierarchical RAG, and a table/tool
-pipeline that executes `gold_predicate`-style queries against the rebuilt rows.
+bundle file, and the evidence position. The paper evaluates three evidence-access regimes on the same
+questions — closed-book, RAG (sparse BM25 and a dense `bge-m3` retriever), and full-context at
+32k/64k/128k/256k/512k — scored with a human-validated LLM-judge; see `docs/baseline_protocol.md` and the
+paper's evaluation-protocol section.
 
 ## v0.5 additions
 
 `data/qa_v0.5_candidates.jsonl` (902 QA) supersedes v0.4 and adds table-cell-grounded QA, new families
-(eligibility/schedule/correction), and announcement-level splits (`dev`/`test_public`/`test_hidden`).
+(eligibility/schedule/correction), and announcement-level splits (`dev`/`test_public`; v0.9 later merged the
+former `test_hidden` into `test_public`, so the released set has no hidden split).
 After the steps above, also run:
 
 ```bash

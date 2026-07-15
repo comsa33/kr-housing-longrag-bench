@@ -174,8 +174,7 @@ Scripts (scoring needs only the standard library):
 Docs:
 
 - `docs/quickstart.md`: public quickstart (record fields, prediction format, end-to-end example)
-- `docs/evaluation_protocol.md`: regime and metric definitions
-- `docs/baseline_protocol.md`: full-context vs RAG vs table/tool protocol
+- `docs/baseline_protocol.md`: evidence-access regimes (closed-book / RAG / full-context), the human-validated LLM-judge headline metric, and trivial baselines
 - `docs/baseline_results.md`: release-grade baseline results
 - `docs/dataset_statistics.md`: count tables (task/split/style/provider/region/bundle/cluster)
 - `docs/public_reconstruction.md`: rebuild the internal corpus from official sources

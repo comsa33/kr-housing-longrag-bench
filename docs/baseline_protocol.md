@@ -1,76 +1,71 @@
-# Baseline Evaluation Protocol (v0.6, draft)
+# Baseline Evaluation Protocol
 
-This protocol describes how to evaluate three system classes on KR-Housing-LongRAG-Bench and how to read
-the trivial baselines. It is a **draft for the paper**, not a leaderboard spec — the `test_hidden` split
-is not yet served behind a sealed harness.
+How the paper's baselines are scored on KR-Housing-LongRAG-Bench, and how to read the trivial sanity
+baselines. This version has **no hidden split**; `test_public` (389) is a public held-out set (the former
+`test_hidden` was merged into it — see `CHANGELOG.md`).
 
-## 0. Inputs and scoring
+## 0. Metric
 
-- Questions / context locators per QA: `scripts/make_prompt.py` → `data/qa_v0.6_prompts.jsonl`
-  (locator-only, public-safe: `context_spec` says *where* the evidence is — bundle/tier/position,
-  `page_ids`/`source_ids`/`row_ids`/`table_ids`/`cell_ids`, predicate source — but carries no document
-  text).
-- A prediction file is JSONL: `{"qa_id": ..., "prediction": "..."}`.
-- Scoring is by `scripts/eval_harness.py`, per `evaluation.metric` (`exact_numbers` /
-  `boolean_and_reason` / contained-answer). It reports plain **and cluster-weighted** accuracy by
-  split / task_type / question_style. Cluster-weighting (`cluster_weight = 1/cluster_size`) keeps
-  parametric near-duplicate families from inflating the score.
+The **headline metric is a human-validated LLM-judge** (`scripts/llm_judge.py`, judge `gpt-4.1-mini`;
+validated on a human sample: n=80, agreement 96.2%, Cohen's κ=0.924), because exact/substring matching
+systematically undercounts correct paraphrases and formatting variants. A **deterministic soft-match
+reference** (`scripts/score_answers.py`: exact-match | contains | token-recall) ships for API-free
+re-scoring and tracks the judge closely. We report **plain accuracy as the primary headline and
+cluster-weighted accuracy as a robustness/sensitivity cut** (`cluster_weight = 1/cluster_size` keeps
+near-duplicate families from inflating the score). `scripts/score_judge.py` aggregates the LLM-judge
+verdicts by split / task_type / context_tier.
 
 ```bash
-python3 scripts/eval_harness.py --pred <predictions>.jsonl
+python3 scripts/llm_judge.py submit --pred <one-regime preds>.jsonl   # headline (LLM-judge)
+python3 scripts/score_judge.py                                        # aggregate verdicts by split/tier
+python3 scripts/eval_harness.py --pred <predictions>.jsonl           # deterministic reference + floors
 ```
 
-## 1. System classes to compare
+## 1. Evidence-access regimes
 
-The benchmark is designed to separate three pipelines on the **same** QA:
+The **same** questions are scored under three regimes (paper §4), so differences are attributable to
+evidence access, not the metric:
 
-| Class | What it sees | How to build the context |
-|---|---|---|
-| **A. Full-context LLM** | the whole long-context bundle in one prompt | `make_prompt.py --inline-context` (INTERNAL output under `workspace_local/`; embeds the bundle text named by `context_spec.bundle_id` at tier `context_tier`, evidence at `evidence_position`) |
-| **B. RAG / retrieval** | top-k retrieved passages from the same announcement/source corpus | retrieve over the rebuilt corpus (`scripts/rebuild_v04_from_public_manifest.py`); the gold `page_ids`/`source_ids` give an oracle-retrieval ceiling |
-| **C. Table / tool pipeline** | structured rows/cells + a tool/operator | for `table_numeric_reasoning` / `format_robustness` / `cross_source_aggregation`, query the source named by `context_spec.predicate_source` over `row_ids`/`cell_ids`; the gold operator stays hidden |
+| Regime | What the model sees |
+|---|---|
+| **Closed-book** | question + locator metadata only, no document body — a parametric-recall floor |
+| **RAG** | top-5 retrieved passages (sparse BM25 and a dense `bge-m3` retriever) from the item's own bundle |
+| **Full-context** | the entire context bundle at the item's tier (up to the 512k tier) |
 
-All three emit the same `{qa_id, prediction}` JSONL and are scored by the one harness, so differences are
-attributable to the pipeline, not the metric.
-
-Recommended reporting cuts (all produced by the harness): by **context_tier** (32k→512k — does
-full-context degrade with length?), by **evidence_position** (early/middle/late/multi — lost-in-the-middle),
-by **task_type** (retrieval vs numeric vs legal vs answerability), and **cluster-weighted ALL**.
+Recommended reporting cuts (all produced by the scorers): by **context_tier** (32k→512k), by
+**evidence_position** (early/middle/late/multi — lost-in-the-middle), by **task_type**, and
+**cluster-weighted ALL**.
 
 ## 2. Trivial baselines (floors / ceiling)
 
-(INTERNAL — `oracle`/`random` are derived from gold answers, including the masked `test_hidden` answers):
+Deterministic-reference sanity checks (`scripts/eval_harness.py`; `oracle`/`random` are derived from gold
+answers and are INTERNAL):
 
-| Baseline | Prediction | Plain acc (all splits) | Cluster-weighted | Role |
-|---|---|---|---|---|
-| `oracle` | gold answer | 100.0% | 100.0% | harness/gold sanity ceiling |
-| `dummy` | fixed "unanswerable" string | 5.3% | 1.7% | matches only `answerability_detection` (106 items) |
-| `echo` | the question text | 2.5% | 1.0% | degenerate floor |
-| `random` | another item's gold answer (fixed offset) | 1.4% | 1.1% | chance-level floor |
+| Baseline | Prediction | Role |
+|---|---|---|
+| `oracle` | gold answer | scorer/gold sanity ceiling (100%) |
+| `dummy` | fixed "unanswerable" string | matches only `answerability_detection` items |
+| `echo` | the question text | degenerate floor |
+| `random` | another item's gold answer (fixed offset) | chance-level floor |
 
 ```bash
-python3 scripts/eval_harness.py --pred workspace_local/audit/baseline_oracle_v06.jsonl
+python3 scripts/eval_harness.py --self-test   # oracle=100% confirms the scorer + gold wiring
 ```
-
-`oracle` = 100% confirms the scorer + gold wiring (same as `eval_harness.py --self-test`). The three
-floors bracket where a real system must land to show signal; note the plain-vs-cluster-weighted gap on
-`dummy` (5.3% → 1.7%) — the answerability items are parametrically related, so cluster-weighting is the
-honest headline number.
 
 ## 3. Protocol steps
 
-1. Freeze inputs: `make_prompt.py` for locators (A/B/C share these); add `--inline-context` only for
-   class A, locally.
-2. Run each system → one `{qa_id, prediction}` JSONL per system.
-3. Score every file with `eval_harness.py`; report plain + cluster-weighted by split, task_type,
-   context_tier, evidence_position.
-4. Always include the four trivial baselines so absolute numbers are interpretable.
-5. Report `test_hidden` only via the internal gold + this harness; never publish hidden answers.
+1. Build prompts per regime (paper §4; closed-book/RAG locators are public, full-context inline-context is
+   INTERNAL under `workspace_local/`).
+2. Run each model × regime → one `{qa_id, prediction}` JSONL per run.
+3. Judge with `llm_judge.py` and aggregate with `score_judge.py` (headline); also run the deterministic
+   `score_answers.py` / `eval_harness.py` reference.
+4. Report plain + cluster-weighted by split / task_type / context_tier; always include the trivial
+   baselines so absolute numbers are interpretable.
 
 ## 4. Caveats
 
-- Not a sealed leaderboard yet; `test_hidden` answers are internal-but-in-repo.
+- No sealed hidden split; `test_public` is a public held-out set, not a leaderboard test.
 - Bundles are internal (`workspace_local/`), rebuilt locally — not redistributed.
-- Class B/C results depend on the retriever/tool you supply; the gold locators give an oracle-retrieval
-  ceiling but a real retriever should be reported separately.
-- Cluster-weighted accuracy is the primary metric for paper claims; plain accuracy is secondary.
+- RAG results depend on the retriever supplied; the gold locators give an oracle-retrieval ceiling, and a
+  real retriever (BM25 / dense) should be reported separately.
+- Plain accuracy is the primary headline; cluster-weighted accuracy is the robustness cut.

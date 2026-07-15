@@ -1,7 +1,8 @@
 # Quickstart (v0.6)
 
 How to load the dataset, build prompts, run the eval harness, and score your own predictions.
-Everything here uses only **public** files (no raw corpus, no answers for the hidden split).
+Everything here uses only **public** files (no raw corpus). **This version has no hidden split** —
+`test_public` is a public held-out set (the former `test_hidden` was merged into it; see `CHANGELOG.md`).
 
 ## 1. Files
 
@@ -9,18 +10,15 @@ Canonical release artifacts (all under `data/`):
 
 | File | Rows | Contents |
 |---|---:|---|
-| `qa_v0.6_realistic_candidates.jsonl` | 2,011 | **canonical full set** — realism + cluster + bundle metadata |
-| `qa_v0.6_dev.jsonl` | 1,618 | dev split, answers included |
-| `qa_v0.6_test_public.jsonl` | 105 | public test split, answers included |
-| `qa_v0.6_test_hidden_questions.jsonl` | 288 | hidden split, **answers masked** (`answer="[HELD OUT]"`; gold predicate values are `null`, gold row ids are empty) |
-| `qa_v0.6_prompts.jsonl` | 2,011 | locator-only prompt inputs (generated; see §3) |
+| `qa_v0.6_realistic_candidates.jsonl` | 1,997 | **canonical full set** — realism + cluster + bundle metadata |
+| `qa_v0.6_dev.jsonl` | 1,608 | dev split, answers included |
+| `qa_v0.6_test_public.jsonl` | 389 | public held-out split, answers included |
+| `qa_v0.6_prompts.jsonl` | 1,997 | locator-only prompt inputs (generated; see §3) |
 | `source_manifest.jsonl` | — | source registry (URLs/metadata) every `source_id` resolves to |
 
-For a clean public checkout, the harness can score `dev` and `test_public` immediately. Hidden-split
-scoring requires an INTERNAL answer file (`workspace_local/audit/qa_v0.6_test_hidden_answers.jsonl`);
-without it, the harness reports hidden gold as unavailable. Long-context bundle **text** is also internal
-(`workspace_local/processed/bundles-v06/`), rebuilt locally — the public QA carries only `bundle_id` +
-tier/position.
+The harness scores `dev` and `test_public` immediately. This version has no hidden split, so there is no
+masked-answer file. Long-context bundle **text** is internal (`workspace_local/processed/bundles-v06/`),
+rebuilt locally — the public QA carries only `bundle_id` + tier/position.
 
 ### QA record fields (public)
 
@@ -33,8 +31,6 @@ question_style, original_question, rewrite_rationale,
 cluster_id, cluster_size, cluster_weight,
 bundle_id?, context_tier?, evidence_position?
 ```
-
-(For `test_hidden` the answer/gold fields are masked; the others remain.)
 
 ## 2. Setup
 
@@ -76,8 +72,7 @@ python3 scripts/eval_harness.py --pred my_predictions.jsonl
 ```
 
 The harness reports plain **and cluster-weighted** accuracy by split / task_type / question_style, scored
-per `evaluation.metric` (`exact_numbers` / `boolean_and_reason` / contained-answer). For `test_hidden` it
-loads gold from the internal answers file automatically. To score only some splits:
+per `evaluation.metric` (`exact_numbers` / `boolean_and_reason` / contained-answer). To score only some splits:
 
 ```bash
 python3 scripts/eval_harness.py --pred my_predictions.jsonl --splits dev,test_public
@@ -85,8 +80,8 @@ python3 scripts/eval_harness.py --pred my_predictions.jsonl --splits dev,test_pu
 
 ## 5. Self-test + trivial baselines
 
-Confirm the scorer/gold wiring (gold-as-prediction → 100%). In a clean public checkout this covers
-`dev` + `test_public`; with the internal hidden-answer file present it covers all 2,011 items:
+Confirm the scorer/gold wiring (gold-as-prediction → 100%). This covers `dev` + `test_public`
+(1,997 items; this version has no hidden split):
 
 ```bash
 python3 scripts/eval_harness.py --self-test
