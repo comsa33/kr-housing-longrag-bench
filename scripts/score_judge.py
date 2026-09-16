@@ -34,7 +34,10 @@ TAGS = ([("g55fc", "gpt-5.5", "fc")]
            for r in ("cb", "rag", "fc")]
         + [("gpt-5.5_cb", "gpt-5.5", "cb"), ("gpt-5.5_rag", "gpt-5.5", "rag")]
         + [(f"{r}_{label}_tp", disp, r) for disp, label in OPEN
-           for r in ("cb", "rag", "fc")])
+           for r in ("cb", "rag", "fc")]
+        # dense (bge-m3) RAG, test_public only, chunker-fixed re-run of 2026-07-13
+        + [(f"jf386_{m}_dense", m, "dense") for m in
+           ("gpt-4.1-mini", "gpt-5.4-mini", "gpt-5.4-nano", "gpt-5.5", "minimax-m3", "glm-5.2", "qwen3.5")])
 TIERS = ["32k", "64k", "128k", "256k", "512k"]
 
 
@@ -93,10 +96,10 @@ def main() -> int:
 
     for split in want:
         print(f"\n===== JUDGE accuracy — split = {split} =====")
-        print(f"{'model':16} | {'cb plain/cw (95% CI cw)':28} | {'rag plain/cw':18} | {'fc plain/cw':18}")
+        print(f"{'model':16} | {'cb plain/cw (95% CI cw)':28} | {'bm25 plain/cw':18} | {'dense plain/cw':18} | {'fc plain/cw':18}")
         for model in MODELS:
             row = f"{model:16} |"
-            for regime in ("cb", "rag", "fc"):
+            for regime in ("cb", "rag", "dense", "fc"):
                 a = acc.get((model, regime, split))
                 if not a or a[0] == 0:
                     row += f" {'—':27}|" if regime == "cb" else f" {'—':17}|"
