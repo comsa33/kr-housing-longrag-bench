@@ -39,13 +39,19 @@ def load_jsonl(path: Path) -> list[dict]:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--rag", required=True, help="RAG prompt JSONL from build_baseline_rag.py")
+    ap.add_argument("--rag", required=True, nargs="+",
+                    help="RAG prompt JSONL(s) from build_baseline_rag.py; several files are pooled")
+    ap.add_argument("--exclude-family", default="",
+                    help="comma list of task_type values to drop, e.g. cross_document_legal_reasoning")
     args = ap.parse_args()
+    xf = {s for s in args.exclude_family.split(",") if s}
 
-    rag_path = Path(args.rag) if Path(args.rag).is_absolute() else ROOT / args.rag
-    if not rag_path.is_file():
-        raise SystemExit(f"--rag not found: {rag_path}")
-    recs = load_jsonl(rag_path)
+    recs = []
+    for one in args.rag:
+        rag_path = Path(one) if Path(one).is_absolute() else ROOT / one
+        if not rag_path.is_file():
+            raise SystemExit(f"--rag not found: {rag_path}")
+        recs += load_jsonl(rag_path)
 
     gold: dict[str, dict] = {}
     for f in GOLD.values():
@@ -70,6 +76,9 @@ def main() -> int:
         recall = len(retr & g) / len(g)
         hit = 1.0 if (retr & g) else 0.0
         it = gold.get(r["qa_id"], {})
+        if it.get("task_type") in xf:
+            scored -= 1
+            continue
         w = it.get("cluster_weight", 1.0)
         task = it.get("task_type", "?")
         tier = r.get("context_tier", it.get("context_tier", "?"))
@@ -84,7 +93,8 @@ def main() -> int:
                 f"cw-recall {wrs/ws:6.1%}  cw-hit {whs/ws:6.1%}  (n={int(n)})")
 
     kdisp = ",".join(str(x) for x in sorted(v for v in k_vals if v is not None))
-    print(f"== v0.9 retrieval metrics — {rag_path.name} (k={kdisp}; items with gold pages={scored}) ==")
+    names = ", ".join(Path(x).name for x in args.rag)
+    print(f"== v0.9 retrieval metrics — {names} (k={kdisp}; items with gold pages={scored}) ==")
     print(line("ALL"))
     for grp in ("split:", "task:", "tier:"):
         print(f"-- by {grp[:-1]} --")
