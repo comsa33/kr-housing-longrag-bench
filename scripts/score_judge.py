@@ -18,10 +18,12 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import sys
 from collections import defaultdict
 from pathlib import Path
 
-from verdict_paths import verdict_file
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from verdict_paths import verdict_file  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 MODELS = ["gpt-4.1-mini", "gpt-5.4-mini", "gpt-5.4-nano", "gpt-5.5"]

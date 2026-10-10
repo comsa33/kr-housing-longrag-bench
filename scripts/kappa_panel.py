@@ -16,9 +16,11 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
-from verdict_paths import human80_file, verdict_file
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from verdict_paths import human80_file, verdict_file  # noqa: E402
 
 # display name -> (lab, filesystem label of the panel_<label>_*.judged.jsonl files).
 # The primary judge is read from files too (panel_gpt-4.1-mini_*), so every row is
