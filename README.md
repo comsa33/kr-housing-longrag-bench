@@ -17,6 +17,7 @@ tabular data (MOLIT 실거래 / HUG 분양이력), and housing statutes.
   `docs/baseline_results.md`); the underlying v0.8 build regenerated all positional-cloze questions into natural
   source-grounded questions, fixes location/answer errors, and removes 14 unrepairable items; it supersedes
   earlier seed builds. See `CHANGELOG.md`.
+- **v0.9.1 evaluation scope:** v0.9.1 evaluates 11 of 12 families; the legal family (`cross_document_legal_reasoning`, 109 items, 42 in `test_public`) is excluded because its gold answers follow the statute versions in the corpus (2015/2018), not the current statutes; see `data/errata_v0.9.1.csv`. The items stay in the data, and the QA files are unchanged. In scope: 1,888 items (dev 1,541 / test_public 347). A 118-item human sample audit of the evaluated `test_public` items is in `results/human_audit/` (1 error, 0.8% [0.1, 4.6]); per-item judge verdicts for every reported run are in `results/judge_verdicts/`.
 - **Canonical v0.9 file:** `data/qa_v0.6_realistic_candidates.jsonl` (historical filename retained for
   compatibility). Splits: `data/qa_v0.6_dev.jsonl` (1,608),
   `data/qa_v0.6_test_public.jsonl` (389, answers included). v0.9 merged the former `test_hidden` (285) into

@@ -39,6 +39,18 @@ after the v0.9 tag. The v0.9 archive (DOI 10.5281/zenodo.20640480, 2026-06-11) p
   (`scripts/build_bundles.py` does not trim it). 37 items (dev 28, test_public 9) use it; use
   `--exclude-bundle mix_multiprovider_256k` to report the 256k tier without them.
 
+### Added (errata and human audit)
+- `data/errata_v0.9.1.csv`: one row per affected item (111). It covers the 109 legal-family items with the
+  statute-version check (holds 72, partial 18, holds_basis_moved 12, does_not_hold 6, unverified 1), the
+  reason they are excluded from v0.9.1 evaluation, and two items flagged by the human audit:
+  `krhlrb_v05_0772` (incomplete gold answer: 130% given, 140% missing) and `krhlrb_v05_0361` (ambiguous
+  question). The data files are not changed.
+- `results/human_audit/human_audit_v091.jsonl`: one author's verdicts on a stratified sample of 118
+  evaluated `test_public` items. There are four checks per item and no timing field. Result: 1 error, 0.8%
+  [0.1, 4.6].
+- `scripts/paper/build_audit_items.py` (seed 20261010; `--ids-only` runs without source text) and
+  `scripts/paper/audit_summary.py`.
+
 ### Changed (wording)
 - The v0.8 build is now called the "LLM-triage repair build" in README, DATASET_CARD, CITATION, Zenodo
   metadata, `docs/dataset_statistics.md` and this changelog. The earlier name, "human-review repair build",

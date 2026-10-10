@@ -10,6 +10,8 @@ This seed benchmark is designed for research on Korean long-context document und
 
 ## Dataset Status
 
+**v0.9.1 evaluates 11 of 12 families; the legal family is excluded (statute versions), see errata** (`data/errata_v0.9.1.csv`). The 109 `cross_document_legal_reasoning` items stay in the data; their gold answers follow the statute versions in the corpus (2015/2018), which differ from the current statutes for some items. Evaluation scope: 1,888 items (dev 1,541 / test_public 347). Human sample audit (118 evaluated `test_public` items, one author, four checks): 1 error, 0.8% [0.1, 4.6]; see `results/human_audit/`.
+
 Release: `v0.9` (split consolidation + release-grade baselines; **1,997 QA**, on the v0.8 build). Lineage:
 `v0.1-seed` → … → `v0.6` quality → `v0.7` research-preview → `v0.8` LLM-triage repair → **`v0.9` split
 merge (test_hidden→test_public 389) + baselines**. The underlying v0.8 build is the

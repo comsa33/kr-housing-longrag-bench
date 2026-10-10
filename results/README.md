@@ -26,3 +26,5 @@ machine) and fall back to `results/judge_verdicts/` otherwise.
 
 `scripts/paper/evidence_check_agg81.py` also needs the 512k bundle text. That text is not redistributed;
 rebuild it first (`docs/public_reconstruction.md`).
+
+- `human_audit/`: v0.9.1 human sample audit (118 items) and how to reproduce its summary; see `human_audit/README.md`.
