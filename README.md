@@ -12,7 +12,7 @@ tabular data (MOLIT 실거래 / HUG 분양이력), and housing statutes.
   3 statutes, with evidence locators, deterministic predicates, answerability labels, and
   long-context-bundle references — **no raw PDFs/HWPs, no API keys**.
 - **Current release:** `v0.9` (split consolidation + release-grade baselines; **1,997 QA**, on the v0.8
-  human-review build) — **public-ready seed benchmark, NOT leaderboard-ready** (see caveats below). v0.9
+  LLM-triage repair build) — **public-ready seed benchmark, NOT leaderboard-ready** (see caveats below). v0.9
   merges the former `test_hidden` into `test_public` (389) and adds LLM-judge-scored baselines (§
   `docs/baseline_results.md`); the underlying v0.8 build regenerated all positional-cloze questions into natural
   source-grounded questions, fixes location/answer errors, and removes 14 unrepairable items; it supersedes
@@ -39,7 +39,7 @@ provider/region comparisons, eligibility/schedule items, answerability checks, a
 splits (`dev`/`test_public`) with announcement-level leakage verified at 0.
 (`data/qa_v0.5_candidates.jsonl` is the pre-realism input build — same qa_ids/answers.)
 
-The v0.8 human-review build regenerated all positional-cloze ("X 다음 값" / [위치 탐침]) questions into
+The v0.8 LLM-triage repair build regenerated all positional-cloze ("X 다음 값" / [위치 탐침]) questions into
 natural source-grounded questions or removed them (cloze-phrased 34% → ~0%; `question_style` now ∈
 real_user/professional_analyst, real_user+analyst 100%), and fixed location/answer errors — on top of prior
 quality passes that materialize **multi-provider** long-context bundles (32k–512k), clusters parametric
@@ -62,7 +62,7 @@ See `CHANGELOG.md` and `docs/dataset_statistics.md`.
 on every push/PR (`validate_dataset.py`, `check_public_release_readiness.py` → `public-ready`, realism +
 surface scans, harness self-test, `py_compile`). The full grounding/recompute gate (`verify_qa.py`,
 1,997/1,997) runs **locally** against the rebuilt internal corpus and self-skips on a clean checkout where
-that corpus is absent. It is **not a leaderboard-ready or sealed-hidden benchmark**: v0.8 human review was LLM-assisted (gpt-5.4 + Claude cross-model), not a full human pass, there is no sealed hidden split (the former `test_hidden` was merged into the public test), question phrasing skews
+that corpus is absent. It is **not a leaderboard-ready or sealed-hidden benchmark**: v0.8 repairs came from an LLM triage (gpt-5.4) and LLM regeneration (Claude); no systematic item-level human review was recorded, there is no sealed hidden split (the former `test_hidden` was merged into the public test), question phrasing skews
 analyst-style, and parametric near-duplicates exist (clustered for cluster-weighted scoring). For audit
 and development, GitHub includes the canonical full-label file `data/qa_v0.6_realistic_candidates.jsonl`;
 for public evaluation or Hugging Face loading, use the release split files (`dev`, `test_public`, all answers

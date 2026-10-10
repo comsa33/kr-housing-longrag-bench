@@ -11,7 +11,7 @@ This seed benchmark is designed for research on Korean long-context document und
 ## Dataset Status
 
 Release: `v0.9` (split consolidation + release-grade baselines; **1,997 QA**, on the v0.8 build). Lineage:
-`v0.1-seed` → … → `v0.6` quality → `v0.7` research-preview → `v0.8` human-review repair → **`v0.9` split
+`v0.1-seed` → … → `v0.6` quality → `v0.7` research-preview → `v0.8` LLM-triage repair → **`v0.9` split
 merge (test_hidden→test_public 389) + baselines**. The underlying v0.8 build is the
 first build where QA content was substantively repaired: all positional-cloze (`"X 다음 값"` / `[위치 탐침]`)
 questions were regenerated into natural source-grounded questions or removed, location mislabels and
@@ -50,7 +50,7 @@ not human-validated, not sealed-hidden, not a final model ranking — and they d
 No raw source documents, full prompts, predictions, bundle text, hidden gold, provider logs, or keys are
 published; those stay internal under `workspace_local/` (`docs/repository_scope_policy.md`).
 
-**Scope: public-ready seed benchmark, NOT leaderboard-ready.** The v0.8 human-review build regenerated all
+**Scope: public-ready seed benchmark, NOT leaderboard-ready.** The v0.8 LLM-triage repair build regenerated all
 positional-cloze into natural questions (cloze 34% → 0%; real_user+analyst → 100%) and fixed location/answer
 errors, on top of the v0.6 quality pass that materialized multi-provider long-context bundles and defined splits. Release files: `data/qa_v0.6_dev.jsonl` (1,608),
 `data/qa_v0.6_test_public.jsonl` (389, answers included).
@@ -60,8 +60,7 @@ leaderboard set** (its policy already disclaimed that), so it was merged into `t
 properly-sized public held-out test (389) — including 124 items at the 512k tier and the `ood_region` /
 `ood_year` generalization subsets. A future release can re-carve a sealed hidden split from grown data if a
 leaderboard is ever stood up; `scripts/make_v06_splits.py` still supports a `test_hidden` split when present.
-Honest caveats: v0.8 human review was **LLM-assisted (gpt-5.4 + Claude cross-model), not a full human
-pass**; question phrasing is now natural (real_user 64%, real_user+analyst 100%, cloze ≈ 0%); parametric
+Honest caveats: **v0.8 repairs came from an LLM triage (gpt-5.4) and LLM regeneration (Claude); no systematic item-level human review was recorded**; question phrasing is now natural (real_user 64%, real_user+analyst 100%, cloze ≈ 0%); parametric
 near-duplicates exist but are clustered (1,997 QA → 282 clusters) and the eval harness reports
 cluster-weighted accuracy so repetition does not inflate scores; some providers contribute few
 announcements / no table cells. No "perfect" or "hallucination-free" claim is made.

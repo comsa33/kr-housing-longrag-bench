@@ -15,14 +15,17 @@ not run from a clean clone.
 |---|---|---|
 | `scripts/` | QA authoring and construction tools for v0.2–v0.6: candidate assembly, deterministic QA builders, agent-answer tightening, authoring packets, human-review sampling, near-duplicate clustering, split creation | `archive/scripts/` at commit `5f7cf93` (removed from the tree in `be18447`) |
 | `docs/` | Development reports and plans for v0.3/v0.4 | `archive/docs/` at `5f7cf93` |
-| `prompts/` | Corpus and QA build prompts given to coding agents during v0.3/v0.4 | `archive/prompts/` at `5f7cf93` |
+| `prompts/` | Corpus and QA build prompts given to coding agents during v0.3–v0.5 | `archive/prompts/` at `5f7cf93`; `v0.5_worker_prompt.md` from `docs/` at tag `v0.9` (removed in `1a6695f`) |
 | `v0.8_regeneration/` | v0.8 repair pass: LLM grounding triage, cloze regeneration, and the fixes applied | internal working directory, copied for this release |
 
 ## v0.8_regeneration/
 
 **Scripts**
 
-- `run_triage_v08.py`: the triage runner. Its system prompts are inline.
+- `run_triage_v08.py`: the triage runner. Its prompts are inline: `CALIB_SYS` (calibration) and
+  `REVIEW_SYS` + `REVIEW_USER` (review). The verification of regenerated cloze items
+  (`regen_verify_gpt5*`) has the same input and output format as review mode. No run log survives, so
+  reusing review mode is an inference.
 - `build_review_manifest.py`, `build_sample_manifest.py`: build the review inputs.
 - `build_calibration_set.py`, `score_verdicts.py`: judge calibration on a planted-error set.
 - `integrate_regen.py`, `integrate_finalize.py`, `apply_sweep_fixes.py`, `apply_hangdong_fix.py`: apply
@@ -35,9 +38,9 @@ source text were removed.
 
 | File | Content |
 |---|---|
-| `review_gpt5_v2.jsonl` | Pass 1, high-risk families: 230 items reviewed, 57 `FLAG` |
-| `review_gpt5_sample.jsonl` | Pass 2, stratified sample of the remaining families: 145 items, 52 `FLAG` |
-| `review_gpt5_hirisk.jsonl` | Earlier 15-item high-risk pilot: 7 `FLAG` |
+| `review_gpt5_v2.jsonl` | Pass 1: every public item in the three high-risk families (legal, multi-document comparison, eligibility), 230 items, 57 `FLAG` |
+| `review_gpt5_sample.jsonl` | Pass 2: systematic per-family sample (every k-th item by qa_id, `build_sample_manifest.py`) of the 942 public, non-predicate items in the other families; 161 drawn, 145 kept after dropping 16 with too little evidence; 52 `FLAG`. Not a random sample |
+| `review_gpt5_hirisk.jsonl` | Pilot on the first 15 pass-1 items, run before the pass-1 inputs were rebuilt: 7 `FLAG` |
 | `confirmed_errors.jsonl` | 15 items confirmed as label errors. All 15 come from the pass-2 flags. `issue` = mismatch type and task family |
 | `noncloze_actions.jsonl` | Actions on non-cloze items: 1 answer fixed (`krhlrb_v05_0910`), 13 removed |
 | `regen_verify_gpt5.jsonl`, `regen_verify_gpt5_68.jsonl` | LLM verification of regenerated cloze items (618 and 68 items) |

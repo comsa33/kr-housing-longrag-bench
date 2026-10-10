@@ -27,8 +27,15 @@ after the v0.9 tag. The v0.9 archive (DOI 10.5281/zenodo.20640480, 2026-06-11) p
 - `scripts/paper/`: `paired_rq1.py`, `tier_small_window.py`, `evidence_check_agg81.py`, the analysis
   scripts behind the paper tables, adapted to this repository layout.
 - `construction/`: QA construction scripts, docs and prompts restored from `archive/` (removed in
-  `be18447`), and `construction/v0.8_regeneration/` (triage and repair scripts with qa_id-level verdict
+  `be18447`) plus `prompts/v0.5_worker_prompt.md` (from `docs/` at v0.9, removed in `1a6695f`), and `construction/v0.8_regeneration/` (triage and repair scripts with qa_id-level verdict
   summaries). This is provenance only; reproduction does not need it.
+
+### Changed (wording)
+- The v0.8 build is now called the "LLM-triage repair build" in README, DATASET_CARD, CITATION, Zenodo
+  metadata, `docs/dataset_statistics.md` and this changelog. The earlier name, "human-review repair build",
+  overstated the human role: v0.8 repairs came from an LLM triage (gpt-5.4) and LLM regeneration (Claude),
+  and no systematic item-level human review was recorded. The LLM-judge validation (one annotator, 80
+  predictions, κ=0.924) is a separate, real human check and is described as before.
 
 ### Changed since v0.9 (already on the branch, not new in this entry)
 - `data/source_manifest.jsonl`: per-source `content_sha256` checksums (`90c63d4`).
@@ -59,11 +66,13 @@ Same 1,997 QA and schema as v0.8; this is a split-policy + evaluation change, no
   turns the 512k tier into a real capability signal (gpt-5.5 76% vs gpt-4.1-mini 20% at n=25). Only that one
   bundle changed on rebuild; the other 166 are byte-identical.
 
-## v0.8 — human-review repair build (1,997 QA)
+## v0.8 — LLM-triage repair build (1,997 QA)
+
+_Renamed in v0.9.1; earlier releases called this the "human-review repair build", which overstated the human role._
 
 Supersedes the v0.6 dataset build. The v0.7 release falsely described the data as "v0.6 unchanged"; v0.8
-is the first build where the QA content was substantively repaired through an LLM-assisted human-review
-pass (gpt-5.4 grounding triage + cross-model verification + source-grounded fixes).
+is the first build where the QA content was substantively repaired through an LLM triage pass
+(gpt-5.4 grounding triage + cross-model verification + source-grounded fixes).
 
 ### Changed
 - **Positional-cloze eliminated.** All ~686 templated `"X 다음/앞에 제시된 값은?"` / `[위치 탐침]` questions
@@ -86,7 +95,7 @@ pass (gpt-5.4 grounding triage + cross-model verification + source-grounded fixe
   article that omit secondary qualifiers (e.g. `1세대 1주택`, `시·도지사 승인 예외`); grounded but not exhaustive.
 - `region_sigungu == region_sido` remains on ~270 items for announcements whose true 시·군·구 was not resolved
   (a v0.9 metadata sweep); the 항동/jpdc/발산 cases were fixed.
-- Human review of v0.8 was LLM-assisted (gpt-5.4 + Claude cross-model), not a full human pass.
+- v0.8 repairs came from an LLM triage (gpt-5.4) and LLM regeneration (Claude); no systematic item-level human review was recorded.
 
 ### Tooling
 - Provider-agnostic triage/verification runner (`run_triage_v08.py`), regeneration + integration pipeline,

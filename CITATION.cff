@@ -9,9 +9,9 @@ abstract: >-
   evidence locators, deterministic predicates, answerability labels, split and
   provider/region metadata, and long-context-bundle references — no raw source
   documents, no leaked answers, and no API keys. v0.9 keeps the same 1,997 QA and schema as the v0.8
-  human-review repair build, merges the former test_hidden split into test_public (389) for a larger public
+  LLM-triage repair build, merges the former test_hidden split into test_public (389) for a larger public
   held-out test, and adds release-grade baselines (5 hosted models x 3 regimes; LLM-judge headline metric,
-  human-validated). It is not yet leaderboard-ready, fully human-validated, or sealed-hidden.
+  human-validated). It has no systematic item-level human review, and it is not leaderboard-ready or sealed-hidden.
 type: dataset
 version: v0.9.1
 date-released: 2026-10-10
@@ -29,7 +29,7 @@ identifiers:
     description: "Concept DOI (all versions; resolves to the latest)."
   - type: doi
     value: "10.5281/zenodo.20571211"
-    description: "Versioned DOI for the prior v0.8 human-review repair release."
+    description: "Versioned DOI for the prior v0.8 LLM-triage repair release."
   - type: doi
     value: "10.5281/zenodo.20570856"
     description: "Versioned DOI for the v0.7 research-preview release."
