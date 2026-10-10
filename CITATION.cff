@@ -13,11 +13,11 @@ abstract: >-
   held-out test, and adds release-grade baselines (5 hosted models x 3 regimes; LLM-judge headline metric,
   human-validated). It is not yet leaderboard-ready, fully human-validated, or sealed-hidden.
 type: dataset
-version: v0.9
-date-released: 2026-06-11
+version: v0.9.1
+date-released: 2026-10-10
 license: CC-BY-4.0
 repository-code: "https://github.com/comsa33/kr-housing-longrag-bench"
-# doi below is the v0.9 versioned DOI (this release). The concept DOI (resolves to the latest version)
+# doi below is still the v0.9 versioned DOI; replace it with the v0.9.1 DOI once Zenodo issues it. The concept DOI (resolves to the latest version)
 # and prior versioned DOIs (v0.8, v0.7, v0.6.3) are listed under identifiers.
 doi: "10.5281/zenodo.20640480"
 identifiers:

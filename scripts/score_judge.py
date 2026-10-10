@@ -11,6 +11,7 @@ cluster_weight are joined from the gold split files (public splits only — hidd
 
     python3 scripts/score_judge.py                 # all models, by split (+ fc tier)
     python3 scripts/score_judge.py --splits test_public
+    python3 scripts/score_judge.py --verdicts-dir results/judge_verdicts   # released copy only
 """
 from __future__ import annotations
 
@@ -20,8 +21,9 @@ import math
 from collections import defaultdict
 from pathlib import Path
 
+from verdict_paths import verdict_file
+
 ROOT = Path(__file__).resolve().parents[1]
-B = ROOT / "workspace_local" / "audit" / "baselines"
 MODELS = ["gpt-4.1-mini", "gpt-5.4-mini", "gpt-5.4-nano", "gpt-5.5"]
 # Open-weight models (EACL leg): test_public only, judged tags = "{regime}_{label}_tp".
 # These rows contribute to test_public and ALL only (no dev run), so dev shows "—".
@@ -57,6 +59,9 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--splits", default="ALL,dev,test_public",
                     help="comma list; ALL = dev+test_public pooled")
+    ap.add_argument("--verdicts-dir", default=None,
+                    help="read <tag>.jsonl verdicts from this directory only "
+                         "(default: workspace_local/audit/baselines if present, else results/judge_verdicts)")
     args = ap.parse_args()
     want = [s.strip() for s in args.splits.split(",") if s.strip()]
 
@@ -74,7 +79,7 @@ def main() -> int:
     tier_acc: dict = defaultdict(lambda: [0, 0])
 
     for tag, model, regime in TAGS:
-        jf = B / f"{tag}.judged.jsonl"
+        jf = verdict_file(tag, args.verdicts_dir)
         if not jf.exists():
             continue
         for line in jf.open(encoding="utf-8"):

@@ -1,0 +1,115 @@
+tag,model,regime,item_set,n,used_in
+cb_glm-5.2-cloud_tp,glm-5.2,cb,test_public 389,389,"RQ1 main results (scripts/score_judge.py; scripts/paper/paired_rq1.py); CB/dense rows of the n=81 and n=42 slices, restricted by qa_id"
+cb_minimax-m3-cloud_tp,minimax-m3,cb,test_public 389,389,"RQ1 main results (scripts/score_judge.py; scripts/paper/paired_rq1.py); CB/dense rows of the n=81 and n=42 slices, restricted by qa_id"
+cb_qwen3.5-cloud_tp,qwen3.5,cb,test_public 389,389,"RQ1 main results (scripts/score_judge.py; scripts/paper/paired_rq1.py); CB/dense rows of the n=81 and n=42 slices, restricted by qa_id"
+fc_glm-5.2-cloud_tp,glm-5.2,fc,fc105 (test_public full-context sample),105,RQ1 main results (scripts/score_judge.py; scripts/paper/paired_rq1.py); full-context by tier (scripts/paper/tier_small_window.py)
+fc_glm-5.2-cloud_tp_512kexp,glm-5.2,fc,512k tier minus native 25 (99),99,legal slice n=42 FC and 124-item 512k tier run 1; input to scripts/build_primary_panel_files.py
+fc_glm-5.2-cloud_tp_fixed,glm-5.2,fc,512k native 25 (fc105 ∩ 512k),25,legal slice n=42 FC and 124-item 512k tier run 1; input to scripts/build_primary_panel_files.py
+fc_glm-5.2-cloud_tp_var124_r2,glm-5.2,fc,"512k tier, test_public (124)",124,open-weight run-to-run variance (512k native 25 / 512k tier 124)
+fc_glm-5.2-cloud_tp_var124_r3,glm-5.2,fc,"512k tier, test_public (124)",124,open-weight run-to-run variance (512k native 25 / 512k tier 124)
+fc_glm-5.2-cloud_tp_var25_r2,glm-5.2,fc,512k native 25 (fc105 ∩ 512k),25,open-weight run-to-run variance (512k native 25 / 512k tier 124)
+fc_glm-5.2-cloud_tp_var25_r3,glm-5.2,fc,512k native 25 (fc105 ∩ 512k),25,open-weight run-to-run variance (512k native 25 / 512k tier 124)
+fc_gpt-4.1-mini_dev_fixeddev512k,gpt-4.1-mini,fc,"7 of dev RAG 1,154",7,not read by any paper script (partial or intermediate run)
+fc_gpt-4.1-mini_test_public_512kexp,gpt-4.1-mini,fc,512k tier minus native 25 (99),99,legal slice n=42 FC and 124-item 512k tier run 1; input to scripts/build_primary_panel_files.py
+fc_gpt-4.1-mini_test_public_fixed512k,gpt-4.1-mini,fc,512k native 25 (fc105 ∩ 512k),25,legal slice n=42 FC and 124-item 512k tier run 1; input to scripts/build_primary_panel_files.py
+fc_gpt-5.5_dev_fixeddev512k,gpt-5.5,fc,"7 of dev RAG 1,154",7,not read by any paper script (partial or intermediate run)
+fc_gpt-5.5_test_public_512kexp,gpt-5.5,fc,512k tier minus native 25 (99),99,legal slice n=42 FC and 124-item 512k tier run 1; input to scripts/build_primary_panel_files.py
+fc_gpt-5.5_test_public_fixed512k,gpt-5.5,fc,512k native 25 (fc105 ∩ 512k),25,legal slice n=42 FC and 124-item 512k tier run 1; input to scripts/build_primary_panel_files.py
+fc_minimax-m3-cloud_tp,minimax-m3,fc,fc105 (test_public full-context sample),105,RQ1 main results (scripts/score_judge.py; scripts/paper/paired_rq1.py); full-context by tier (scripts/paper/tier_small_window.py)
+fc_minimax-m3-cloud_tp_512kexp,minimax-m3,fc,512k tier minus native 25 (99),99,legal slice n=42 FC and 124-item 512k tier run 1; input to scripts/build_primary_panel_files.py
+fc_minimax-m3-cloud_tp_fixed,minimax-m3,fc,512k native 25 (fc105 ∩ 512k),25,legal slice n=42 FC and 124-item 512k tier run 1; input to scripts/build_primary_panel_files.py
+fc_minimax-m3-cloud_tp_var124_r2,minimax-m3,fc,"512k tier, test_public (124)",124,open-weight run-to-run variance (512k native 25 / 512k tier 124)
+fc_minimax-m3-cloud_tp_var124_r3,minimax-m3,fc,"512k tier, test_public (124)",124,open-weight run-to-run variance (512k native 25 / 512k tier 124)
+fc_minimax-m3-cloud_tp_var25_r2,minimax-m3,fc,512k native 25 (fc105 ∩ 512k),25,open-weight run-to-run variance (512k native 25 / 512k tier 124)
+fc_minimax-m3-cloud_tp_var25_r3,minimax-m3,fc,24 of 512k native 25 (fc105 ∩ 512k),24,open-weight run-to-run variance (512k native 25 / 512k tier 124)
+fc_qwen3.5-cloud_tp,qwen3.5,fc,fc78 (≤256k subset of fc105),78,RQ1 main results (scripts/score_judge.py; scripts/paper/paired_rq1.py); full-context by tier (scripts/paper/tier_small_window.py)
+g55fc,gpt-5.5,fc,fc105 + dev fc 83,188,RQ1 main results (scripts/score_judge.py; scripts/paper/paired_rq1.py); full-context by tier (scripts/paper/tier_small_window.py)
+g55fc_hugfix,gpt-5.5,fc,"test_public 2, dev 2",4,not read by any paper script (partial or intermediate run)
+g55fc_new285,gpt-5.5,fc,72 of fc105 (test_public full-context sample),72,not read by any paper script (partial or intermediate run)
+g55fc_new285hugfc,gpt-5.5,fc,16 of 512k native 25 (fc105 ∩ 512k),16,not read by any paper script (partial or intermediate run)
+gpt-4.1-mini_cb,gpt-4.1-mini,cb,"all 1,997 (dev+test_public)",1997,"RQ1 main results (scripts/score_judge.py; scripts/paper/paired_rq1.py); CB/dense rows of the n=81 and n=42 slices, restricted by qa_id"
+gpt-4.1-mini_cb_new285,gpt-4.1-mini,cb,285 of test_public RAG 386,285,not read by any paper script (partial or intermediate run)
+gpt-4.1-mini_fc,gpt-4.1-mini,fc,fc105 + dev fc 83,188,RQ1 main results (scripts/score_judge.py; scripts/paper/paired_rq1.py); full-context by tier (scripts/paper/tier_small_window.py)
+gpt-4.1-mini_fc_hugfix,gpt-4.1-mini,fc,"test_public 2, dev 2",4,not read by any paper script (partial or intermediate run)
+gpt-4.1-mini_fc_new285,gpt-4.1-mini,fc,72 of fc105 (test_public full-context sample),72,not read by any paper script (partial or intermediate run)
+gpt-4.1-mini_fc_new285hugfc,gpt-4.1-mini,fc,16 of 512k native 25 (fc105 ∩ 512k),16,not read by any paper script (partial or intermediate run)
+gpt-4.1-mini_rag,gpt-4.1-mini,bm25,"dev+test_public RAG 1,540",1540,RQ1 main results (scripts/score_judge.py; scripts/paper/paired_rq1.py)
+gpt-4.1-mini_rag_new285,gpt-4.1-mini,bm25,285 of test_public RAG 386,285,not read by any paper script (partial or intermediate run)
+gpt-5.4-mini_cb,gpt-5.4-mini,cb,"all 1,997 (dev+test_public)",1997,"RQ1 main results (scripts/score_judge.py; scripts/paper/paired_rq1.py); CB/dense rows of the n=81 and n=42 slices, restricted by qa_id"
+gpt-5.4-mini_cb_new285,gpt-5.4-mini,cb,285 of test_public RAG 386,285,not read by any paper script (partial or intermediate run)
+gpt-5.4-mini_fc,gpt-5.4-mini,fc,fc78 + dev fc 73,151,RQ1 main results (scripts/score_judge.py; scripts/paper/paired_rq1.py); full-context by tier (scripts/paper/tier_small_window.py)
+gpt-5.4-mini_fc_new285,gpt-5.4-mini,fc,51 of fc78 (≤256k subset of fc105),51,not read by any paper script (partial or intermediate run)
+gpt-5.4-mini_rag,gpt-5.4-mini,bm25,"dev+test_public RAG 1,540",1540,RQ1 main results (scripts/score_judge.py; scripts/paper/paired_rq1.py)
+gpt-5.4-mini_rag_new285,gpt-5.4-mini,bm25,285 of test_public RAG 386,285,not read by any paper script (partial or intermediate run)
+gpt-5.4-nano_cb,gpt-5.4-nano,cb,"all 1,997 (dev+test_public)",1997,"RQ1 main results (scripts/score_judge.py; scripts/paper/paired_rq1.py); CB/dense rows of the n=81 and n=42 slices, restricted by qa_id"
+gpt-5.4-nano_cb_new285,gpt-5.4-nano,cb,285 of test_public RAG 386,285,not read by any paper script (partial or intermediate run)
+gpt-5.4-nano_fc,gpt-5.4-nano,fc,fc78 + dev fc 73,151,RQ1 main results (scripts/score_judge.py; scripts/paper/paired_rq1.py); full-context by tier (scripts/paper/tier_small_window.py)
+gpt-5.4-nano_fc_new285,gpt-5.4-nano,fc,51 of fc78 (≤256k subset of fc105),51,not read by any paper script (partial or intermediate run)
+gpt-5.4-nano_rag,gpt-5.4-nano,bm25,"dev+test_public RAG 1,540",1540,RQ1 main results (scripts/score_judge.py; scripts/paper/paired_rq1.py)
+gpt-5.4-nano_rag_new285,gpt-5.4-nano,bm25,285 of test_public RAG 386,285,not read by any paper script (partial or intermediate run)
+gpt-5.5_cb,gpt-5.5,cb,"all 1,997 (dev+test_public)",1997,"RQ1 main results (scripts/score_judge.py; scripts/paper/paired_rq1.py); CB/dense rows of the n=81 and n=42 slices, restricted by qa_id"
+gpt-5.5_cb_g55miss,gpt-5.5,cb,"test_public 17, dev 56",73,not read by any paper script (partial or intermediate run)
+gpt-5.5_cb_new285,gpt-5.5,cb,285 of test_public RAG 386,285,not read by any paper script (partial or intermediate run)
+gpt-5.5_rag,gpt-5.5,bm25,"dev+test_public RAG 1,540",1540,RQ1 main results (scripts/score_judge.py; scripts/paper/paired_rq1.py)
+gpt-5.5_rag_new285,gpt-5.5,bm25,285 of test_public RAG 386,285,not read by any paper script (partial or intermediate run)
+jaggfix_glm_bm25,glm-5.2,bm25,agg81 (aggregation slice),81,not used (re-run; the paper uses jf386_* restricted to the 81 ids)
+jaggfix_glm_dense,glm-5.2,dense,agg81 (aggregation slice),81,not used (re-run; the paper uses jf386_* restricted to the 81 ids)
+jaggfix_gpt41mini_bm25,gpt-4.1-mini,bm25,agg81 (aggregation slice),81,not used (re-run; the paper uses jf386_* restricted to the 81 ids)
+jaggfix_gpt41mini_dense,gpt-4.1-mini,dense,agg81 (aggregation slice),81,not used (re-run; the paper uses jf386_* restricted to the 81 ids)
+jaggfix_gpt55_bm25,gpt-5.5,bm25,agg81 (aggregation slice),81,not used (re-run; the paper uses jf386_* restricted to the 81 ids)
+jaggfix_gpt55_dense,gpt-5.5,dense,agg81 (aggregation slice),81,not used (re-run; the paper uses jf386_* restricted to the 81 ids)
+jaggfix_mmx_bm25,minimax-m3,bm25,agg81 (aggregation slice),81,not used (re-run; the paper uses jf386_* restricted to the 81 ids)
+jaggfix_mmx_dense,minimax-m3,dense,agg81 (aggregation slice),81,not used (re-run; the paper uses jf386_* restricted to the 81 ids)
+jdev_gpt-4.1-mini_bm25,gpt-4.1-mini,bm25,"dev RAG 1,154",1154,not read by any paper script (partial or intermediate run)
+jdev_gpt-5.4-mini_bm25,gpt-5.4-mini,bm25,"dev RAG 1,154",1154,not read by any paper script (partial or intermediate run)
+jdev_gpt-5.4-nano_bm25,gpt-5.4-nano,bm25,"dev RAG 1,154",1154,not read by any paper script (partial or intermediate run)
+jdev_gpt-5.5_bm25,gpt-5.5,bm25,"dev RAG 1,154",1154,not read by any paper script (partial or intermediate run)
+jf386_glm-5.2_bm25,glm-5.2,bm25,test_public RAG 386,386,"BM25 rows of the aggregation (n=81) and legal (n=42) slices, restricted by qa_id"
+jf386_glm-5.2_dense,glm-5.2,dense,test_public RAG 386,386,"RQ1 main results (scripts/score_judge.py; scripts/paper/paired_rq1.py); CB/dense rows of the n=81 and n=42 slices, restricted by qa_id"
+jf386_gpt-4.1-mini_bm25,gpt-4.1-mini,bm25,test_public RAG 386,386,"BM25 rows of the aggregation (n=81) and legal (n=42) slices, restricted by qa_id"
+jf386_gpt-4.1-mini_dense,gpt-4.1-mini,dense,test_public RAG 386,386,"RQ1 main results (scripts/score_judge.py; scripts/paper/paired_rq1.py); CB/dense rows of the n=81 and n=42 slices, restricted by qa_id"
+jf386_gpt-5.4-mini_bm25,gpt-5.4-mini,bm25,test_public RAG 386,386,"BM25 rows of the aggregation (n=81) and legal (n=42) slices, restricted by qa_id"
+jf386_gpt-5.4-mini_dense,gpt-5.4-mini,dense,test_public RAG 386,386,"RQ1 main results (scripts/score_judge.py; scripts/paper/paired_rq1.py); CB/dense rows of the n=81 and n=42 slices, restricted by qa_id"
+jf386_gpt-5.4-nano_bm25,gpt-5.4-nano,bm25,test_public RAG 386,386,"BM25 rows of the aggregation (n=81) and legal (n=42) slices, restricted by qa_id"
+jf386_gpt-5.4-nano_dense,gpt-5.4-nano,dense,test_public RAG 386,386,"RQ1 main results (scripts/score_judge.py; scripts/paper/paired_rq1.py); CB/dense rows of the n=81 and n=42 slices, restricted by qa_id"
+jf386_gpt-5.5_bm25,gpt-5.5,bm25,test_public RAG 386,386,"BM25 rows of the aggregation (n=81) and legal (n=42) slices, restricted by qa_id"
+jf386_gpt-5.5_dense,gpt-5.5,dense,test_public RAG 386,386,"RQ1 main results (scripts/score_judge.py; scripts/paper/paired_rq1.py); CB/dense rows of the n=81 and n=42 slices, restricted by qa_id"
+jf386_minimax-m3_bm25,minimax-m3,bm25,test_public RAG 386,386,"BM25 rows of the aggregation (n=81) and legal (n=42) slices, restricted by qa_id"
+jf386_minimax-m3_dense,minimax-m3,dense,test_public RAG 386,386,"RQ1 main results (scripts/score_judge.py; scripts/paper/paired_rq1.py); CB/dense rows of the n=81 and n=42 slices, restricted by qa_id"
+jf386_qwen3.5_bm25,qwen3.5,bm25,test_public RAG 386,386,"BM25 rows of the aggregation (n=81) and legal (n=42) slices, restricted by qa_id"
+jf386_qwen3.5_dense,qwen3.5,dense,test_public RAG 386,386,"RQ1 main results (scripts/score_judge.py; scripts/paper/paired_rq1.py); CB/dense rows of the n=81 and n=42 slices, restricted by qa_id"
+panel_deepseek-v3.2_agg81_glm-5.2,glm-5.2,fc (judge-panel:deepseek-v3.2),agg81 (aggregation slice),81,judge-panel appendix (scripts/kappa_panel.py)
+panel_deepseek-v3.2_agg81_gpt-4.1-mini,gpt-4.1-mini,fc (judge-panel:deepseek-v3.2),agg81 (aggregation slice),81,judge-panel appendix (scripts/kappa_panel.py)
+panel_deepseek-v3.2_agg81_gpt-5.5,gpt-5.5,fc (judge-panel:deepseek-v3.2),agg81 (aggregation slice),81,judge-panel appendix (scripts/kappa_panel.py)
+panel_deepseek-v3.2_agg81_minimax-m3,minimax-m3,fc (judge-panel:deepseek-v3.2),agg81 (aggregation slice),81,judge-panel appendix (scripts/kappa_panel.py)
+panel_deepseek-v3.2_human80,mixed (80 human-labelled predictions),judge-panel:deepseek-v3.2,human80 (qa_id__model__regime keys),80,judge-panel appendix (scripts/kappa_panel.py)
+panel_gemma4_31b_agg81_glm-5.2,glm-5.2,fc (judge-panel:gemma4_31b),agg81 (aggregation slice),81,judge-panel appendix (scripts/kappa_panel.py)
+panel_gemma4_31b_agg81_gpt-4.1-mini,gpt-4.1-mini,fc (judge-panel:gemma4_31b),agg81 (aggregation slice),81,judge-panel appendix (scripts/kappa_panel.py)
+panel_gemma4_31b_agg81_gpt-5.5,gpt-5.5,fc (judge-panel:gemma4_31b),agg81 (aggregation slice),81,judge-panel appendix (scripts/kappa_panel.py)
+panel_gemma4_31b_agg81_minimax-m3,minimax-m3,fc (judge-panel:gemma4_31b),agg81 (aggregation slice),81,judge-panel appendix (scripts/kappa_panel.py)
+panel_gemma4_31b_human80,mixed (80 human-labelled predictions),judge-panel:gemma4_31b,human80 (qa_id__model__regime keys),80,judge-panel appendix (scripts/kappa_panel.py)
+panel_gpt-4.1-mini_agg81_glm-5.2,glm-5.2,fc (judge-panel:gpt-4.1-mini),agg81 (aggregation slice),81,"judge-panel appendix (scripts/kappa_panel.py); aggregation table, n=81 full-context"
+panel_gpt-4.1-mini_agg81_gpt-4.1-mini,gpt-4.1-mini,fc (judge-panel:gpt-4.1-mini),agg81 (aggregation slice),81,"judge-panel appendix (scripts/kappa_panel.py); aggregation table, n=81 full-context"
+panel_gpt-4.1-mini_agg81_gpt-5.5,gpt-5.5,fc (judge-panel:gpt-4.1-mini),agg81 (aggregation slice),81,"judge-panel appendix (scripts/kappa_panel.py); aggregation table, n=81 full-context"
+panel_gpt-4.1-mini_agg81_minimax-m3,minimax-m3,fc (judge-panel:gpt-4.1-mini),agg81 (aggregation slice),81,"judge-panel appendix (scripts/kappa_panel.py); aggregation table, n=81 full-context"
+panel_gpt-4.1-mini_human80,mixed (80 human-labelled predictions),judge-panel:gpt-4.1-mini,human80 (qa_id__model__regime keys),80,judge-panel appendix (scripts/kappa_panel.py)
+panel_kimi-k2.6_agg81_glm-5.2,glm-5.2,fc (judge-panel:kimi-k2.6),agg81 (aggregation slice),81,judge-panel appendix (scripts/kappa_panel.py)
+panel_kimi-k2.6_agg81_gpt-4.1-mini,gpt-4.1-mini,fc (judge-panel:kimi-k2.6),agg81 (aggregation slice),81,judge-panel appendix (scripts/kappa_panel.py)
+panel_kimi-k2.6_agg81_gpt-5.5,gpt-5.5,fc (judge-panel:kimi-k2.6),agg81 (aggregation slice),81,judge-panel appendix (scripts/kappa_panel.py)
+panel_kimi-k2.6_agg81_minimax-m3,minimax-m3,fc (judge-panel:kimi-k2.6),agg81 (aggregation slice),81,judge-panel appendix (scripts/kappa_panel.py)
+panel_kimi-k2.6_human80,mixed (80 human-labelled predictions),judge-panel:kimi-k2.6,human80 (qa_id__model__regime keys),80,judge-panel appendix (scripts/kappa_panel.py)
+panel_mistral-large-3_675b_agg81_glm-5.2,glm-5.2,fc (judge-panel:mistral-large-3_675b),agg81 (aggregation slice),81,judge-panel appendix (scripts/kappa_panel.py)
+panel_mistral-large-3_675b_agg81_gpt-4.1-mini,gpt-4.1-mini,fc (judge-panel:mistral-large-3_675b),agg81 (aggregation slice),81,judge-panel appendix (scripts/kappa_panel.py)
+panel_mistral-large-3_675b_agg81_gpt-5.5,gpt-5.5,fc (judge-panel:mistral-large-3_675b),agg81 (aggregation slice),81,judge-panel appendix (scripts/kappa_panel.py)
+panel_mistral-large-3_675b_agg81_minimax-m3,minimax-m3,fc (judge-panel:mistral-large-3_675b),agg81 (aggregation slice),81,judge-panel appendix (scripts/kappa_panel.py)
+panel_mistral-large-3_675b_human80,mixed (80 human-labelled predictions),judge-panel:mistral-large-3_675b,human80 (qa_id__model__regime keys),80,judge-panel appendix (scripts/kappa_panel.py)
+rag_dense_glm-5.2-cloud_tp,glm-5.2,dense,test_public RAG 386,386,"not used (earlier dense run, superseded by jf386_*_dense, the chunker-fixed re-run of 2026-07-13)"
+rag_dense_minimax-m3-cloud_tp,minimax-m3,dense,test_public RAG 386,386,"not used (earlier dense run, superseded by jf386_*_dense, the chunker-fixed re-run of 2026-07-13)"
+rag_dense_qwen3.5-cloud_tp,qwen3.5,dense,test_public RAG 386,386,"not used (earlier dense run, superseded by jf386_*_dense, the chunker-fixed re-run of 2026-07-13)"
+rag_glm-5.2-cloud_tp,glm-5.2,bm25,test_public RAG 386,386,RQ1 main results (scripts/score_judge.py; scripts/paper/paired_rq1.py)
+rag_minimax-m3-cloud_tp,minimax-m3,bm25,test_public RAG 386,386,RQ1 main results (scripts/score_judge.py; scripts/paper/paired_rq1.py)
+rag_qwen3.5-cloud_tp,qwen3.5,bm25,test_public RAG 386,386,RQ1 main results (scripts/score_judge.py; scripts/paper/paired_rq1.py)
+ragdense_gpt-4.1-mini_test_public,gpt-4.1-mini,dense,test_public RAG 386,386,"not used (earlier dense run, superseded by jf386_*_dense, the chunker-fixed re-run of 2026-07-13)"
+ragdense_gpt-5.4-mini_test_public,gpt-5.4-mini,dense,test_public RAG 386,386,"not used (earlier dense run, superseded by jf386_*_dense, the chunker-fixed re-run of 2026-07-13)"
+ragdense_gpt-5.4-nano_test_public,gpt-5.4-nano,dense,test_public RAG 386,386,"not used (earlier dense run, superseded by jf386_*_dense, the chunker-fixed re-run of 2026-07-13)"
+ragdense_gpt-5.5_test_public,gpt-5.5,dense,test_public RAG 386,386,"not used (earlier dense run, superseded by jf386_*_dense, the chunker-fixed re-run of 2026-07-13)"

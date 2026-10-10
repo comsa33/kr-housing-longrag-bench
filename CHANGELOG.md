@@ -1,5 +1,40 @@
 # Changelog
 
+## v0.9.1 — result-reproduction files (2026-10-10)
+
+No change to the QA items, answers, schema, or splits. `data/qa_*.jsonl` are byte-identical to v0.9.
+This release adds the files needed to recompute the reported results, and it publishes code fixes made
+after the v0.9 tag. The v0.9 archive (DOI 10.5281/zenodo.20640480, 2026-06-11) predates these fixes.
+
+### Fixed (after v0.9; all reported runs use the fixed code)
+- **512k bundle builder fix** (`8a9a497`, 2026-07-10). An earlier build of `mix_multiprovider_512k`
+  omitted some statute articles and table rows that its legal and aggregation items require. The builder
+  now embeds the cited statute articles and the MOLIT trade-detail slices as required components. The
+  full-context verdicts that involve this bundle were re-run on the rebuilt bundle and merged on
+  2026-07-11 (`16e2258`). Models that cannot take the 512k tier (gpt-5.4-mini, gpt-5.4-nano, qwen3.5)
+  never received this bundle.
+- **RAG chunker preamble fix** (`0606c59`, 2026-07-13). The page-marker chunker dropped text before the
+  first page marker, so retrieval never indexed the aggregation tables and statute text at the front of
+  the mix bundle. The reported BM25 and dense test_public runs use the fixed chunker: the
+  `rag_{bm25,dense}_tp386_fixed` prompts retrieve `preamble-p000` pages.
+
+### Added
+- `results/judge_verdicts/`: per-item LLM-judge verdicts (`qa_id`, `judge_correct`) for all 114 judged
+  runs, plus `MANIFEST.csv` (model, regime, item set, n, use). Also `human80_labels.jsonl` (human Y/N
+  for the judge-validation sample) and `results/item_sets/agg81.jsonl`.
+- `scripts/verdict_paths.py`. `score_judge.py` and `kappa_panel.py` take `--verdicts-dir` and fall back to
+  `results/judge_verdicts/` when the internal working copy is absent.
+- `scripts/paper/`: `paired_rq1.py`, `tier_small_window.py`, `evidence_check_agg81.py`, the analysis
+  scripts behind the paper tables, adapted to this repository layout.
+- `construction/`: QA construction scripts, docs and prompts restored from `archive/` (removed in
+  `be18447`), and `construction/v0.8_regeneration/` (triage and repair scripts with qa_id-level verdict
+  summaries). This is provenance only; reproduction does not need it.
+
+### Changed since v0.9 (already on the branch, not new in this entry)
+- `data/source_manifest.jsonl`: per-source `content_sha256` checksums (`90c63d4`).
+- `data/cluster_map.jsonl` released (`d8524c5`).
+- Script and doc files renamed without version suffixes; internal docs removed from the public tree.
+
 ## v0.9 — split consolidation + release-grade baselines (2026-06-11)
 
 Same 1,997 QA and schema as v0.8; this is a split-policy + evaluation change, not a content rebuild.
