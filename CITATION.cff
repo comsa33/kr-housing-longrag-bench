@@ -8,10 +8,15 @@ abstract: >-
   HUG 분양이력), and housing statutes. The public release contains QA labels,
   evidence locators, deterministic predicates, answerability labels, split and
   provider/region metadata, and long-context-bundle references — no raw source
-  documents, no leaked answers, and no API keys. v0.9 keeps the same 1,997 QA and schema as the v0.8
-  LLM-triage repair build, merges the former test_hidden split into test_public (389) for a larger public
-  held-out test, and adds release-grade baselines (5 hosted models x 3 regimes; LLM-judge headline metric,
-  human-validated). It has no systematic item-level human review, and it is not leaderboard-ready or sealed-hidden.
+  documents, no leaked answers, and no API keys. v0.9.1 keeps the 1,997 QA and
+  splits of v0.9 (dev 1,608 / test_public 389) unchanged. It evaluates 11 of 12
+  task families: the cross_document_legal_reasoning family (109 items) stays in
+  the data but is excluded from evaluation because its gold answers follow the
+  2015/2018 statute versions in the corpus (see data/errata_v0.9.1.csv). It adds
+  the errata, a 118-item human sample audit by one author (1 error), per-item
+  LLM-judge verdicts for the reported baselines (judge checked against 80 human
+  labels), analysis scripts, and construction provenance. It has no systematic
+  item-level human review, and it is not leaderboard-ready or sealed-hidden.
 type: dataset
 version: v0.9.1
 date-released: 2026-10-10
