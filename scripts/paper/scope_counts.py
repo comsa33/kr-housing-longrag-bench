@@ -1,0 +1,50 @@
+#!/usr/bin/env python3
+"""Item counts of the evaluation scope (split x family), with optional family/bundle exclusions.
+
+Reads only the public split files. Also lists the items whose bundle is mix_multiprovider_256k
+(the mixed "256k" bundle is ~710k cl100k tokens, longer than the 512k bundle).
+
+    python3 shared/scripts/scope_counts.py [--exclude-family cross_document_legal_reasoning]
+"""
+from __future__ import annotations
+
+import argparse
+import json
+from collections import Counter
+from pathlib import Path
+
+HERE = Path(__file__).resolve()
+DEFAULT_ROOT = HERE.parents[2] if (HERE.parents[2] / "data").is_dir() else HERE.parents[3] / "kr-housing-longrag-bench"
+OVERSIZED = "mix_multiprovider_256k"
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--dataset", default=str(DEFAULT_ROOT))
+    ap.add_argument("--exclude-family", default="")
+    args = ap.parse_args()
+    root = Path(args.dataset)
+    xf = {s for s in args.exclude_family.split(",") if s}
+    rows = []
+    for sp in ("dev", "test_public"):
+        for line in (root / "data" / f"qa_v0.6_{sp}.jsonl").open(encoding="utf-8"):
+            if line.strip():
+                rows.append(json.loads(line))
+    kept = [r for r in rows if r["task_type"] not in xf]
+    print(f"all items {len(rows)}; excluded families {sorted(xf) or '-'}; in scope {len(kept)}")
+    print("split:", dict(Counter(r["split"] for r in kept)))
+    fam = Counter((r["task_type"], r["split"]) for r in kept)
+    print(f"{'family':32} {'dev':>5} {'test':>5} {'all':>5}")
+    for f in sorted({r["task_type"] for r in kept}, key=lambda f: -sum(v for (g, _), v in fam.items() if g == f)):
+        d, t = fam[(f, "dev")], fam[(f, "test_public")]
+        print(f"{f:32} {d:>5} {t:>5} {d + t:>5}")
+    print("context tier (test_public):", dict(sorted(Counter(r.get("context_tier") for r in kept if r["split"] == "test_public").items(), key=str)))
+    over = [r for r in kept if r.get("bundle_id") == OVERSIZED]
+    print(f"{OVERSIZED} items in scope: {len(over)}  split {dict(Counter(r['split'] for r in over))}  "
+          f"family {dict(Counter(r['task_type'] for r in over))}")
+    print("  test_public ids:", " ".join(sorted(r["qa_id"] for r in over if r["split"] == "test_public")))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

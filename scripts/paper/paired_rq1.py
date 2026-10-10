@@ -72,6 +72,10 @@ def main() -> int:
                     help="read <tag>.jsonl verdicts from this directory only "
                          "(default: workspace_local/audit/baselines if present, else results/judge_verdicts)")
     ap.add_argument("--md", action="store_true", help="print a markdown table instead of plain text")
+    ap.add_argument("--exclude-family", default="",
+                    help="comma list of task_type values to drop from scoring, e.g. cross_document_legal_reasoning")
+    ap.add_argument("--exclude-bundle", default="",
+                    help="comma list of bundle_id values to drop from scoring, e.g. mix_multiprovider_256k")
     args = ap.parse_args()
     root = Path(args.dataset)
 
@@ -81,6 +85,9 @@ def main() -> int:
             d = json.loads(line)
             gold[d["qa_id"]] = d
 
+    xf = {s for s in args.exclude_family.split(",") if s}
+    xb = {s for s in args.exclude_bundle.split(",") if s}
+    gold = {q: g for q, g in gold.items() if g.get("task_type") not in xf and g.get("bundle_id") not in xb}
     rows = []
     for name, *tags in RUNS:
         v = {r: load_verdicts(verdict_file(t, args.verdicts_dir), gold) for r, t in zip(REGIMES, tags)}

@@ -30,6 +30,15 @@ after the v0.9 tag. The v0.9 archive (DOI 10.5281/zenodo.20640480, 2026-06-11) p
   `be18447`) plus `prompts/v0.5_worker_prompt.md` (from `docs/` at v0.9, removed in `1a6695f`), and `construction/v0.8_regeneration/` (triage and repair scripts with qa_id-level verdict
   summaries). This is provenance only; reproduction does not need it.
 
+### Evaluation scope
+- The v0.9.1 evaluation excludes the `cross_document_legal_reasoning` family (109 items, 42 in
+  `test_public`); the items stay in the data. Scoring scripts take `--exclude-family` (and
+  `--exclude-bundle`); the default reproduces the v0.9 numbers. In scope: 1,888 items (dev 1,541 /
+  test_public 347). New `scripts/paper/family_table.py` and `scripts/paper/scope_counts.py`.
+- Known issue: the `mix_multiprovider_256k` bundle is ~710k cl100k tokens, longer than the 512k bundle
+  (`scripts/build_bundles.py` does not trim it). 37 items (dev 28, test_public 9) use it; use
+  `--exclude-bundle mix_multiprovider_256k` to report the 256k tier without them.
+
 ### Changed (wording)
 - The v0.8 build is now called the "LLM-triage repair build" in README, DATASET_CARD, CITATION, Zenodo
   metadata, `docs/dataset_statistics.md` and this changelog. The earlier name, "human-review repair build",

@@ -35,6 +35,10 @@ def main() -> int:
     ap.add_argument("--verdicts-dir", default=None,
                     help="read <tag>.jsonl verdicts from this directory only "
                          "(default: workspace_local/audit/baselines if present, else results/judge_verdicts)")
+    ap.add_argument("--exclude-family", default="",
+                    help="comma list of task_type values to drop from scoring, e.g. cross_document_legal_reasoning")
+    ap.add_argument("--exclude-bundle", default="",
+                    help="comma list of bundle_id values to drop from scoring, e.g. mix_multiprovider_256k")
     args = ap.parse_args()
     root = Path(args.dataset)
     gold = {}
@@ -42,6 +46,9 @@ def main() -> int:
         if line.strip():
             d = json.loads(line)
             gold[d["qa_id"]] = d
+    xf = {s for s in args.exclude_family.split(",") if s}
+    xb = {s for s in args.exclude_bundle.split(",") if s}
+    gold = {q: g for q, g in gold.items() if g.get("task_type") not in xf and g.get("bundle_id") not in xb}
     print(f"{'model':14}" + "".join(f"{t:>14}" for t in TIERS))
     for name, tag in FC_TAGS:
         acc = defaultdict(lambda: [0, 0])

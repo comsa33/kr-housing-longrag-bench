@@ -12,6 +12,7 @@ cluster_weight are joined from the gold split files (public splits only — hidd
     python3 scripts/score_judge.py                 # all models, by split (+ fc tier)
     python3 scripts/score_judge.py --splits test_public
     python3 scripts/score_judge.py --verdicts-dir results/judge_verdicts   # released copy only
+    python3 scripts/score_judge.py --exclude-family cross_document_legal_reasoning   # v0.9.1 scope
 """
 from __future__ import annotations
 
@@ -64,15 +65,23 @@ def main() -> int:
     ap.add_argument("--verdicts-dir", default=None,
                     help="read <tag>.jsonl verdicts from this directory only "
                          "(default: workspace_local/audit/baselines if present, else results/judge_verdicts)")
+    ap.add_argument("--exclude-family", default="",
+                    help="comma list of task_type values to drop, e.g. cross_document_legal_reasoning")
+    ap.add_argument("--exclude-bundle", default="",
+                    help="comma list of bundle_id values to drop, e.g. mix_multiprovider_256k")
     args = ap.parse_args()
     want = [s.strip() for s in args.splits.split(",") if s.strip()]
 
+    xf = {s for s in args.exclude_family.split(",") if s}
+    xb = {s for s in args.exclude_bundle.split(",") if s}
     gi: dict[str, dict] = {}
     for sp in ("dev", "test_public"):
         f = ROOT / "data" / f"qa_v0.6_{sp}.jsonl"
         if f.exists():
             for line in f.open(encoding="utf-8"):
                 d = json.loads(line)
+                if d.get("task_type") in xf or d.get("bundle_id") in xb:
+                    continue
                 gi[d["qa_id"]] = d
 
     # acc[(model, regime, split)] = [n, w_n, hits, w_hits]
