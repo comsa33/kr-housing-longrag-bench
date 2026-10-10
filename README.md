@@ -204,7 +204,7 @@ permits it. Korean statutes/rules fall under the non-protected categories of Cop
 
 ## Citation
 
-If you use this benchmark, cite the **v0.9 release** by its Zenodo versioned DOI (or use the concept DOI to
+If you use this benchmark, cite the **v0.9.1 release** by its Zenodo versioned DOI (or use the concept DOI to
 always cite the latest version):
 
 ```bibtex
@@ -212,15 +212,15 @@ always cite the latest version):
   author    = {Lee, Ruo},
   title     = {KR-Housing-LongRAG-Bench},
   year      = {2026},
-  version   = {v0.9 (split consolidation + release-grade baselines; 1,997 QA)},
+  version   = {v0.9.1 (1,997 QA; legal family excluded from evaluation; errata and human sample audit)},
   publisher = {Zenodo},
-  doi       = {10.5281/zenodo.20640480},
-  url       = {https://doi.org/10.5281/zenodo.20640480},
-  note      = {v0.9 merges the former test_hidden split into test_public (389) and adds release-grade baselines; same 1,997 QA as v0.8.}
+  doi       = {10.5281/zenodo.23282680},
+  url       = {https://doi.org/10.5281/zenodo.23282680},
+  note      = {v0.9.1 keeps the 1,997 QA and splits of v0.9, excludes the cross_document_legal_reasoning family from evaluation, and adds errata, a human sample audit and per-item judge verdicts.}
 }
 ```
 
-DOI state: the **v0.9 versioned DOI is `10.5281/zenodo.20640480`** (Zenodo, 2026-06-11); the **concept DOI
+DOI state: the **v0.9.1 versioned DOI is `10.5281/zenodo.23282680`** (Zenodo, 2026-10-10); the v0.9 versioned DOI is `10.5281/zenodo.20640480` (2026-06-11); the **concept DOI
 `10.5281/zenodo.20559127`** always resolves to the latest version. Prior versioned DOIs:
 **v0.8 `10.5281/zenodo.20571211`**, **v0.7 `10.5281/zenodo.20570856`**, **v0.6.3 dataset build
 `10.5281/zenodo.20563604`**.
