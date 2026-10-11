@@ -2,7 +2,6 @@
 
 ## v0.9.2 — full test review, gold fixes, Claude primary judge (2026-10-11)
 
-<!-- TODO: set the release date and the versioned DOI (10.5281/zenodo.TBD) when Zenodo mints it. -->
 
 No change to the questions, schema, or splits. `data/qa_*.jsonl` are byte-identical to v0.9.1. The gold
 changes are published as a separate file, `data/v0.9.2/gold_fixes.json`, and the scoring scripts apply them.

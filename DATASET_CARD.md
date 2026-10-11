@@ -116,7 +116,6 @@ Do not use this benchmark to provide legal, financial, or housing eligibility ad
 If you use this benchmark, cite the **v0.9.2 release** by its Zenodo versioned DOI (or use the concept DOI to
 always cite the latest version):
 
-<!-- TODO: replace 10.5281/zenodo.TBD with the v0.9.2 versioned DOI once Zenodo mints it. -->
 ```bibtex
 @dataset{lee_kr_housing_longrag_bench_2026,
   author    = {Lee, Ruo},
@@ -124,13 +123,13 @@ always cite the latest version):
   year      = {2026},
   version   = {v0.9.2 (1,997 QA; full test review, gold fixes, Claude primary judge)},
   publisher = {Zenodo},
-  doi       = {10.5281/zenodo.TBD},
-  url       = {https://doi.org/10.5281/zenodo.TBD},
+  doi       = {10.5281/zenodo.23291297},
+  url       = {https://doi.org/10.5281/zenodo.23291297},
   note      = {v0.9.2 keeps the 1,997 QA and splits of v0.9, reviews all 347 evaluated test items with three annotators, corrects 24 gold answers, excludes 5 ill-posed items and the cross_document_legal_reasoning family from evaluation, and uses claude-sonnet-5-5 as the primary judge.}
 }
 ```
 
-DOI state: the v0.9.2 versioned DOI is `10.5281/zenodo.TBD` (minted on release); the v0.9.1 versioned DOI is `10.5281/zenodo.23282680` (Zenodo, 2026-10-10); the v0.9 versioned DOI is `10.5281/zenodo.20640480` (2026-06-11); the concept DOI
+DOI state: the v0.9.2 versioned DOI is `10.5281/zenodo.23291297` (minted on release); the v0.9.1 versioned DOI is `10.5281/zenodo.23282680` (Zenodo, 2026-10-10); the v0.9 versioned DOI is `10.5281/zenodo.20640480` (2026-06-11); the concept DOI
 `10.5281/zenodo.20559127` always resolves to the latest version. Prior versioned DOIs: v0.8 `10.5281/zenodo.20571211`, v0.7 `10.5281/zenodo.20570856`,
 v0.6.3 dataset build `10.5281/zenodo.20563604` (the v0.7 release reuses that v0.6 data).
 
