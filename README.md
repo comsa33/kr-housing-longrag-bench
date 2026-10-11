@@ -18,6 +18,7 @@ tabular data (MOLIT 실거래 / HUG 분양이력), and housing statutes.
   source-grounded questions, fixes location/answer errors, and removes 14 unrepairable items; it supersedes
   earlier seed builds. See `CHANGELOG.md`.
 - **v0.9.3 corrections and added labels:** a closed-book locator leak (64 count items showed as many row ids as the gold count; 4 ids embedded the gold date) is fixed in `scripts/run_llm_baseline.py`; page ids with Hangul (18 SH announcements) are now parsed by `scripts/build_rag_smoke.py`, which corrects dev gold-page recall (40.9% reported, 74.1% matched by text); 122 dev items whose gold page is not in their 512k bundle are excluded from BM25, dense and full context (`data/v0.9.3/bundle_exclusions.txt`). Round-2 human labels (100 random dev items: 7 errors, 7.0% [3.4, 13.7], excluded from evaluation in `data/v0.9.3/eval_exclusions.txt`; independent labels on the 80 judge-validation predictions) and round-3 labels (74 Anthropic predictions on which six judges disagree) are in `results/human_review_v0.9.3/`. Re-run verdicts, two Anthropic models and a four-judge panel are in `results/judge_verdicts_v0.9.3/`. See CHANGELOG 0.9.3.
+- **v0.9.4 additions:** dense bge-m3 retrieval with 50 passages on the 81 aggregation items for six models (verdicts in `results/judge_verdicts_v0.9.4/`, per-item coverage in `results/retrieval_v0.9.4/`), with the comparison rule fixed before any generation call; a gold-page recall rule that assigns each passage to one page (dev BM25 recall@5 74.9%, pooled 78.7%, test unchanged at 89.7%); and disclosures on the minimax-m3 reasoning flag and four July 2026 full-context re-calls. Questions, answers and evaluation scope are unchanged. Scripts: `scripts/v094/`. See CHANGELOG 0.9.4.
 - **v0.9.2 human review and gold fixes:** three annotators reviewed all 347 evaluated `test_public` items; 29 have an error, 8.4% [5.9, 11.7] (Wilson 95%). This corrects the 0.8% figure of the v0.9.1 one-author sample audit: the same 118 items have 8 errors under the three-annotator review. 24 gold answers are corrected in `data/v0.9.2/gold_fixes.json` (questions unchanged; the QA files are byte-identical to v0.9.1) and 5 ill-posed items are excluded from evaluation (`data/v0.9.2/eval_exclusions.txt`). Evaluated: 1,883 items (dev 1,541 / test_public 342). Dev was not reviewed by people; 54 dev items carry unverified automatic flags and are still evaluated. Errata: `data/errata_v0.9.2.csv`. Primary judge `claude-sonnet-5-5`, secondary `gpt-4.1-mini`; verdicts in `results/judge_verdicts_v0.9.2/`, review labels in `results/human_review_v0.9.2/`.
 - **v0.9.1 evaluation scope:** v0.9.1 evaluates 11 of 12 families; the legal family (`cross_document_legal_reasoning`, 109 items, 42 in `test_public`) is excluded because its gold answers follow the statute versions in the corpus (2015/2018), not the current statutes; see `data/errata_v0.9.1.csv`. The items stay in the data, and the QA files are unchanged. In scope: 1,888 items (dev 1,541 / test_public 347). A 118-item human sample audit of the evaluated `test_public` items is in `results/human_audit/` (1 error, 0.8% [0.1, 4.6]); per-item judge verdicts for every reported run are in `results/judge_verdicts/`.
 - **Canonical v0.9 file:** `data/qa_v0.6_realistic_candidates.jsonl` (historical filename retained for
@@ -209,23 +210,24 @@ permits it. Korean statutes/rules fall under the non-protected categories of Cop
 
 ## Citation
 
-If you use this benchmark, cite the **v0.9.3 release** by its Zenodo versioned DOI (or use the concept DOI to
+If you use this benchmark, cite the **v0.9.4 release** by its Zenodo versioned DOI (or use the concept DOI to
 always cite the latest version):
 
+<!-- TODO: replace 10.5281/zenodo.TBD with the v0.9.4 versioned DOI once Zenodo mints it. -->
 ```bibtex
 @dataset{lee_kr_housing_longrag_bench_2026,
   author    = {Lee, Ruo},
   title     = {KR-Housing-LongRAG-Bench},
   year      = {2026},
-  version   = {v0.9.3 (1,997 QA; leak and page-marker fixes, round-2/3 human labels, re-run verdicts)},
+  version   = {v0.9.4 (1,997 QA; dense k=50 on the aggregation set, recall rule, disclosures)},
   publisher = {Zenodo},
-  doi       = {10.5281/zenodo.23298455},
-  url       = {https://doi.org/10.5281/zenodo.23298455},
-  note      = {v0.9.3 keeps the 1,997 QA, questions and splits of v0.9 and the v0.9.2 gold fixes, fixes a closed-book locator leak and a page-marker bug, excludes 122 dev items without bundle evidence from the bundle settings, adds round-2 and round-3 human labels, re-run verdicts, two Anthropic models and a four-judge panel.}
+  doi       = {10.5281/zenodo.TBD},
+  url       = {https://doi.org/10.5281/zenodo.TBD},
+  note      = {v0.9.4 keeps the 1,997 QA, questions, splits, gold fixes and evaluation scope of v0.9.3, adds dense bge-m3 k=50 verdicts on the 81 aggregation items for six models, a majority-page gold-recall rule, and disclosures on the minimax-m3 reasoning flag and four July full-context re-calls.}
 }
 ```
 
-DOI state: the **v0.9.3 versioned DOI is `10.5281/zenodo.23298455`** (minted on release); the v0.9.2 versioned DOI is `10.5281/zenodo.23291297` (Zenodo, 2026-10-11); the v0.9.1 versioned DOI is `10.5281/zenodo.23282680` (Zenodo, 2026-10-10); the v0.9 versioned DOI is `10.5281/zenodo.20640480` (2026-06-11); the **concept DOI
+DOI state: the **v0.9.4 versioned DOI is `10.5281/zenodo.TBD`** (minted on release); the v0.9.3 versioned DOI is `10.5281/zenodo.23298455` (Zenodo, 2026-10-11); the v0.9.2 versioned DOI is `10.5281/zenodo.23291297` (Zenodo, 2026-10-11); the v0.9.1 versioned DOI is `10.5281/zenodo.23282680` (Zenodo, 2026-10-10); the v0.9 versioned DOI is `10.5281/zenodo.20640480` (2026-06-11); the **concept DOI
 `10.5281/zenodo.20559127`** always resolves to the latest version. Prior versioned DOIs:
 **v0.8 `10.5281/zenodo.20571211`**, **v0.7 `10.5281/zenodo.20570856`**, **v0.6.3 dataset build
 `10.5281/zenodo.20563604`**.

@@ -78,3 +78,21 @@ python3 scripts/score_judge.py --exclude-family cross_document_legal_reasoning \
     --verdicts-dir results/judge_verdicts_v0.9.2/claude-sonnet-5-5
 python3 scripts/v093/score_claude_human.py
 ```
+
+## v0.9.4
+
+- `judge_verdicts_v0.9.4/{claude-sonnet-5-5,gpt-4.1-mini}/k50dense_<model>.jsonl`: dense bge-m3 retrieval with
+  50 passages on the 81 aggregation items, same format. `k50dense_minimax-m3` is the run with reasoning on (the
+  reported row); `k50dense_minimax-m3_reasoning-absent` is the run with the reported flag (off), for which the
+  endpoint returned no reasoning. See CHANGELOG 0.9.4.
+- `judge_verdicts_v0.9.4/panel/`: the four panel judges on the two Anthropic models' k=50 predictions.
+- `judge_verdicts_v0.9.4/MANIFEST.csv`: judge, tag, model, regime, split, n for every file.
+- `retrieval_v0.9.4/k50_coverage_agg81.jsonl`: per item, whether the 50 passages hold the announcement page and
+  how many of the matched rows they hold.
+- `retrieval_v0.9.4/nonagg_recall_test.csv`: gold-page recall@k (k = 5, 10, 20, 50) of BM25, bge-m3 and their
+  reciprocal-rank fusion for the 258 non-aggregation test_public items.
+
+```bash
+python3 scripts/v094/score_k50.py      # k=50 table: accuracy, pair-bootstrap intervals, d vs full context, labels
+python3 scripts/v094/hitmiss.py        # accuracy by gold-page hit at k=5
+```

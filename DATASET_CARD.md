@@ -10,6 +10,8 @@ This seed benchmark is designed for research on Korean long-context document und
 
 ## Dataset Status
 
+**v0.9.4: dense retrieval at k=50 on the aggregation set and a recall rule.** Six models read 50 bge-m3 passages on the 81 aggregation items under a comparison rule fixed before any generation call; the 50 passages hold the announcement page and every matched row for 63 items, and no model answers any of the other 18 correctly (verdicts: `results/judge_verdicts_v0.9.4/`). Gold-page recall now assigns each retrieved passage to one page: BM25 recall@5 is 74.9% on dev and 78.7% pooled (test unchanged at 89.7%). The 122 dev items of v0.9.3 are those whose 512k bundle lacks at least one gold page. The minimax-m3 reasoning flag and four July 2026 full-context re-calls are disclosed in the changelog. Questions, answers and evaluation scope are unchanged.
+
 **v0.9.3: corrections and added human labels.** A closed-book locator leak (68 items) and a page-marker bug for Hangul page ids are fixed; 122 dev items whose gold page is not in their 512k bundle are excluded from the bundle settings; the two non-author annotators reviewed 100 random dev items (7 errors, 7.0% [3.4, 13.7]; the 7 are excluded from evaluation), labelled the 80 judge-validation predictions, and labelled the 74 Anthropic predictions on which six judges disagree. The v0.9.2 gold fixes and test scope are unchanged. Human naturalness labels (q4) of the v0.9.2 review: two or more of three annotators marked 52 of 347 test items as not reading naturally (51 script-generated); naturalness is not an error criterion.
 
 **v0.9.2: full human review of the evaluated test set.** Three annotators (the first author and two native Korean speakers who are not domain experts) independently labelled all 347 evaluated `test_public` items; the author adjudicated the 39 items that any annotator flagged. 29 items have an error, 8.4% [5.9, 11.7] (Wilson 95%): script-generated 25/179 = 14.0% [9.6, 19.8], cloze-regenerated 4/168 = 2.4% [0.9, 6.0]. Agreement before adjudication: Fleiss κ 0.705. This corrects the v0.9.1 sample-audit figure below (0.8%, one author, 118 items): the same 118 items have 8 errors under the three-annotator review. 24 gold answers are corrected (`data/v0.9.2/gold_fixes.json`; 23 accept-any, 1 replaced) and 5 ill-posed items are excluded from evaluation but kept in the data. Evaluation scope: 1,883 items (dev 1,541 / test_public 342). `dev` was not reviewed by people; 54 dev items carry unverified automatic flags (`data/errata_v0.9.2.csv`) and are still evaluated. Labels: `results/human_review_v0.9.2/`. Primary judge `claude-sonnet-5-5` (98.8%, κ 0.975 against 80 human labels), secondary `gpt-4.1-mini`.
@@ -115,23 +117,24 @@ Do not use this benchmark to provide legal, financial, or housing eligibility ad
 
 ## Citation
 
-If you use this benchmark, cite the **v0.9.3 release** by its Zenodo versioned DOI (or use the concept DOI to
+If you use this benchmark, cite the **v0.9.4 release** by its Zenodo versioned DOI (or use the concept DOI to
 always cite the latest version):
 
+<!-- TODO: replace 10.5281/zenodo.TBD with the v0.9.4 versioned DOI once Zenodo mints it. -->
 ```bibtex
 @dataset{lee_kr_housing_longrag_bench_2026,
   author    = {Lee, Ruo},
   title     = {KR-Housing-LongRAG-Bench},
   year      = {2026},
-  version   = {v0.9.3 (1,997 QA; leak and page-marker fixes, round-2/3 human labels, re-run verdicts)},
+  version   = {v0.9.4 (1,997 QA; dense k=50 on the aggregation set, recall rule, disclosures)},
   publisher = {Zenodo},
-  doi       = {10.5281/zenodo.23298455},
-  url       = {https://doi.org/10.5281/zenodo.23298455},
-  note      = {v0.9.3 keeps the 1,997 QA, questions and splits of v0.9 and the v0.9.2 gold fixes, fixes a closed-book locator leak and a page-marker bug, excludes 122 dev items without bundle evidence from the bundle settings, adds round-2 and round-3 human labels, re-run verdicts, two Anthropic models and a four-judge panel.}
+  doi       = {10.5281/zenodo.TBD},
+  url       = {https://doi.org/10.5281/zenodo.TBD},
+  note      = {v0.9.4 keeps the 1,997 QA, questions, splits, gold fixes and evaluation scope of v0.9.3, adds dense bge-m3 k=50 verdicts on the 81 aggregation items for six models, a majority-page gold-recall rule, and disclosures on the minimax-m3 reasoning flag and four July full-context re-calls.}
 }
 ```
 
-DOI state: the v0.9.3 versioned DOI is `10.5281/zenodo.23298455` (minted on release); the v0.9.2 versioned DOI is `10.5281/zenodo.23291297` (Zenodo, 2026-10-11); the v0.9.1 versioned DOI is `10.5281/zenodo.23282680` (Zenodo, 2026-10-10); the v0.9 versioned DOI is `10.5281/zenodo.20640480` (2026-06-11); the concept DOI
+DOI state: the v0.9.4 versioned DOI is `10.5281/zenodo.TBD` (minted on release); the v0.9.3 versioned DOI is `10.5281/zenodo.23298455` (Zenodo, 2026-10-11); the v0.9.2 versioned DOI is `10.5281/zenodo.23291297` (Zenodo, 2026-10-11); the v0.9.1 versioned DOI is `10.5281/zenodo.23282680` (Zenodo, 2026-10-10); the v0.9 versioned DOI is `10.5281/zenodo.20640480` (2026-06-11); the concept DOI
 `10.5281/zenodo.20559127` always resolves to the latest version. Prior versioned DOIs: v0.8 `10.5281/zenodo.20571211`, v0.7 `10.5281/zenodo.20570856`,
 v0.6.3 dataset build `10.5281/zenodo.20563604` (the v0.7 release reuses that v0.6 data).
 

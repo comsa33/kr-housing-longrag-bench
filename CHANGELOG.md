@@ -1,5 +1,66 @@
 # Changelog
 
+## v0.9.4 — dense retrieval at k=50 on the aggregation set, recall rule, disclosures (release date TBD)
+
+No change to the questions, answers, schema, splits, gold fixes, or evaluation scope of v0.9.3 (1,876 items:
+dev 1,534 / test_public 342; legal family and the 12 items of `data/v0.9.3/eval_exclusions.txt` excluded).
+Every number below can be recomputed from released files with the scripts in `scripts/v094/`.
+
+### Dense bge-m3 retrieval at k=50 on the 81 aggregation items (`results/judge_verdicts_v0.9.4/`)
+- **Setting, fixed before any generation call.** The six full-window models (gpt-5.5, glm-5.2, minimax-m3,
+  claude-sonnet-5-5, claude-haiku-5-5, gpt-4.1-mini) read the 50 bge-m3 passages of the item's 512k bundle,
+  with the chunker (v0.9.2 page markers, `KRH_LEGACY_PAGE_MARKERS=1`), prompt builder, passage order and
+  template of the reported dense top-5 runs; only k changed. Rebuilding k=5 with the same code reproduces the
+  stored dense prompts 81/81. Output caps were raised before the run (gpt-5.5 16,000; Anthropic models and
+  glm-5.2 16,384; minimax-m3 32,768) with the single-retry rule of v0.9.3 as a fallback. Ollama `num_ctx` was
+  131,072 (the reported runs used 32,768, which cannot hold these prompts).
+- **Decision rule, fixed before any generation call.** d = accuracy at k=50 minus full-context (512k)
+  accuracy on the same 81 items under the primary judge, with a 95% bootstrap over the 9
+  announcement–table pairs (10,000 resamples, seed 20261011): "exceeds" if the interval lies above 0,
+  "below" if it lies below 0, otherwise "no detected difference".
+- **Results (primary judge).** gpt-5.5 78% (63/81; full context 100%; d −22 [−56, 0]); glm-5.2 72%
+  (88%; −16 [−43, +5]); minimax-m3 75% (68%; +7 [−25, +35]); claude-sonnet-5-5 69% (74%; −5 [−35, +20]);
+  claude-haiku-5-5 21% (23%; −2 [−15, +11]); gpt-4.1-mini 12% (9%; +4 [−2, +11]). Every label is "no
+  detected difference"; the gpt-5.5 interval reaches 0. The 50 passages hold the announcement page and every
+  matched row for 63 items; in the other 18 every matched row is present but the announcement page is
+  missing, and no model answers any of those 18 correctly. Per-item coverage:
+  `results/retrieval_v0.9.4/k50_coverage_agg81.jsonl`. The HUG table spans 27 passages, so k=50 holds
+  nearly all of it.
+- **minimax-m3 reasoning mode.** Every reported minimax-m3 run reasoned: closed-book, BM25 and dense top-5
+  under the flag "off" (traces on 389/389, 386/386, 386/386 calls) and full context and the v0.9.3
+  shortened contexts under "on". With the same "off" flag and unchanged client code, the endpoint returned
+  no reasoning on any of the 81 k=50 items (23%, "below"). A run with reasoning explicitly on is the reported
+  row; the choice between the two runs was made after both were seen. Both are released
+  (`k50dense_minimax-m3`, `k50dense_minimax-m3_reasoning-absent`).
+- **Empty answers.** glm-5.2 returned 5 empty answers on the first pass (2 at the cap while reasoning, 3
+  stopped under 500 tokens); the retry at 32,768 answered 3. Items 1891 and 1904 again stopped at about 300
+  tokens, far below the cap, with the answer only in the reasoning trace; both are scored wrong. The glm-5.2
+  label is the same under either treatment. All other models: 0 empty, 0 at the cap.
+- **Judges.** Primary claude-sonnet-5-5 and secondary gpt-4.1-mini on all 7 rows; the four panel judges
+  (deepseek-v4.1-flash, gemma4, kimi-k2.6, mistral-large-3) on the two Anthropic models. On this run the
+  primary judge scores claude-sonnet-5-5 at 69% and the four panel judges at 63% to 68%.
+
+### Retrieval recall rule (`scripts/v094/recall_majority_page.py`)
+- Gold-page recall now assigns each retrieved passage to the one page that holds most of its characters; an
+  item with two gold pages scores half for each page retrieved. The v0.9.3 text-matching figure counted a
+  passage crossing a page boundary for both pages, which inflated SH recall.
+- BM25 recall@5 on the evaluated items with their gold pages in the bundle: test_public 89.7% (unchanged),
+  dev 74.9%, pooled dev + test 78.7%. This supersedes the v0.9.3 dev figure of 74.1% (text-matched, before the
+  122 items and the 7 dev errors were excluded). The rule changes only SH items (dev 67.8%
+  against 80.4% for the other dev items). Retrieved text and accuracy are unchanged.
+- Accuracy on the 258 non-aggregation test_public items split by gold-page hit at k=5
+  (`scripts/v094/hitmiss.py`, `results/retrieval_v0.9.4/nonagg_recall_test.csv`): with BM25, pooled over
+  eight models, 91.7% on hit items against 32.3% on miss items; with bge-m3, 86.4% against 15.9%.
+
+### Corrections and disclosures
+- The 122 dev items of `data/v0.9.3/bundle_exclusions.txt` are items whose 512k bundle lacks at least one of
+  their gold pages (60 lack every gold page, 62 lack one of two), not items with no gold page in the bundle.
+- minimax-m3 full context (512k): 4 aggregation answers (0435, 0438, 0442, 1896) were empty at the
+  16,384-token cap on the first call in July 2026; when the run resumed on 2026-07-10 they were called once
+  more at the same cap, before the v0.9.3 retry rule existed. The scored answers are from that call; the
+  primary judge marks all 4 correct. Without that call minimax-m3 would score 51 instead of 55 of the 81
+  aggregation items.
+
 ## v0.9.3 — leak and page-marker fixes, more human labels, re-run verdicts (2026-10-11)
 
 No change to the questions, answers, schema, or splits. `data/qa_*.jsonl` are byte-identical to v0.9.2, and
