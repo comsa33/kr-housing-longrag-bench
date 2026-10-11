@@ -1,0 +1,23 @@
+judge,tag,model,regime,split,n
+claude-sonnet-5-5,k50dense_gpt-5.5,gpt-5.5,dense k=50,test_public,81
+claude-sonnet-5-5,k50dense_gpt-4.1-mini,gpt-4.1-mini,dense k=50,test_public,81
+claude-sonnet-5-5,k50dense_glm-5.2,glm-5.2,dense k=50,test_public,81
+claude-sonnet-5-5,k50dense_minimax-m3,minimax-m3,dense k=50 (reasoning on; reported),test_public,81
+claude-sonnet-5-5,k50dense_minimax-m3_reasoning-absent,minimax-m3,"dense k=50 (flag off, no reasoning; not reported as the result)",test_public,81
+claude-sonnet-5-5,k50dense_claude-sonnet-5-5,claude-sonnet-5-5,dense k=50,test_public,81
+claude-sonnet-5-5,k50dense_claude-haiku-5-5,claude-haiku-5-5,dense k=50,test_public,81
+gpt-4.1-mini,k50dense_gpt-5.5,gpt-5.5,dense k=50,test_public,81
+gpt-4.1-mini,k50dense_gpt-4.1-mini,gpt-4.1-mini,dense k=50,test_public,81
+gpt-4.1-mini,k50dense_glm-5.2,glm-5.2,dense k=50,test_public,81
+gpt-4.1-mini,k50dense_minimax-m3,minimax-m3,dense k=50 (reasoning on; reported),test_public,81
+gpt-4.1-mini,k50dense_minimax-m3_reasoning-absent,minimax-m3,"dense k=50 (flag off, no reasoning; not reported as the result)",test_public,81
+gpt-4.1-mini,k50dense_claude-sonnet-5-5,claude-sonnet-5-5,dense k=50,test_public,81
+gpt-4.1-mini,k50dense_claude-haiku-5-5,claude-haiku-5-5,dense k=50,test_public,81
+deepseek-v4.1-flash,panel_deepseek-v4.1-flash_k50dense_claude-haiku-5-5,claude-haiku-5-5,dense k=50 (panel re-score),test_public,81
+deepseek-v4.1-flash,panel_deepseek-v4.1-flash_k50dense_claude-sonnet-5-5,claude-sonnet-5-5,dense k=50 (panel re-score),test_public,81
+gemma4_31b,panel_gemma4_31b_k50dense_claude-haiku-5-5,claude-haiku-5-5,dense k=50 (panel re-score),test_public,81
+gemma4_31b,panel_gemma4_31b_k50dense_claude-sonnet-5-5,claude-sonnet-5-5,dense k=50 (panel re-score),test_public,81
+kimi-k2.6,panel_kimi-k2.6_k50dense_claude-haiku-5-5,claude-haiku-5-5,dense k=50 (panel re-score),test_public,81
+kimi-k2.6,panel_kimi-k2.6_k50dense_claude-sonnet-5-5,claude-sonnet-5-5,dense k=50 (panel re-score),test_public,81
+mistral-large-3_675b,panel_mistral-large-3_675b_k50dense_claude-haiku-5-5,claude-haiku-5-5,dense k=50 (panel re-score),test_public,81
+mistral-large-3_675b,panel_mistral-large-3_675b_k50dense_claude-sonnet-5-5,claude-sonnet-5-5,dense k=50 (panel re-score),test_public,81
