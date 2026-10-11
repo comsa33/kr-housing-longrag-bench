@@ -8,30 +8,34 @@ abstract: >-
   HUG 분양이력), and housing statutes. The public release contains QA labels,
   evidence locators, deterministic predicates, answerability labels, split and
   provider/region metadata, and long-context-bundle references — no raw source
-  documents, no leaked answers, and no API keys. v0.9.2 keeps the 1,997 QA and
-  splits of v0.9 (dev 1,608 / test_public 389) and their questions unchanged.
-  Three annotators reviewed all 347 evaluated test_public items; 29 have an
-  error (8.4%, Wilson 95% [5.9, 11.7]). This corrects the 0.8% one-author
-  sample figure published with v0.9.1: the same 118 items have 8 errors under
-  the three-annotator review. 24 gold answers are corrected in
-  data/v0.9.2/gold_fixes.json and 5 ill-posed items are excluded from
-  evaluation, leaving 342 evaluated test_public items; the legal family stays
-  excluded as in v0.9.1. Dev was not reviewed by people; 54 dev items carry
-  unverified automatic flags and are still evaluated. Errata are in
-  data/errata_v0.9.2.csv. The primary judge is claude-sonnet-5-5 (98.8% agreement
-  with 80 human labels) and gpt-4.1-mini is the secondary judge. The release is
-  not leaderboard-ready and has no sealed hidden split.
+  documents, no leaked answers, and no API keys. v0.9.3 keeps the 1,997 QA,
+  questions and splits of v0.9 (dev 1,608 / test_public 389) and the v0.9.2
+  gold fixes (342 evaluated test_public items). It fixes a closed-book locator
+  leak (68 items whose locator revealed the answer; re-run) and a page-marker
+  bug for Hangul page ids (dev recall under-counted; results unchanged),
+  excludes 122 dev items whose gold page is not in their 512k bundle from the
+  bundle settings, and adds human labels: 100 random dev items (7 errors,
+  7.0%, Wilson 95% [3.4, 13.7]), independent labels on the 80 judge-validation
+  predictions, and the 74 Anthropic predictions on which six judges disagree.
+  It adds verdicts for the re-runs, two Anthropic models and a four-judge
+  panel. The v0.9.2 three-annotator test review (29 errors, 8.4%) and its gold
+  fixes stand. The release is not leaderboard-ready and has no sealed hidden
+  split.
 type: dataset
-version: v0.9.2
+version: v0.9.3
+# TODO: set date-released to the GitHub/Zenodo release date.
 date-released: 2026-10-11
 license: CC-BY-4.0
 repository-code: "https://github.com/comsa33/kr-housing-longrag-bench"
 # The concept DOI (resolves to the latest version) and prior versioned DOIs are listed under identifiers.
-doi: "10.5281/zenodo.23291297"
+doi: "10.5281/zenodo.TBD"
 identifiers:
   - type: doi
+    value: "10.5281/zenodo.TBD"
+    description: "Versioned DOI for this v0.9.3 release (leak and page-marker fixes, round-2/3 human labels, re-run verdicts)."
+  - type: doi
     value: "10.5281/zenodo.23291297"
-    description: "Versioned DOI for this v0.9.2 release (full test review, gold fixes, Claude primary judge)."
+    description: "Versioned DOI for the prior v0.9.2 release (full test review, gold fixes, Claude primary judge)."
   - type: doi
     value: "10.5281/zenodo.23282680"
     description: "Versioned DOI for the prior v0.9.1 release (evaluation scope, errata, human sample audit)."

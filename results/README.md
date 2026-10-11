@@ -55,3 +55,26 @@ python3 scripts/paper/family_table.py $X --verdicts-dir $V --regime bm25 --min-n
 python3 scripts/paper/scope_counts.py $X
 python3 scripts/v092/score29.py                                     # the 29 fixed or excluded items
 ```
+
+## v0.9.3
+
+- `judge_verdicts_v0.9.3/{claude-sonnet-5-5,gpt-4.1-mini}/<tag>.jsonl`: verdicts for the v0.9.3 re-runs and the two
+  Anthropic models, same format. `cbfix_*` are the closed-book items whose locator leaked the answer, re-run
+  without the leaking fields; they replace those items in the v0.9.2 closed-book runs. `g55retry_cb_*` are the
+  gpt-5.5 closed-book items that were empty at the 4,000-token cap, re-run once at 16,000; they replace those
+  items. `thinkon_*` are glm-5.2 with reasoning on. `oracle_agg81_*` / `openregion_agg81_*` are the aggregation
+  set with only the matching rows, or with every row of the item's year (HUG) or month (MOLIT), plus the
+  announcement page. `agg512k_*` reuse the full-context prediction for the 18 aggregation items of the
+  full-context sample.
+- `judge_verdicts_v0.9.3/panel/`: gemma4:31b, kimi-k2.6, mistral-large-3:675b and deepseek-v4.1-flash on all
+  Anthropic predictions; deepseek-v4.1-flash also on the 80 human-labelled predictions and on the
+  aggregation-set full-context predictions of gpt-5.5, gpt-4.1-mini, glm-5.2 and minimax-m3.
+- `judge_verdicts_v0.9.3/MANIFEST.csv`: judge, tag, model, regime, split, n for every file.
+- `human_review_v0.9.3/`: round-2 and round-3 human labels; see its README.
+
+```bash
+python3 scripts/score_judge.py --exclude-family cross_document_legal_reasoning \
+    --exclude-ids data/v0.9.2/eval_exclusions.txt --exclude-bundle-ids data/v0.9.3/bundle_exclusions.txt \
+    --verdicts-dir results/judge_verdicts_v0.9.2/claude-sonnet-5-5
+python3 scripts/v093/score_claude_human.py
+```

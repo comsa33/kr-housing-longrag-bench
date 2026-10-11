@@ -1,5 +1,75 @@
 # Changelog
 
+## v0.9.3 — leak and page-marker fixes, more human labels, re-run verdicts (release date TBD)
+
+No change to the questions, answers, schema, or splits. `data/qa_*.jsonl` are byte-identical to v0.9.2, and
+the v0.9.2 gold fixes and the 342-item test scope stay in force.
+
+### Changes from v0.9.2 and the figures they affect
+- **Closed-book locator leak.** For 68 items the closed-book locator block revealed the answer: for 64 count
+  items (test 17, dev 47) the number of listed `row_ids` equals the gold count, and for 4 items (test 1,
+  dev 3) a page or bundle id embeds the gold date. `scripts/run_llm_baseline.py` now drops those fields for
+  those items (`data/v0.9.3/cb_locator_fix.jsonl`; `--legacy-locators` restores the old prompts). The
+  affected closed-book items were re-run for every model that can still be run. Affects closed-book scores
+  only.
+- **Empty answers.** gpt-5.5 returned no answer for 63 of 342 test and 234 of 1,541 dev closed-book items
+  because its reasoning used the whole 4,000-token output cap. Under a rule fixed before any re-run, each
+  was re-run once at 16,000 tokens; all were answered. The same rule (cap doubled for open models) was
+  applied to 28 items of the leak-fixed gpt-5.5 run and to 8 open-model predictions; all were answered
+  (`scripts/v093/list_empty_answers.py`).
+- **Page markers with Hangul ids.** The page-marker pattern in `scripts/build_rag_smoke.py` read ASCII ids
+  only, so the 18 SH announcements were not split into pages and their passages carried no page id. The
+  retrieved text and the accuracy results are unchanged; dev gold-page recall was under-counted (40.9%
+  reported, 74.1% when passages are matched to gold pages by text; test unchanged at 89.7%). The pattern is
+  fixed; `KRH_LEGACY_PAGE_MARKERS=1` reproduces the reported runs.
+- **Dev items without bundle evidence.** For 122 dev items (multi-document comparison 62, aggregation 36,
+  region comparison 21, provider comparison 3; all 512k) the gold page is not in their 512k bundle. They are
+  excluded from BM25, dense and full context and kept in closed-book (`data/v0.9.3/bundle_exclusions.txt`;
+  `scripts/score_judge.py --exclude-bundle-ids`). All test items have their gold page in the bundle, and the
+  table rows of the other 144 dev aggregation items are all in the bundle.
+- **Models and judges.** qwen3.5 was withdrawn by its provider and is not reported. In the judge panel,
+  deepseek-v3.2 was withdrawn and replaced by deepseek-v4.1-flash (κ 0.949 against the 80 human labels; the
+  acceptance rule κ ≥ 0.85 was fixed in advance). The v0.9.2 deepseek-v3.2 verdicts stay published.
+- **Settings restated.** minimax-m3 produced reasoning in its closed-book and retrieval runs although the
+  run metadata say reasoning off. Prompt sizes: the 512k prompt is 330k–520k tokens depending on the
+  model's tokenizer (511k by the cl100k count used for the tiers); the top-5 retrieval prompt is about 3k–5k.
+
+### Added human labels (`results/human_review_v0.9.3/`)
+- Round 2: the two non-author annotators reviewed 100 random in-scope dev items with the four checks of
+  the test review. Both labelled the same 7 items as errors (κ 1.0) and the author confirmed all 7: dev error
+  estimate 7/100 = 7.0% [3.4, 13.7]. The 7 items are marked `confirmed_error_still_evaluated` in
+  `data/errata_v0.9.3.csv`; their gold is unchanged. They also labelled the 80 judge-validation predictions
+  independently (model names hidden): on the 78 items both labelled, they agree with each other and with the
+  primary judge on all 78.
+- Round 3: they labelled the 74 predictions of claude-sonnet-5-5 and claude-haiku-5-5 (of 2,722) on which
+  the six judges disagree; if they agreed, that label stands (53), otherwise the author decided (21), under
+  a rule fixed before labelling. The primary judge had credited 21 of the 74 that the human labels mark
+  wrong. Scores with the human labels differ from the primary judge by at most 4.9 points
+  (`scripts/v093/score_claude_human.py`).
+- In every round the annotators worked independently, did not use AI tools and had up to one week. They
+  received no further payment after the first round.
+- The v0.9.2 test review also recorded naturalness (q4): two or more of the three annotators marked 52 of
+  347 items as not reading naturally (51 script-generated, 1 cloze-regenerated). Naturalness is not an error
+  criterion; the items stay in the evaluation.
+
+### New verdicts (`results/judge_verdicts_v0.9.3/`)
+- Primary (claude-sonnet-5-5) and secondary (gpt-4.1-mini) verdicts for: the leak-fixed closed-book items
+  (`cbfix_*`), the gpt-5.5 retries (`g55retry_*`), glm-5.2 with reasoning on (`thinkon_*`), the aggregation
+  set with oracle rows and with all rows of the item's year or month (`oracle_agg81_*`, `openregion_agg81_*`),
+  and all settings for claude-sonnet-5-5 and claude-haiku-5-5. `panel/` holds the four panel judges'
+  verdicts on all Anthropic predictions, deepseek-v4.1-flash on the 80 human-labelled predictions and on the
+  aggregation-set full-context predictions of the four original full-window models. `MANIFEST.csv` lists
+  every file. Predictions and prompts stay internal, as in v0.9.2.
+
+### Errata
+- `data/errata_v0.9.3.csv`, 206 rows: the v0.9.2 rows (status column renamed `v0.9.3_status`), the 7 round-2
+  dev confirmations (6 were among the v0.9.2 automatic flags) and the 122 dev items without bundle evidence.
+
+### Scripts
+- New `scripts/v093/` (`build_errata.py`, `build_human_labels.py`, `write_verdicts.py`, `check_fixes.py`,
+  `list_empty_answers.py`, `score_cb_corrected.py`, `score_claude_human.py`); see its README.
+- `scripts/score_judge.py --exclude-bundle-ids FILE`: drop items from the rag, dense and fc regimes only.
+
 ## v0.9.2 — full test review, gold fixes, Claude primary judge (2026-10-11)
 
 

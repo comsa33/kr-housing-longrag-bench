@@ -9,6 +9,7 @@ No script here calls an API.
 | `write_verdicts.py` | Writes `results/judge_verdicts_v0.9.3/` from the raw judge batch results and the panel outputs (build machine). |
 | `check_fixes.py` | Checks the two code fixes: Hangul page markers (`build_rag_smoke.py`) and the closed-book locator fix (`run_llm_baseline.py`). |
 | `list_empty_answers.py` | Lists empty predictions of a run and writes the prompts for the single retry. |
+| `score_cb_corrected.py` | Closed-book accuracy before and after the leak fix and the gpt-5.5 retries, from released verdicts only. |
 | `score_claude_human.py` | Anthropic-model scores under the primary judge, the secondary judge, the panel mean and the round-3 human labels, from released files only. |
 
 ## Code fixes
