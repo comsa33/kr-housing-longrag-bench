@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.9.2 — full test review, gold fixes, Claude primary judge (unreleased)
+## v0.9.2 — full test review, gold fixes, Claude primary judge (2026-10-11)
 
 <!-- TODO: set the release date and the versioned DOI (10.5281/zenodo.TBD) when Zenodo mints it. -->
 
