@@ -8,26 +8,35 @@ abstract: >-
   HUG 분양이력), and housing statutes. The public release contains QA labels,
   evidence locators, deterministic predicates, answerability labels, split and
   provider/region metadata, and long-context-bundle references — no raw source
-  documents, no leaked answers, and no API keys. v0.9.1 keeps the 1,997 QA and
-  splits of v0.9 (dev 1,608 / test_public 389) unchanged. It evaluates 11 of 12
-  task families: the cross_document_legal_reasoning family (109 items) stays in
-  the data but is excluded from evaluation because its gold answers follow the
-  2015/2018 statute versions in the corpus (see data/errata_v0.9.1.csv). It adds
-  the errata, a 118-item human sample audit by one author (1 error), per-item
-  LLM-judge verdicts for the reported baselines (judge checked against 80 human
-  labels), analysis scripts, and construction provenance. It has no systematic
-  item-level human review, and it is not leaderboard-ready or sealed-hidden.
+  documents, no leaked answers, and no API keys. v0.9.2 keeps the 1,997 QA and
+  splits of v0.9 (dev 1,608 / test_public 389) and their questions unchanged.
+  Three annotators reviewed all 347 evaluated test_public items; 29 have an
+  error (8.4%, Wilson 95% [5.9, 11.7]). This corrects the 0.8% one-author
+  sample figure published with v0.9.1: the same 118 items have 8 errors under
+  the three-annotator review. 24 gold answers are corrected in
+  data/v0.9.2/gold_fixes.json and 5 ill-posed items are excluded from
+  evaluation, leaving 342 evaluated test_public items; the legal family stays
+  excluded as in v0.9.1. Dev was not reviewed by people; 54 dev items carry
+  unverified automatic flags and are still evaluated. Errata are in
+  data/errata_v0.9.2.csv. The primary judge is claude-sonnet-5-5 (98.8% agreement
+  with 80 human labels) and gpt-4.1-mini is the secondary judge. The release is
+  not leaderboard-ready and has no sealed hidden split.
 type: dataset
-version: v0.9.1
-date-released: 2026-10-10
+version: v0.9.2
+# TODO: set date-released to the GitHub/Zenodo release date.
+date-released: 2026-10-11
 license: CC-BY-4.0
 repository-code: "https://github.com/comsa33/kr-housing-longrag-bench"
 # The concept DOI (resolves to the latest version) and prior versioned DOIs are listed under identifiers.
-doi: "10.5281/zenodo.23282680"
+# TODO: replace 10.5281/zenodo.TBD with the v0.9.2 versioned DOI once Zenodo mints it.
+doi: "10.5281/zenodo.TBD"
 identifiers:
   - type: doi
+    value: "10.5281/zenodo.TBD"
+    description: "Versioned DOI for this v0.9.2 release (full test review, gold fixes, Claude primary judge)."
+  - type: doi
     value: "10.5281/zenodo.23282680"
-    description: "Versioned DOI for this v0.9.1 release (evaluation scope, errata, human sample audit)."
+    description: "Versioned DOI for the prior v0.9.1 release (evaluation scope, errata, human sample audit)."
   - type: doi
     value: "10.5281/zenodo.20640480"
     description: "Versioned DOI for the prior v0.9 release (split consolidation + baselines)."

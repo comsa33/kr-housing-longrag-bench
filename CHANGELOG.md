@@ -1,5 +1,68 @@
 # Changelog
 
+## v0.9.2 — full test review, gold fixes, Claude primary judge (unreleased)
+
+<!-- TODO: set the release date and the versioned DOI (10.5281/zenodo.TBD) when Zenodo mints it. -->
+
+No change to the questions, schema, or splits. `data/qa_*.jsonl` are byte-identical to v0.9.1. The gold
+changes are published as a separate file, `data/v0.9.2/gold_fixes.json`, and the scoring scripts apply them.
+
+### Human review of the full evaluated test set
+- Three annotators (the first author and two native Korean speakers who are not domain experts) labelled
+  all 347 evaluated `test_public` items independently with the four checks of the v0.9.1 audit. Items
+  that at least one annotator marked as an error (39) were adjudicated by the author.
+- Result: 29 of 347 items have an error, 8.4% [5.9, 11.7] (Wilson 95%). Script-generated items 25/179 =
+  14.0% [9.6, 19.8]; cloze-regenerated items 4/168 = 2.4% [0.9, 6.0].
+- Agreement before adjudication: Fleiss κ 0.705; pairwise raw agreement 94.2% / 94.2% / 98.3%.
+- New `results/human_review_v0.9.2/`: per-annotator labels (347 × 3) and the 39 adjudication decisions.
+  No question, answer, evidence or memo text is included.
+
+### Correction of the v0.9.1 audit figure
+- v0.9.1 reported a one-author sample audit of 118 items with 1 error, 0.8% [0.1, 4.6]. Under the
+  three-annotator review, the same 118 items have 8 errors; the single v0.9.1 annotator had flagged 1 of
+  them (0772). The 0.8% figure is therefore corrected to the full-review rate above. The v0.9.1 entry
+  below and `results/human_audit/` are left as published.
+
+### Gold fixes and evaluation scope (`data/v0.9.2/gold_fixes.json`)
+- 24 items get a corrected gold answer. 23 accept any of several answers that the source supports
+  (`accept_any`), and 1 gets a new answer (`replace`, `krhlrb_v05_0568`). Questions are unchanged.
+- 5 items are excluded from evaluation because the question is ill-posed: 0994, 0995, 1125, 1132 (table
+  header misparse) and 1369 (supply type not named). They stay in the data. The list is also in
+  `data/v0.9.2/eval_exclusions.txt`.
+- v0.9.2 evaluation scope: legal family and the 5 items excluded, 1,883 items (dev 1,541 / test_public 342).
+- `dev` was not reviewed by people. Detectors built from the test review flag 54 dev items (44 dual-row
+  gold, 6 multiple schedules, 4 header misparse). These are unverified flags; the items are still evaluated.
+  On `test_public` the detectors recover 25 of the 29 confirmed errors and flag no other item.
+
+### Errata
+- `data/errata_v0.9.2.csv`, 83 rows: the 29 confirmed test errors with type, old answer, new or accepted
+  answers and status (dual-row gold 19, multiple schedules 3, header misparse 4, wrong gold 1, scope
+  mismatch 1, unspecified type 1), and the 54 unverified dev flags. `data/errata_v0.9.1.csv` is unchanged.
+
+### Judges
+- Primary judge: `claude-sonnet-5-5` (Message Batches API; no temperature, which the API rejects for
+  this model; JSON-schema verdict). Same instruction text as `scripts/llm_judge.py`. Accept-any gold is
+  shown as `다음 중 어느 하나와 일치하면 정답: (1) … / (2) …`.
+- Secondary judge: `gpt-4.1-mini`, with its v0.9.1 verdicts except on the 24 gold-fixed items, which were
+  re-judged with the same prompts.
+- Checks: agreement with the 80 human labels 98.8%, κ 0.975 (gpt-4.1-mini 96.2%, κ 0.924); 100/100
+  identical verdicts on a re-run; 99.5% agreement between the two judges over 8,091 in-scope test verdicts
+  and over 10,844 dev verdicts.
+- New `results/judge_verdicts_v0.9.2/{claude-sonnet-5-5,gpt-4.1-mini}/<tag>.jsonl` (36 runs; test_public,
+  plus dev for the 12 GPT core runs) and `human80_claude-sonnet-5-5.jsonl`.
+- New `scripts/judge_v092/`: prompt builders, prediction mapping for test and dev, batch runner and parser,
+  the gpt-4.1-mini re-judge input builder and the verdict writer. The rebuild reproduces the submitted
+  inputs and the released verdict files exactly. Model predictions stay internal.
+
+### Scripts
+- `scripts/score_judge.py`, `scripts/score_retrieval.py` and `scripts/paper/{paired_rq1,tier_small_window,
+  family_table,scope_counts}.py` take `--exclude-ids FILE`; `family_table.py` also takes `--verdicts-dir`.
+  Defaults are unchanged and reproduce the v0.9.1 numbers. v0.9.2 numbers:
+  `--exclude-family cross_document_legal_reasoning --exclude-ids data/v0.9.2/eval_exclusions.txt
+  --verdicts-dir results/judge_verdicts_v0.9.2/claude-sonnet-5-5`.
+- New `scripts/v092/`: `detect.py` (dev defect flags), `build_errata.py` (`data/errata_v0.9.2.csv`) and
+  `score29.py` (scores on the 29 fixed or excluded items under old and new gold).
+
 ## v0.9.1 — result-reproduction files (2026-10-10)
 
 No change to the QA items, answers, schema, or splits. `data/qa_*.jsonl` are byte-identical to v0.9.

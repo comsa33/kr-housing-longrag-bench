@@ -28,3 +28,30 @@ machine) and fall back to `results/judge_verdicts/` otherwise.
 rebuild it first (`docs/public_reconstruction.md`).
 
 - `human_audit/`: v0.9.1 human sample audit (118 items) and how to reproduce its summary; see `human_audit/README.md`.
+
+## v0.9.2
+
+- `judge_verdicts_v0.9.2/claude-sonnet-5-5/<tag>.jsonl`: primary-judge verdicts, same format as above, for
+  the 36 runs used in v0.9.2 (test_public; dev added for the 12 GPT core runs). Only items in the v0.9.2
+  scope are included (legal family and the 5 excluded items removed), judged against the v0.9.2 gold.
+- `judge_verdicts_v0.9.2/gpt-4.1-mini/<tag>.jsonl`: secondary judge. These are the v0.9.1 verdicts, except
+  for the 24 gold-fixed items, which were re-judged against the v0.9.2 gold.
+- `judge_verdicts_v0.9.2/human80_claude-sonnet-5-5.jsonl`: Claude verdicts on the 80 human-labelled
+  predictions (`claude_sonnet_5_5`, `human`).
+- `human_review_v0.9.2/`: three-annotator labels for the 347 evaluated test_public items and the 39
+  adjudication decisions; see `human_review_v0.9.2/README.md`.
+- How the verdicts were produced: `scripts/judge_v092/README.md`.
+
+Reproduce the v0.9.2 tables (all scoring scripts take the same three options; without them they give
+the v0.9.1 numbers):
+
+```bash
+X="--exclude-family cross_document_legal_reasoning --exclude-ids data/v0.9.2/eval_exclusions.txt"
+V=results/judge_verdicts_v0.9.2/claude-sonnet-5-5      # or .../gpt-4.1-mini
+python3 scripts/score_judge.py $X --verdicts-dir $V                 # test_public, dev, pooled
+python3 scripts/paper/paired_rq1.py $X --verdicts-dir $V            # four regimes on the same items
+python3 scripts/paper/tier_small_window.py $X --verdicts-dir $V [--exclude-bundle mix_multiprovider_256k]
+python3 scripts/paper/family_table.py $X --verdicts-dir $V --regime bm25 --min-n 1
+python3 scripts/paper/scope_counts.py $X
+python3 scripts/v092/score29.py                                     # the 29 fixed or excluded items
+```
