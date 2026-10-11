@@ -1,0 +1,8 @@
+# v0.9.2: test_public items excluded from evaluation (ill-posed questions found in the
+# three-annotator test review). Same ids as "exclude_from_evaluation" in gold_fixes.json.
+# Use with: --exclude-ids data/v0.9.2/eval_exclusions.txt
+krhlrb_v05_0994
+krhlrb_v05_0995
+krhlrb_v05_1125
+krhlrb_v05_1132
+krhlrb_v05_1369
