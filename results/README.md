@@ -1,8 +1,8 @@
 # results/ — per-item judge verdicts behind the reported numbers
 
 - `judge_verdicts/<tag>.jsonl`: one line per item, `{"qa_id": ..., "judge_correct": true|false}`. This is
-  the LLM-judge verdict for one (model, regime, item set) run. Predictions, judge outputs and prompts are
-  not included.
+  the LLM-judge verdict for one (model, regime, item set) run. Judge outputs and prompts are not
+  included; the model answers behind each verdict file are in `predictions_v0.9.5/` from v0.9.5.
 - `judge_verdicts/MANIFEST.csv`: one row per tag, giving the model, the regime (`cb`, `bm25`, `dense`,
   `fc`, or a judge-panel re-score), the item set, `n`, and where the run is used. Rows marked `not used` are
   partial runs or superseded re-runs. They are kept so the record is complete.
@@ -97,3 +97,12 @@ python3 scripts/v094/score_k50.py      # k=50 table: accuracy, pair-bootstrap in
 python3 scripts/v094/hitmiss.py        # accuracy by gold-page hit at k=5
 python3 scripts/v094/bootstrap_agg81.py  # aggregation-set intervals (pair and cluster bootstrap), by matched-row count
 ```
+
+## Model answers (v0.9.5)
+
+- `predictions_v0.9.5/<v0.9.2|v0.9.3|v0.9.4|variance|human80>/<tag>.jsonl`: the final answer text of every
+  judged prediction, one file per verdict file (`predictions_v0.9.5/MANIFEST.csv`), with the released primary
+  and secondary verdicts joined in. Reasoning traces, prompts and the unreported qwen3.5 runs are excluded,
+  and a small amount of text is masked (`predictions_v0.9.5/README.md`). **Terms:** the model answers are not
+  covered by CC BY 4.0, remain subject to each model provider's terms of use, are released for reproducing and
+  re-judging the evaluation, and must not be used to train competing models.

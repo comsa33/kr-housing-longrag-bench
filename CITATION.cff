@@ -8,26 +8,27 @@ abstract: >-
   HUG 분양이력), and housing statutes. The public release contains QA labels,
   evidence locators, deterministic predicates, answerability labels, split and
   provider/region metadata, and long-context-bundle references — no raw source
-  documents, no leaked answers, and no API keys. v0.9.4 keeps the 1,997 QA,
-  questions, splits, gold fixes and evaluation scope of v0.9.3 (1,876 evaluated
-  items: dev 1,534 / test_public 342). It adds verdicts for dense bge-m3
-  retrieval with 50 passages on the 81 aggregation items for six models, run
-  under a comparison rule fixed before any generation call, a gold-page recall
-  rule that assigns each retrieved passage to one page (dev BM25 recall@5
-  74.9%, test unchanged), and disclosures on the minimax-m3 reasoning flag and
-  four July 2026 full-context re-calls. The release is not leaderboard-ready
-  and has no sealed hidden split.
+  documents, no leaked answers, and no API keys. v0.9.5 keeps the 1,997 QA,
+  questions, splits, gold fixes, evaluation scope, verdicts and every reported
+  number of v0.9.4 and adds the final answer text of every judged prediction
+  (24,074 model answers; reasoning traces excluded). The model answers are not
+  covered by CC BY 4.0 and remain subject to each model provider's terms. The
+  release is not leaderboard-ready and has no sealed hidden split.
 type: dataset
-version: v0.9.4
+version: v0.9.5
+# TODO: set date-released to the GitHub/Zenodo release date.
 date-released: 2026-10-12
 license: CC-BY-4.0
 repository-code: "https://github.com/comsa33/kr-housing-longrag-bench"
 # The concept DOI (resolves to the latest version) and prior versioned DOIs are listed under identifiers.
-doi: "10.5281/zenodo.23300582"
+doi: "10.5281/zenodo.TBD"
 identifiers:
   - type: doi
+    value: "10.5281/zenodo.TBD"
+    description: "Versioned DOI for this v0.9.5 release (model answers released)."
+  - type: doi
     value: "10.5281/zenodo.23300582"
-    description: "Versioned DOI for this v0.9.4 release (dense k=50 on the aggregation set, recall rule, disclosures)."
+    description: "Versioned DOI for the v0.9.4 release (dense k=50 on the aggregation set, recall rule, disclosures)."
   - type: doi
     value: "10.5281/zenodo.23298455"
     description: "Versioned DOI for the prior v0.9.3 release (leak and page-marker fixes, round-2/3 human labels, re-run verdicts)."

@@ -1,5 +1,35 @@
 # Changelog
 
+## v0.9.5 — model answers released (2026-10-12)
+
+No change to the questions, answers, schema, splits, gold fixes, evaluation scope, verdicts, or any reported
+number of v0.9.4.
+
+### Model answers (`results/predictions_v0.9.5/`)
+- **What.** The final answer text of every judged prediction behind the reported results: 24,074 model
+  answers (test_public 12,797, dev 11,277) in 85 JSONL files that mirror the released verdict files one to
+  one (`MANIFEST.csv`). Each line is `{qa_id, split, model, setting, prediction, judge_label,
+  judge_label_secondary}` with the released primary (claude-sonnet-5-5) and secondary (gpt-4.1-mini)
+  verdicts. Covered: the main runs of the eight models, the closed-book leak-fix re-runs, the gpt-5.5
+  empty-answer retries, the glm-5.2 reasoning-on runs, the open-region and oracle contexts, dense k=50
+  (seven rows, including the minimax-m3 run without reasoning), the second and third full-context runs of
+  Section S8 (secondary judge only), the dev runs behind the pooled tables, and the 80 judge-validation
+  predictions. The 74 predictions of the round-3 human review are among the Anthropic files.
+- **Exact strings.** Each answer is the string the judge scored, after re-runs; `scripts/v095/` rebuilds the
+  files from the judge inputs and checks that every file has the same qa_id set as its verdict file.
+- **Excluded.** Reasoning traces (4.6% of them copy 200 or more characters of bundle text), prompts, bundle
+  text, provider logs, and the unreported qwen3.5 runs.
+- **Masking.** A span is replaced by `[source text omitted, N chars]` when, after removing whitespace, a
+  maximal run of overlapping 20-character windows that all occur in the item's bundle text covers 200 or more
+  characters: 1 answer (573 characters). A phone-number-shaped string that occurs in no bundle text is
+  replaced by `[phone number omitted]`: 6 distinct numbers in 6 answers. After masking, the longest bundle
+  overlap in any answer is 162 characters, and no mobile number, e-mail address, resident registration number
+  or labelled personal name remains.
+- **Terms.** The model answers are not covered by the CC BY 4.0 license of the annotations and remain
+  subject to each model provider's terms of use (LICENSE §3; `results/predictions_v0.9.5/README.md`). They
+  are released for reproducing and re-judging the evaluation; do not use them to train models that compete
+  with those providers' products.
+
 ## v0.9.4 — dense retrieval at k=50 on the aggregation set, recall rule, disclosures (2026-10-12)
 
 No change to the questions, answers, schema, splits, gold fixes, or evaluation scope of v0.9.3 (1,876 items:

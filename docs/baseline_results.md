@@ -9,7 +9,7 @@ This is a **research-preview reference baseline**, **not** a sealed-hidden leade
 model ranking. Per-tier long-context numbers are captioned **indicative**; see *Limitations and the path to
 paper-grade* (§9) for what must be added before a camera-ready claim. No raw documents, bundle text, or API
 keys are published here; all predictions, prompts, and run metadata are INTERNAL under
-`workspace_local/audit/baselines/` (gitignored).
+`workspace_local/audit/baselines/` (gitignored). From v0.9.5 the final answer text of the reported runs (not the reasoning traces or prompts) is released in `results/predictions_v0.9.5/` under the providers' terms.
 
 > **Reading guide.** §§1–7 describe the **current** design and run mechanics; §§8–9 are the results and
 > limitations. Where an earlier 304-item *pilot* sample is referenced, it is labelled as such — the headline
