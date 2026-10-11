@@ -16,15 +16,14 @@ abstract: >-
   release is not leaderboard-ready and has no sealed hidden split.
 type: dataset
 version: v0.9.5
-# TODO: set date-released to the GitHub/Zenodo release date.
 date-released: 2026-10-12
 license: CC-BY-4.0
 repository-code: "https://github.com/comsa33/kr-housing-longrag-bench"
 # The concept DOI (resolves to the latest version) and prior versioned DOIs are listed under identifiers.
-doi: "10.5281/zenodo.TBD"
+doi: "10.5281/zenodo.23306443"
 identifiers:
   - type: doi
-    value: "10.5281/zenodo.TBD"
+    value: "10.5281/zenodo.23306443"
     description: "Versioned DOI for this v0.9.5 release (model answers released)."
   - type: doi
     value: "10.5281/zenodo.23300582"
