@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.9.3 — leak and page-marker fixes, more human labels, re-run verdicts (release date TBD)
+## v0.9.3 — leak and page-marker fixes, more human labels, re-run verdicts (2026-10-11)
 
 No change to the questions, answers, schema, or splits. `data/qa_*.jsonl` are byte-identical to v0.9.2, and
 the v0.9.2 gold fixes and the 342-item test scope stay in force. The 7 dev errors confirmed by the round-2

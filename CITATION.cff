@@ -23,7 +23,6 @@ abstract: >-
   split.
 type: dataset
 version: v0.9.3
-# TODO: set date-released to the GitHub/Zenodo release date.
 date-released: 2026-10-11
 license: CC-BY-4.0
 repository-code: "https://github.com/comsa33/kr-housing-longrag-bench"
