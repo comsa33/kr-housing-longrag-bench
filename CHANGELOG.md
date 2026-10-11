@@ -3,7 +3,11 @@
 ## v0.9.3 — leak and page-marker fixes, more human labels, re-run verdicts (release date TBD)
 
 No change to the questions, answers, schema, or splits. `data/qa_*.jsonl` are byte-identical to v0.9.2, and
-the v0.9.2 gold fixes and the 342-item test scope stay in force.
+the v0.9.2 gold fixes and the 342-item test scope stay in force. The 7 dev errors confirmed by the round-2
+human review are excluded from evaluation, as the confirmed ill-posed test items were in v0.9.2:
+`data/v0.9.3/eval_exclusions.txt` lists the 5 test and 7 dev items (sections marked by split). v0.9.3
+evaluation scope: legal family and these 12 items excluded, 1,876 items (dev 1,534 / test_public 342); the
+122 dev items without bundle evidence are further excluded from the bundle settings.
 
 ### Changes from v0.9.2 and the figures they affect
 - **Closed-book locator leak.** For 68 items the closed-book locator block revealed the answer: for 64 count
@@ -37,8 +41,9 @@ the v0.9.2 gold fixes and the 342-item test scope stay in force.
 ### Added human labels (`results/human_review_v0.9.3/`)
 - Round 2: the two non-author annotators reviewed 100 random in-scope dev items with the four checks of
   the test review. Both labelled the same 7 items as errors (κ 1.0) and the author confirmed all 7: dev error
-  estimate 7/100 = 7.0% [3.4, 13.7]. The 7 items are marked `confirmed_error_still_evaluated` in
-  `data/errata_v0.9.3.csv`; their gold is unchanged. They also labelled the 80 judge-validation predictions
+  estimate 7/100 = 7.0% [3.4, 13.7]. The 7 items are excluded from evaluation in every setting
+  (`excluded_from_evaluation` in `data/errata_v0.9.3.csv`; listed in `data/v0.9.3/eval_exclusions.txt`); they
+  stay in the data with their gold unchanged. They also labelled the 80 judge-validation predictions
   independently (model names hidden): on the 78 items both labelled, they agree with each other and with the
   primary judge on all 78.
 - Round 3: they labelled the 74 predictions of claude-sonnet-5-5 and claude-haiku-5-5 (of 2,722) on which
@@ -63,7 +68,7 @@ the v0.9.2 gold fixes and the 342-item test scope stay in force.
 
 ### Errata
 - `data/errata_v0.9.3.csv`, 206 rows: the v0.9.2 rows (status column renamed `v0.9.3_status`), the 7 round-2
-  dev confirmations (6 were among the v0.9.2 automatic flags) and the 122 dev items without bundle evidence.
+  dev confirmations, now excluded from evaluation (6 were among the v0.9.2 automatic flags) and the 122 dev items without bundle evidence.
 
 ### Scripts
 - New `scripts/v093/` (`build_errata.py`, `build_human_labels.py`, `write_verdicts.py`, `check_fixes.py`,

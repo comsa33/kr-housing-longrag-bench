@@ -16,8 +16,9 @@ cluster_weight are joined from the gold split files (public splits only — hidd
     python3 scripts/score_judge.py --exclude-family cross_document_legal_reasoning \
         --exclude-ids data/v0.9.2/eval_exclusions.txt \
         --verdicts-dir results/judge_verdicts_v0.9.2/claude-sonnet-5-5             # v0.9.2 scope
-    # v0.9.3 scope: add --exclude-bundle-ids data/v0.9.3/bundle_exclusions.txt (dev items whose gold page is
-    # not in their 512k bundle; dropped from rag/dense/fc only)
+    # v0.9.3 scope: --exclude-ids data/v0.9.3/eval_exclusions.txt (5 test + 7 dev, all settings) and
+    # --exclude-bundle-ids data/v0.9.3/bundle_exclusions.txt (122 dev items whose gold page is not in their
+    # 512k bundle; dropped from rag/dense/fc only)
 """
 from __future__ import annotations
 

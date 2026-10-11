@@ -74,7 +74,7 @@ python3 scripts/v092/score29.py                                     # the 29 fix
 
 ```bash
 python3 scripts/score_judge.py --exclude-family cross_document_legal_reasoning \
-    --exclude-ids data/v0.9.2/eval_exclusions.txt --exclude-bundle-ids data/v0.9.3/bundle_exclusions.txt \
+    --exclude-ids data/v0.9.3/eval_exclusions.txt --exclude-bundle-ids data/v0.9.3/bundle_exclusions.txt \
     --verdicts-dir results/judge_verdicts_v0.9.2/claude-sonnet-5-5
 python3 scripts/v093/score_claude_human.py
 ```

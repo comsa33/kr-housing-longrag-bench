@@ -15,7 +15,7 @@ abstract: >-
   bug for Hangul page ids (dev recall under-counted; results unchanged),
   excludes 122 dev items whose gold page is not in their 512k bundle from the
   bundle settings, and adds human labels: 100 random dev items (7 errors,
-  7.0%, Wilson 95% [3.4, 13.7]), independent labels on the 80 judge-validation
+  7.0%, Wilson 95% [3.4, 13.7]; excluded from evaluation), independent labels on the 80 judge-validation
   predictions, and the 74 Anthropic predictions on which six judges disagree.
   It adds verdicts for the re-runs, two Anthropic models and a four-judge
   panel. The v0.9.2 three-annotator test review (29 errors, 8.4%) and its gold

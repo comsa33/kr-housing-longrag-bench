@@ -14,8 +14,9 @@ The items are a random sample (seed 20261011) of the in-scope dev items (legal f
 
 `dev100_adjudication.jsonl` — the items with at least one error label (7). The author confirmed all 7
 (`final_error`). Both annotators labelled the same 7 items as errors. Dev error estimate: 7/100 = 7.0%
-(Wilson 95% [3.4, 13.7]). The 7 items are listed in `data/errata_v0.9.3.csv`
-(`confirmed_error_still_evaluated`); their gold is unchanged.
+(Wilson 95% [3.4, 13.7]). The 7 items are excluded from evaluation in every setting
+(`excluded_from_evaluation` in `data/errata_v0.9.3.csv`; `data/v0.9.3/eval_exclusions.txt`); they stay in the
+data with their gold unchanged.
 
 ## Round 2: independent labels on the 80 judge-validation predictions
 
