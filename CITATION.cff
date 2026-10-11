@@ -27,10 +27,10 @@ date-released: 2026-10-11
 license: CC-BY-4.0
 repository-code: "https://github.com/comsa33/kr-housing-longrag-bench"
 # The concept DOI (resolves to the latest version) and prior versioned DOIs are listed under identifiers.
-doi: "10.5281/zenodo.TBD"
+doi: "10.5281/zenodo.23298455"
 identifiers:
   - type: doi
-    value: "10.5281/zenodo.TBD"
+    value: "10.5281/zenodo.23298455"
     description: "Versioned DOI for this v0.9.3 release (leak and page-marker fixes, round-2/3 human labels, re-run verdicts)."
   - type: doi
     value: "10.5281/zenodo.23291297"
