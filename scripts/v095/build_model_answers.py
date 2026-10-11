@@ -70,7 +70,7 @@ def labels(dirn,tag,judge):
     if dirn in ("human80","variance") and judge=="claude-sonnet-5-5" and dirn=="variance": return {}
     f=R+(f"{dirn}/{judge}/{tag}.jsonl" if dirn.startswith("judge_verdicts_") else "")
     if dirn=="variance" and judge=="gpt-4.1-mini": f=R+f"judge_verdicts/{tag}.jsonl"
-    if dirn=="human80": f=R+"judge_verdicts_v0.9.2/human80_claude-sonnet-5-5.jsonl" if judge=="claude-sonnet-5-5" else ""
+    if dirn=="human80": f=R+"judge_verdicts_v0.9.2/human80_claude-sonnet-5-5.jsonl" if judge=="claude-sonnet-5-5" else R+"judge_verdicts/panel_gpt-4.1-mini_human80.jsonl"
     if not f or not os.path.exists(f): return {}
     out={}
     for r in L(f): out[r["qa_id"]]=r.get("judge_correct", r.get("claude_sonnet_5_5"))

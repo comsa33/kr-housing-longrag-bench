@@ -102,7 +102,7 @@ python3 scripts/v094/bootstrap_agg81.py  # aggregation-set intervals (pair and c
 
 - `predictions_v0.9.5/<v0.9.2|v0.9.3|v0.9.4|variance|human80>/<tag>.jsonl`: the final answer text of every
   judged prediction, one file per verdict file (`predictions_v0.9.5/MANIFEST.csv`), with the released primary
-  and secondary verdicts joined in. Reasoning traces, prompts and the unreported qwen3.5 runs are excluded,
+  and secondary verdicts joined in. Reasoning traces, the model input prompts (which contain bundle text) and the unreported qwen3.5 runs are excluded,
   and a small amount of text is masked (`predictions_v0.9.5/README.md`). **Terms:** the model answers are not
   covered by CC BY 4.0, remain subject to each model provider's terms of use, are released for reproducing and
   re-judging the evaluation, and must not be used to train competing models.

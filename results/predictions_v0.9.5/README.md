@@ -32,7 +32,7 @@ models that compete with those providers' products.
 
 ## What is not here
 - Reasoning traces (minimax-m3 and glm-5.2 return them; 4.6% of them copy 200 or more characters of bundle
-  text), prompts, bundle text, and provider logs.
+  text), the model input prompts (which contain bundle text), bundle text, and provider logs.
 - The unreported qwen3.5 runs.
 
 ## Masking

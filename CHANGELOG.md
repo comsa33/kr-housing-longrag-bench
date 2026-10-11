@@ -17,7 +17,7 @@ number of v0.9.4.
   predictions. The 74 predictions of the round-3 human review are among the Anthropic files.
 - **Exact strings.** Each answer is the string the judge scored, after re-runs; `scripts/v095/` rebuilds the
   files from the judge inputs and checks that every file has the same qa_id set as its verdict file.
-- **Excluded.** Reasoning traces (4.6% of them copy 200 or more characters of bundle text), prompts, bundle
+- **Excluded.** Reasoning traces (4.6% of them copy 200 or more characters of bundle text), the model input prompts (which contain bundle text), bundle
   text, provider logs, and the unreported qwen3.5 runs.
 - **Masking.** A span is replaced by `[source text omitted, N chars]` when, after removing whitespace, a
   maximal run of overlapping 20-character windows that all occur in the item's bundle text covers 200 or more
