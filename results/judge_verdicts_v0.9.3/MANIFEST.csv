@@ -1,0 +1,136 @@
+judge,tag,model,regime,split,n
+claude-sonnet-5-5,cbfix_glm-5.2_test_public,glm-5.2,"cb (leak-fixed re-run, affected items)",test_public,18
+claude-sonnet-5-5,cbfix_gpt-4.1-mini_dev,gpt-4.1-mini,"cb (leak-fixed re-run, affected items)",dev,50
+claude-sonnet-5-5,cbfix_gpt-4.1-mini_test_public,gpt-4.1-mini,"cb (leak-fixed re-run, affected items)",test_public,18
+claude-sonnet-5-5,cbfix_gpt-5.4-mini_dev,gpt-5.4-mini,"cb (leak-fixed re-run, affected items)",dev,50
+claude-sonnet-5-5,cbfix_gpt-5.4-mini_test_public,gpt-5.4-mini,"cb (leak-fixed re-run, affected items)",test_public,18
+claude-sonnet-5-5,cbfix_gpt-5.4-nano_dev,gpt-5.4-nano,"cb (leak-fixed re-run, affected items)",dev,50
+claude-sonnet-5-5,cbfix_gpt-5.4-nano_test_public,gpt-5.4-nano,"cb (leak-fixed re-run, affected items)",test_public,18
+claude-sonnet-5-5,cbfix_gpt-5.5_dev,gpt-5.5,"cb (leak-fixed re-run, affected items)",dev,50
+claude-sonnet-5-5,cbfix_gpt-5.5_test_public,gpt-5.5,"cb (leak-fixed re-run, affected items)",test_public,18
+claude-sonnet-5-5,cbfix_minimax-m3_test_public,minimax-m3,"cb (leak-fixed re-run, affected items)",test_public,18
+claude-sonnet-5-5,thinkon_bm25_glm-5.2,glm-5.2,bm25 (reasoning on),test_public,339
+claude-sonnet-5-5,thinkon_cb_glm-5.2,glm-5.2,cb (reasoning on),test_public,342
+claude-sonnet-5-5,thinkon_dense_glm-5.2,glm-5.2,dense (reasoning on),test_public,339
+claude-sonnet-5-5,oracle_agg81_glm-5.2,glm-5.2,agg81 oracle rows,test_public,81
+claude-sonnet-5-5,oracle_agg81_gpt-4.1-mini,gpt-4.1-mini,agg81 oracle rows,test_public,81
+claude-sonnet-5-5,oracle_agg81_gpt-5.5,gpt-5.5,agg81 oracle rows,test_public,81
+claude-sonnet-5-5,oracle_agg81_minimax-m3,minimax-m3,agg81 oracle rows,test_public,81
+claude-sonnet-5-5,openregion_agg81_glm-5.2,glm-5.2,agg81 open-region rows,test_public,81
+claude-sonnet-5-5,openregion_agg81_gpt-4.1-mini,gpt-4.1-mini,agg81 open-region rows,test_public,81
+claude-sonnet-5-5,openregion_agg81_gpt-5.5,gpt-5.5,agg81 open-region rows,test_public,81
+claude-sonnet-5-5,openregion_agg81_minimax-m3,minimax-m3,agg81 open-region rows,test_public,81
+claude-sonnet-5-5,g55retry_cb_dev,gpt-5.5,cb (single retry of empty answers),dev,233
+claude-sonnet-5-5,g55retry_cb_test_public,gpt-5.5,cb (single retry of empty answers),test_public,63
+claude-sonnet-5-5,agg512k_claude-haiku-5-5,claude-haiku-5-5,agg512k,test_public,81
+claude-sonnet-5-5,bm25_claude-haiku-5-5,claude-haiku-5-5,bm25,test_public,339
+claude-sonnet-5-5,cb_claude-haiku-5-5,claude-haiku-5-5,cb,test_public,342
+claude-sonnet-5-5,dense_claude-haiku-5-5,claude-haiku-5-5,dense,test_public,339
+claude-sonnet-5-5,oracle_agg81_claude-haiku-5-5,claude-haiku-5-5,oracle agg81,test_public,81
+claude-sonnet-5-5,openregion_agg81_claude-haiku-5-5,claude-haiku-5-5,openregion agg81,test_public,81
+claude-sonnet-5-5,fc_claude-haiku-5-5,claude-haiku-5-5,fc,test_public,98
+claude-sonnet-5-5,agg512k_claude-sonnet-5-5,claude-sonnet-5-5,agg512k,test_public,81
+claude-sonnet-5-5,bm25_claude-sonnet-5-5,claude-sonnet-5-5,bm25,test_public,339
+claude-sonnet-5-5,cb_claude-sonnet-5-5,claude-sonnet-5-5,cb,test_public,342
+claude-sonnet-5-5,dense_claude-sonnet-5-5,claude-sonnet-5-5,dense,test_public,339
+claude-sonnet-5-5,oracle_agg81_claude-sonnet-5-5,claude-sonnet-5-5,oracle agg81,test_public,81
+claude-sonnet-5-5,openregion_agg81_claude-sonnet-5-5,claude-sonnet-5-5,openregion agg81,test_public,81
+claude-sonnet-5-5,fc_claude-sonnet-5-5,claude-sonnet-5-5,fc,test_public,98
+gpt-4.1-mini,cbfix_glm-5.2_test_public,glm-5.2,"cb (leak-fixed re-run, affected items)",test_public,18
+gpt-4.1-mini,cbfix_gpt-4.1-mini_dev,gpt-4.1-mini,"cb (leak-fixed re-run, affected items)",dev,50
+gpt-4.1-mini,cbfix_gpt-4.1-mini_test_public,gpt-4.1-mini,"cb (leak-fixed re-run, affected items)",test_public,18
+gpt-4.1-mini,cbfix_gpt-5.4-mini_dev,gpt-5.4-mini,"cb (leak-fixed re-run, affected items)",dev,50
+gpt-4.1-mini,cbfix_gpt-5.4-mini_test_public,gpt-5.4-mini,"cb (leak-fixed re-run, affected items)",test_public,18
+gpt-4.1-mini,cbfix_gpt-5.4-nano_dev,gpt-5.4-nano,"cb (leak-fixed re-run, affected items)",dev,50
+gpt-4.1-mini,cbfix_gpt-5.4-nano_test_public,gpt-5.4-nano,"cb (leak-fixed re-run, affected items)",test_public,18
+gpt-4.1-mini,cbfix_gpt-5.5_dev,gpt-5.5,"cb (leak-fixed re-run, affected items)",dev,50
+gpt-4.1-mini,cbfix_gpt-5.5_test_public,gpt-5.5,"cb (leak-fixed re-run, affected items)",test_public,18
+gpt-4.1-mini,cbfix_minimax-m3_test_public,minimax-m3,"cb (leak-fixed re-run, affected items)",test_public,18
+gpt-4.1-mini,thinkon_bm25_glm-5.2,glm-5.2,bm25 (reasoning on),test_public,339
+gpt-4.1-mini,thinkon_cb_glm-5.2,glm-5.2,cb (reasoning on),test_public,342
+gpt-4.1-mini,thinkon_dense_glm-5.2,glm-5.2,dense (reasoning on),test_public,339
+gpt-4.1-mini,oracle_agg81_glm-5.2,glm-5.2,agg81 oracle rows,test_public,81
+gpt-4.1-mini,oracle_agg81_gpt-4.1-mini,gpt-4.1-mini,agg81 oracle rows,test_public,81
+gpt-4.1-mini,oracle_agg81_gpt-5.5,gpt-5.5,agg81 oracle rows,test_public,81
+gpt-4.1-mini,oracle_agg81_minimax-m3,minimax-m3,agg81 oracle rows,test_public,81
+gpt-4.1-mini,openregion_agg81_glm-5.2,glm-5.2,agg81 open-region rows,test_public,81
+gpt-4.1-mini,openregion_agg81_gpt-4.1-mini,gpt-4.1-mini,agg81 open-region rows,test_public,81
+gpt-4.1-mini,openregion_agg81_gpt-5.5,gpt-5.5,agg81 open-region rows,test_public,81
+gpt-4.1-mini,openregion_agg81_minimax-m3,minimax-m3,agg81 open-region rows,test_public,81
+gpt-4.1-mini,g55retry_cb_dev,gpt-5.5,cb (single retry of empty answers),dev,233
+gpt-4.1-mini,g55retry_cb_test_public,gpt-5.5,cb (single retry of empty answers),test_public,63
+gpt-4.1-mini,agg512k_claude-haiku-5-5,claude-haiku-5-5,agg512k,test_public,81
+gpt-4.1-mini,bm25_claude-haiku-5-5,claude-haiku-5-5,bm25,test_public,339
+gpt-4.1-mini,cb_claude-haiku-5-5,claude-haiku-5-5,cb,test_public,342
+gpt-4.1-mini,dense_claude-haiku-5-5,claude-haiku-5-5,dense,test_public,339
+gpt-4.1-mini,oracle_agg81_claude-haiku-5-5,claude-haiku-5-5,oracle agg81,test_public,81
+gpt-4.1-mini,openregion_agg81_claude-haiku-5-5,claude-haiku-5-5,openregion agg81,test_public,81
+gpt-4.1-mini,fc_claude-haiku-5-5,claude-haiku-5-5,fc,test_public,98
+gpt-4.1-mini,agg512k_claude-sonnet-5-5,claude-sonnet-5-5,agg512k,test_public,81
+gpt-4.1-mini,bm25_claude-sonnet-5-5,claude-sonnet-5-5,bm25,test_public,339
+gpt-4.1-mini,cb_claude-sonnet-5-5,claude-sonnet-5-5,cb,test_public,342
+gpt-4.1-mini,dense_claude-sonnet-5-5,claude-sonnet-5-5,dense,test_public,339
+gpt-4.1-mini,oracle_agg81_claude-sonnet-5-5,claude-sonnet-5-5,oracle agg81,test_public,81
+gpt-4.1-mini,openregion_agg81_claude-sonnet-5-5,claude-sonnet-5-5,openregion agg81,test_public,81
+gpt-4.1-mini,fc_claude-sonnet-5-5,claude-sonnet-5-5,fc,test_public,98
+deepseek-v4.1-flash,panel_deepseek-v4.1-flash_fc_agg81_glm-5.2,glm-5.2,fc agg81 (512k),test_public,81
+deepseek-v4.1-flash,panel_deepseek-v4.1-flash_fc_agg81_gpt-4.1-mini,gpt-4.1-mini,fc agg81 (512k),test_public,81
+deepseek-v4.1-flash,panel_deepseek-v4.1-flash_fc_agg81_gpt-5.5,gpt-5.5,fc agg81 (512k),test_public,81
+deepseek-v4.1-flash,panel_deepseek-v4.1-flash_fc_agg81_minimax-m3,minimax-m3,fc agg81 (512k),test_public,81
+deepseek-v4.1-flash,panel_deepseek-v4.1-flash_agg512k_claude-haiku-5-5,claude-haiku-5-5,agg512k,test_public,81
+deepseek-v4.1-flash,panel_deepseek-v4.1-flash_bm25_claude-haiku-5-5,claude-haiku-5-5,bm25,test_public,339
+deepseek-v4.1-flash,panel_deepseek-v4.1-flash_cb_claude-haiku-5-5,claude-haiku-5-5,cb,test_public,342
+deepseek-v4.1-flash,panel_deepseek-v4.1-flash_dense_claude-haiku-5-5,claude-haiku-5-5,dense,test_public,339
+deepseek-v4.1-flash,panel_deepseek-v4.1-flash_oracle_agg81_claude-haiku-5-5,claude-haiku-5-5,oracle agg81,test_public,81
+deepseek-v4.1-flash,panel_deepseek-v4.1-flash_openregion_agg81_claude-haiku-5-5,claude-haiku-5-5,openregion agg81,test_public,81
+deepseek-v4.1-flash,panel_deepseek-v4.1-flash_fc_claude-haiku-5-5,claude-haiku-5-5,fc,test_public,98
+deepseek-v4.1-flash,panel_deepseek-v4.1-flash_human80,four OpenAI models,judge validation (80 human-labelled),mixed,80
+deepseek-v4.1-flash,panel_deepseek-v4.1-flash_agg512k_claude-sonnet-5-5,claude-sonnet-5-5,agg512k,test_public,81
+deepseek-v4.1-flash,panel_deepseek-v4.1-flash_bm25_claude-sonnet-5-5,claude-sonnet-5-5,bm25,test_public,339
+deepseek-v4.1-flash,panel_deepseek-v4.1-flash_cb_claude-sonnet-5-5,claude-sonnet-5-5,cb,test_public,342
+deepseek-v4.1-flash,panel_deepseek-v4.1-flash_dense_claude-sonnet-5-5,claude-sonnet-5-5,dense,test_public,339
+deepseek-v4.1-flash,panel_deepseek-v4.1-flash_oracle_agg81_claude-sonnet-5-5,claude-sonnet-5-5,oracle agg81,test_public,81
+deepseek-v4.1-flash,panel_deepseek-v4.1-flash_openregion_agg81_claude-sonnet-5-5,claude-sonnet-5-5,openregion agg81,test_public,81
+deepseek-v4.1-flash,panel_deepseek-v4.1-flash_fc_claude-sonnet-5-5,claude-sonnet-5-5,fc,test_public,98
+gemma4_31b,panel_gemma4_31b_agg512k_claude-haiku-5-5,claude-haiku-5-5,agg512k,test_public,81
+gemma4_31b,panel_gemma4_31b_bm25_claude-haiku-5-5,claude-haiku-5-5,bm25,test_public,339
+gemma4_31b,panel_gemma4_31b_cb_claude-haiku-5-5,claude-haiku-5-5,cb,test_public,342
+gemma4_31b,panel_gemma4_31b_dense_claude-haiku-5-5,claude-haiku-5-5,dense,test_public,339
+gemma4_31b,panel_gemma4_31b_oracle_agg81_claude-haiku-5-5,claude-haiku-5-5,oracle agg81,test_public,81
+gemma4_31b,panel_gemma4_31b_openregion_agg81_claude-haiku-5-5,claude-haiku-5-5,openregion agg81,test_public,81
+gemma4_31b,panel_gemma4_31b_fc_claude-haiku-5-5,claude-haiku-5-5,fc,test_public,98
+gemma4_31b,panel_gemma4_31b_agg512k_claude-sonnet-5-5,claude-sonnet-5-5,agg512k,test_public,81
+gemma4_31b,panel_gemma4_31b_bm25_claude-sonnet-5-5,claude-sonnet-5-5,bm25,test_public,339
+gemma4_31b,panel_gemma4_31b_cb_claude-sonnet-5-5,claude-sonnet-5-5,cb,test_public,342
+gemma4_31b,panel_gemma4_31b_dense_claude-sonnet-5-5,claude-sonnet-5-5,dense,test_public,339
+gemma4_31b,panel_gemma4_31b_oracle_agg81_claude-sonnet-5-5,claude-sonnet-5-5,oracle agg81,test_public,81
+gemma4_31b,panel_gemma4_31b_openregion_agg81_claude-sonnet-5-5,claude-sonnet-5-5,openregion agg81,test_public,81
+gemma4_31b,panel_gemma4_31b_fc_claude-sonnet-5-5,claude-sonnet-5-5,fc,test_public,98
+kimi-k2.6,panel_kimi-k2.6_agg512k_claude-haiku-5-5,claude-haiku-5-5,agg512k,test_public,81
+kimi-k2.6,panel_kimi-k2.6_bm25_claude-haiku-5-5,claude-haiku-5-5,bm25,test_public,339
+kimi-k2.6,panel_kimi-k2.6_cb_claude-haiku-5-5,claude-haiku-5-5,cb,test_public,342
+kimi-k2.6,panel_kimi-k2.6_dense_claude-haiku-5-5,claude-haiku-5-5,dense,test_public,339
+kimi-k2.6,panel_kimi-k2.6_oracle_agg81_claude-haiku-5-5,claude-haiku-5-5,oracle agg81,test_public,81
+kimi-k2.6,panel_kimi-k2.6_openregion_agg81_claude-haiku-5-5,claude-haiku-5-5,openregion agg81,test_public,81
+kimi-k2.6,panel_kimi-k2.6_fc_claude-haiku-5-5,claude-haiku-5-5,fc,test_public,98
+kimi-k2.6,panel_kimi-k2.6_agg512k_claude-sonnet-5-5,claude-sonnet-5-5,agg512k,test_public,81
+kimi-k2.6,panel_kimi-k2.6_bm25_claude-sonnet-5-5,claude-sonnet-5-5,bm25,test_public,339
+kimi-k2.6,panel_kimi-k2.6_cb_claude-sonnet-5-5,claude-sonnet-5-5,cb,test_public,342
+kimi-k2.6,panel_kimi-k2.6_dense_claude-sonnet-5-5,claude-sonnet-5-5,dense,test_public,339
+kimi-k2.6,panel_kimi-k2.6_oracle_agg81_claude-sonnet-5-5,claude-sonnet-5-5,oracle agg81,test_public,81
+kimi-k2.6,panel_kimi-k2.6_openregion_agg81_claude-sonnet-5-5,claude-sonnet-5-5,openregion agg81,test_public,81
+kimi-k2.6,panel_kimi-k2.6_fc_claude-sonnet-5-5,claude-sonnet-5-5,fc,test_public,98
+mistral-large-3_675b,panel_mistral-large-3_675b_agg512k_claude-haiku-5-5,claude-haiku-5-5,agg512k,test_public,81
+mistral-large-3_675b,panel_mistral-large-3_675b_bm25_claude-haiku-5-5,claude-haiku-5-5,bm25,test_public,339
+mistral-large-3_675b,panel_mistral-large-3_675b_cb_claude-haiku-5-5,claude-haiku-5-5,cb,test_public,342
+mistral-large-3_675b,panel_mistral-large-3_675b_dense_claude-haiku-5-5,claude-haiku-5-5,dense,test_public,339
+mistral-large-3_675b,panel_mistral-large-3_675b_oracle_agg81_claude-haiku-5-5,claude-haiku-5-5,oracle agg81,test_public,81
+mistral-large-3_675b,panel_mistral-large-3_675b_openregion_agg81_claude-haiku-5-5,claude-haiku-5-5,openregion agg81,test_public,81
+mistral-large-3_675b,panel_mistral-large-3_675b_fc_claude-haiku-5-5,claude-haiku-5-5,fc,test_public,98
+mistral-large-3_675b,panel_mistral-large-3_675b_agg512k_claude-sonnet-5-5,claude-sonnet-5-5,agg512k,test_public,81
+mistral-large-3_675b,panel_mistral-large-3_675b_bm25_claude-sonnet-5-5,claude-sonnet-5-5,bm25,test_public,339
+mistral-large-3_675b,panel_mistral-large-3_675b_cb_claude-sonnet-5-5,claude-sonnet-5-5,cb,test_public,342
+mistral-large-3_675b,panel_mistral-large-3_675b_dense_claude-sonnet-5-5,claude-sonnet-5-5,dense,test_public,339
+mistral-large-3_675b,panel_mistral-large-3_675b_oracle_agg81_claude-sonnet-5-5,claude-sonnet-5-5,oracle agg81,test_public,81
+mistral-large-3_675b,panel_mistral-large-3_675b_openregion_agg81_claude-sonnet-5-5,claude-sonnet-5-5,openregion agg81,test_public,81
+mistral-large-3_675b,panel_mistral-large-3_675b_fc_claude-sonnet-5-5,claude-sonnet-5-5,fc,test_public,98
