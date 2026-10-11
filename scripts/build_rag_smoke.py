@@ -22,13 +22,19 @@ import argparse
 import collections
 import json
 import math
+import os
 import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 QA = ROOT / "data" / "qa_v0.6_realistic_candidates.jsonl"
 BUNDLES = ROOT / "workspace_local" / "processed" / "bundles-v06"
-PAGE_RE = re.compile(r"\[[^\]]*?([A-Za-z0-9][A-Za-z0-9-]*-p\d{3})[^\]]*?\]")
+# v0.9.3: page ids may contain Hangul (the 18 SH announcements, e.g. sh-sh-13075-입주자-모집공고문-p001).
+# The v0.9.2 pattern accepted ASCII ids only, so SH pages were not split and their passages carried no page
+# id. Set KRH_LEGACY_PAGE_MARKERS=1 to reproduce the reported (pre-fix) retrieval runs exactly.
+PAGE_RE_LEGACY = re.compile(r"\[[^\]]*?([A-Za-z0-9][A-Za-z0-9-]*-p\d{3})[^\]]*?\]")
+PAGE_RE_V093 = re.compile(r"\[[^\]]*?([A-Za-z0-9가-힣][A-Za-z0-9가-힣-]*-p\d{3})[^\]]*?\]")
+PAGE_RE = PAGE_RE_LEGACY if os.environ.get("KRH_LEGACY_PAGE_MARKERS") == "1" else PAGE_RE_V093
 TOK_RE = re.compile(r"[0-9A-Za-z가-힣]+")
 
 

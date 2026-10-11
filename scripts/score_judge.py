@@ -16,6 +16,8 @@ cluster_weight are joined from the gold split files (public splits only — hidd
     python3 scripts/score_judge.py --exclude-family cross_document_legal_reasoning \
         --exclude-ids data/v0.9.2/eval_exclusions.txt \
         --verdicts-dir results/judge_verdicts_v0.9.2/claude-sonnet-5-5             # v0.9.2 scope
+    # v0.9.3 scope: add --exclude-bundle-ids data/v0.9.3/bundle_exclusions.txt (dev items whose gold page is
+    # not in their 512k bundle; dropped from rag/dense/fc only)
 """
 from __future__ import annotations
 
@@ -87,12 +89,16 @@ def main() -> int:
     ap.add_argument("--exclude-ids", default=None, metavar="FILE",
                     help="file of qa_ids to drop (one per line, '#' comments), "
                          "e.g. data/v0.9.2/eval_exclusions.txt; default: none")
+    ap.add_argument("--exclude-bundle-ids", default=None, metavar="FILE",
+                    help="file of qa_ids to drop from the bundle-based regimes only (rag, dense, fc), "
+                         "e.g. data/v0.9.3/bundle_exclusions.txt; closed-book keeps them")
     args = ap.parse_args()
     want = [s.strip() for s in args.splits.split(",") if s.strip()]
 
     xf = {s for s in args.exclude_family.split(",") if s}
     xb = {s for s in args.exclude_bundle.split(",") if s}
     xi = read_id_file(args.exclude_ids)
+    xbi = read_id_file(args.exclude_bundle_ids)
     gi: dict[str, dict] = {}
     for sp in ("dev", "test_public"):
         f = ROOT / "data" / f"qa_v0.6_{sp}.jsonl"
@@ -115,7 +121,7 @@ def main() -> int:
         for line in jf.open(encoding="utf-8"):
             d = json.loads(line)
             g = gi.get(d["qa_id"])
-            if not g:
+            if not g or (regime != "cb" and d["qa_id"] in xbi):
                 continue
             ok = 1.0 if d.get("judge_correct") else 0.0
             cw = float(g.get("cluster_weight", 1.0))

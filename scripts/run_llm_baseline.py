@@ -57,11 +57,35 @@ def now_iso() -> str:
 
 
 # --------------------------------------------------------------------------- prompt construction
+# v0.9.3 closed-book locator fix: for the items in data/v0.9.3/cb_locator_fix.jsonl the locator block
+# revealed the answer (count items: the number of row_ids equals the gold count; date items: an id
+# embeds the gold date). Those fields are dropped for those items. --legacy-locators restores the
+# v0.9.2 prompts (needed only to reproduce the pre-fix runs).
+CB_LOCATOR_FIX_FILE = Path(__file__).resolve().parents[1] / "data" / "v0.9.3" / "cb_locator_fix.jsonl"
+LEGACY_LOCATORS = False
+_CB_FIX = None
+
+
+def _cb_fix() -> dict:
+    global _CB_FIX
+    if _CB_FIX is None:
+        _CB_FIX = {}
+        if CB_LOCATOR_FIX_FILE.exists():
+            for line in CB_LOCATOR_FIX_FILE.read_text(encoding="utf-8").splitlines():
+                if line.strip():
+                    r = json.loads(line)
+                    _CB_FIX[r["qa_id"]] = set(r["removed_fields"])
+    return _CB_FIX
+
+
 def build_prompt(rec: dict) -> str:
     """Deterministic, simple closed-book prompt: instruction + question + locator hints (no doc text)."""
     instr = rec.get("instruction", "주어진 근거 자료로 질문에 답하라.")
     question = rec.get("question", "")
-    spec = rec.get("context_spec", {}) or {}
+    spec = dict(rec.get("context_spec", {}) or {})
+    if not LEGACY_LOCATORS:
+        for k in _cb_fix().get(rec.get("qa_id"), ()):
+            spec.pop(k, None)
 
     def _ids(key: str, limit: int = 20) -> str:
         vals = spec.get(key) or []
@@ -477,6 +501,8 @@ def parse_args(argv=None):
                     help="OpenAI/Azure token-param mode: auto = detect reasoning models (gpt-5*/o-series) "
                          "by name; on/off = force (use for Azure deployments whose name hides the model).")
     ap.add_argument("--resume", action="store_true", help="skip qa_ids already present in the output file")
+    ap.add_argument("--legacy-locators", action="store_true",
+                    help="closed-book: keep the v0.9.2 locator block (no v0.9.3 leak fix); reproduction only")
     ap.add_argument("--sleep-seconds", type=float, default=0.0, help="pause between calls (rate limiting)")
     ap.add_argument(
         "--allow-internal-hidden",
@@ -487,7 +513,9 @@ def parse_args(argv=None):
 
 
 def main(argv=None) -> int:
+    global LEGACY_LOCATORS
     args = parse_args(argv)
+    LEGACY_LOCATORS = bool(args.legacy_locators)
 
     if args.split in INTERNAL_SPLITS and not args.allow_internal_hidden:
         print(
