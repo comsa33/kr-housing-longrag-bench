@@ -95,4 +95,5 @@ python3 scripts/v093/score_claude_human.py
 ```bash
 python3 scripts/v094/score_k50.py      # k=50 table: accuracy, pair-bootstrap intervals, d vs full context, labels
 python3 scripts/v094/hitmiss.py        # accuracy by gold-page hit at k=5
+python3 scripts/v094/bootstrap_agg81.py  # aggregation-set intervals (pair and cluster bootstrap), by matched-row count
 ```

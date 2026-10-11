@@ -1,12 +1,13 @@
 # scripts/v094 — dense retrieval at k=50 and the gold-page recall rule
 
-No script here calls an LLM API. The two scoring scripts read released files only; the others need the bundle
+No script here calls an LLM API. The three scoring scripts read released files only; the others need the bundle
 text and the stored retrieval prompts, which are not redistributed (rebuild the bundles first,
 `docs/public_reconstruction.md`).
 
 | script | needs | what it does |
 |---|---|---|
 | `score_k50.py` | released files | The k=50 table: accuracy with Wilson and pair-bootstrap intervals, d against full context (512k) with its interval and the pre-specified label, the secondary judge, the dense top-5 reference, the coverage cross-check, and the panel re-scores of the Anthropic models. |
+| `bootstrap_agg81.py` | released files | Pair and cluster bootstrap intervals on the 81 aggregation items for full context, open-region and oracle contexts, paired differences between models and conditions, and accuracy by matched-row count (top-5 rows included). |
 | `hitmiss.py` | released files | Accuracy on the 258 non-aggregation test_public items split by gold-page hit at k=5, BM25 and bge-m3, eight models. |
 | `build_prompts_k50.py` | bundles, stored prompts, local bge-m3 (Ollama) | Rebuilds the dense top-5 prompts and checks them against the stored ones (81/81 identical), then builds the k=50 prompts with only k changed. Output stays under `workspace_local/`. |
 | `coverage_k50.py` | bundles, k=50 prompts | Writes `results/retrieval_v0.9.4/k50_coverage_agg81.jsonl`: whether the 50 passages hold the announcement page and how many matched rows they hold; checks that the ranker's top 50 equal the prompt passages. |
