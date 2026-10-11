@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.9.4 — dense retrieval at k=50 on the aggregation set, recall rule, disclosures (release date TBD)
+## v0.9.4 — dense retrieval at k=50 on the aggregation set, recall rule, disclosures (2026-10-12)
 
 No change to the questions, answers, schema, splits, gold fixes, or evaluation scope of v0.9.3 (1,876 items:
 dev 1,534 / test_public 342; legal family and the 12 items of `data/v0.9.3/eval_exclusions.txt` excluded).
