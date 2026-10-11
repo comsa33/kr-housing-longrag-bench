@@ -13,6 +13,9 @@ cluster_weight are joined from the gold split files (public splits only — hidd
     python3 scripts/score_judge.py --splits test_public
     python3 scripts/score_judge.py --verdicts-dir results/judge_verdicts   # released copy only
     python3 scripts/score_judge.py --exclude-family cross_document_legal_reasoning   # v0.9.1 scope
+    python3 scripts/score_judge.py --exclude-family cross_document_legal_reasoning \
+        --exclude-ids data/v0.9.2/eval_exclusions.txt \
+        --verdicts-dir results/judge_verdicts_v0.9.2/claude-sonnet-5-5             # v0.9.2 scope
 """
 from __future__ import annotations
 
@@ -46,6 +49,18 @@ TAGS = ([("g55fc", "gpt-5.5", "fc")]
 TIERS = ["32k", "64k", "128k", "256k", "512k"]
 
 
+def read_id_file(path: str | None) -> set[str]:
+    """qa_ids listed one per line in `path` ('#' starts a comment); empty set when path is None."""
+    if not path:
+        return set()
+    ids = set()
+    for line in Path(path).read_text(encoding="utf-8").splitlines():
+        line = line.split("#", 1)[0].strip()
+        if line:
+            ids.add(line)
+    return ids
+
+
 def wilson(c: float, n: float) -> tuple[float, float]:
     """Wilson 95% CI for a (possibly cluster-weighted) proportion; n = effective count."""
     if n <= 0:
@@ -69,18 +84,22 @@ def main() -> int:
                     help="comma list of task_type values to drop, e.g. cross_document_legal_reasoning")
     ap.add_argument("--exclude-bundle", default="",
                     help="comma list of bundle_id values to drop, e.g. mix_multiprovider_256k")
+    ap.add_argument("--exclude-ids", default=None, metavar="FILE",
+                    help="file of qa_ids to drop (one per line, '#' comments), "
+                         "e.g. data/v0.9.2/eval_exclusions.txt; default: none")
     args = ap.parse_args()
     want = [s.strip() for s in args.splits.split(",") if s.strip()]
 
     xf = {s for s in args.exclude_family.split(",") if s}
     xb = {s for s in args.exclude_bundle.split(",") if s}
+    xi = read_id_file(args.exclude_ids)
     gi: dict[str, dict] = {}
     for sp in ("dev", "test_public"):
         f = ROOT / "data" / f"qa_v0.6_{sp}.jsonl"
         if f.exists():
             for line in f.open(encoding="utf-8"):
                 d = json.loads(line)
-                if d.get("task_type") in xf or d.get("bundle_id") in xb:
+                if d.get("task_type") in xf or d.get("bundle_id") in xb or d["qa_id"] in xi:
                     continue
                 gi[d["qa_id"]] = d
 

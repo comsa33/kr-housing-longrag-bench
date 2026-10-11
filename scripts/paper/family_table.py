@@ -5,6 +5,7 @@ Re-aggregates existing LLM-judge verdict files only (no model calls). Scoring ru
 scripts/score_judge.py: a verdict counts as correct iff `judge_correct` is truthy.
 
     python3 shared/scripts/family_table.py [--regime bm25] [--exclude-family cross_document_legal_reasoning]
+        [--exclude-ids data/v0.9.2/eval_exclusions.txt] [--verdicts-dir results/judge_verdicts_v0.9.2/claude-sonnet-5-5]
 
 Works from the paper repo (dataset at ../kr-housing-longrag-bench) and from the dataset repo
 (scripts/paper/). Verdicts are read from workspace_local/audit/baselines/<tag>.judged.jsonl when present,
@@ -32,9 +33,29 @@ RUNS = {
 }
 
 
-def verdict_path(root: Path, tag: str) -> Path:
+def verdict_path(root: Path, tag: str, verdicts_dir: str | None = None) -> Path:
+    if verdicts_dir:
+        d = Path(verdicts_dir)
+        if not d.is_absolute() and not d.exists():
+            d = root / d
+        for name in (f"{tag}.judged.jsonl", f"{tag}.jsonl"):
+            if (d / name).exists():
+                return d / name
+        return d / f"{tag}.jsonl"
     p = root / "workspace_local" / "audit" / "baselines" / f"{tag}.judged.jsonl"
     return p if p.exists() else root / "results" / "judge_verdicts" / f"{tag}.jsonl"
+
+
+def read_id_file(path: str | None) -> set[str]:
+    """qa_ids listed one per line in `path` ('#' starts a comment); empty set when path is None."""
+    if not path:
+        return set()
+    ids = set()
+    for line in Path(path).read_text(encoding="utf-8").splitlines():
+        line = line.split("#", 1)[0].strip()
+        if line:
+            ids.add(line)
+    return ids
 
 
 def main() -> int:
@@ -45,21 +66,28 @@ def main() -> int:
     ap.add_argument("--min-n", type=int, default=4, help="hide families with fewer items")
     ap.add_argument("--exclude-family", default="")
     ap.add_argument("--exclude-bundle", default="")
+    ap.add_argument("--exclude-ids", default=None, metavar="FILE",
+                    help="file of qa_ids to drop (one per line, '#' comments), "
+                         "e.g. data/v0.9.2/eval_exclusions.txt; default: none")
+    ap.add_argument("--verdicts-dir", default=None,
+                    help="read <tag>.jsonl verdicts from this directory only "
+                         "(default: workspace_local/audit/baselines if present, else results/judge_verdicts)")
     args = ap.parse_args()
     root = Path(args.dataset)
     xf = {s for s in args.exclude_family.split(",") if s}
     xb = {s for s in args.exclude_bundle.split(",") if s}
+    xi = read_id_file(args.exclude_ids)
     gold = {}
     for line in (root / "data" / "qa_v0.6_test_public.jsonl").open(encoding="utf-8"):
         if line.strip():
             d = json.loads(line)
-            if d.get("task_type") not in xf and d.get("bundle_id") not in xb:
+            if d.get("task_type") not in xf and d.get("bundle_id") not in xb and d["qa_id"] not in xi:
                 gold[d["qa_id"]] = d
     models = [m for m in args.models.split(",") if m]
     acc = {m: defaultdict(lambda: [0, 0]) for m in models}
     nfam = defaultdict(set)
     for m in models:
-        for line in verdict_path(root, RUNS[m][args.regime]).open(encoding="utf-8"):
+        for line in verdict_path(root, RUNS[m][args.regime], args.verdicts_dir).open(encoding="utf-8"):
             if not line.strip():
                 continue
             d = json.loads(line)

@@ -37,14 +37,30 @@ def load_jsonl(path: Path) -> list[dict]:
         return [json.loads(l) for l in f if l.strip()]
 
 
+def read_id_file(path: str | None) -> set[str]:
+    """qa_ids listed one per line in `path` ('#' starts a comment); empty set when path is None."""
+    if not path:
+        return set()
+    ids = set()
+    for line in Path(path).read_text(encoding="utf-8").splitlines():
+        line = line.split("#", 1)[0].strip()
+        if line:
+            ids.add(line)
+    return ids
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--rag", required=True, nargs="+",
                     help="RAG prompt JSONL(s) from build_baseline_rag.py; several files are pooled")
     ap.add_argument("--exclude-family", default="",
                     help="comma list of task_type values to drop, e.g. cross_document_legal_reasoning")
+    ap.add_argument("--exclude-ids", default=None, metavar="FILE",
+                    help="file of qa_ids to drop (one per line, '#' comments), "
+                         "e.g. data/v0.9.2/eval_exclusions.txt; default: none")
     args = ap.parse_args()
     xf = {s for s in args.exclude_family.split(",") if s}
+    xi = read_id_file(args.exclude_ids)
 
     recs = []
     for one in args.rag:
@@ -76,7 +92,7 @@ def main() -> int:
         recall = len(retr & g) / len(g)
         hit = 1.0 if (retr & g) else 0.0
         it = gold.get(r["qa_id"], {})
-        if it.get("task_type") in xf:
+        if it.get("task_type") in xf or r["qa_id"] in xi:
             scored -= 1
             continue
         w = it.get("cluster_weight", 1.0)

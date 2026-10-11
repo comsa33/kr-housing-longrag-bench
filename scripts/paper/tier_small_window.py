@@ -19,6 +19,18 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from verdict_paths import verdict_file  # noqa: E402
 
+
+def read_id_file(path: str | None) -> set[str]:
+    """qa_ids listed one per line in `path` ('#' starts a comment); empty set when path is None."""
+    if not path:
+        return set()
+    ids = set()
+    for line in Path(path).read_text(encoding="utf-8").splitlines():
+        line = line.split("#", 1)[0].strip()
+        if line:
+            ids.add(line)
+    return ids
+
 FC_TAGS = [
     ("gpt-4.1-mini", "gpt-4.1-mini_fc"), ("gpt-5.4-mini", "gpt-5.4-mini_fc"),
     ("gpt-5.4-nano", "gpt-5.4-nano_fc"), ("gpt-5.5", "g55fc"),
@@ -39,6 +51,9 @@ def main() -> int:
                     help="comma list of task_type values to drop from scoring, e.g. cross_document_legal_reasoning")
     ap.add_argument("--exclude-bundle", default="",
                     help="comma list of bundle_id values to drop from scoring, e.g. mix_multiprovider_256k")
+    ap.add_argument("--exclude-ids", default=None, metavar="FILE",
+                    help="file of qa_ids to drop (one per line, '#' comments), "
+                         "e.g. data/v0.9.2/eval_exclusions.txt; default: none")
     args = ap.parse_args()
     root = Path(args.dataset)
     gold = {}
@@ -48,7 +63,9 @@ def main() -> int:
             gold[d["qa_id"]] = d
     xf = {s for s in args.exclude_family.split(",") if s}
     xb = {s for s in args.exclude_bundle.split(",") if s}
-    gold = {q: g for q, g in gold.items() if g.get("task_type") not in xf and g.get("bundle_id") not in xb}
+    xi = read_id_file(args.exclude_ids)
+    gold = {q: g for q, g in gold.items()
+            if g.get("task_type") not in xf and g.get("bundle_id") not in xb and q not in xi}
     print(f"{'model':14}" + "".join(f"{t:>14}" for t in TIERS))
     for name, tag in FC_TAGS:
         acc = defaultdict(lambda: [0, 0])
