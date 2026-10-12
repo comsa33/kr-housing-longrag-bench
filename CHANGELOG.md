@@ -3,16 +3,16 @@
 ## v0.9.6 — dense k=50 plus the announcement page on the 18 uncovered aggregation items (2026-10-12)
 
 No change to the questions, answers, schema, splits, gold fixes, evaluation scope, or any number released in
-v0.9.5. This release adds one pre-registered run.
+v0.9.5. This release adds one pre-specified run.
 
 ### k=50 + announcement page (`results/judge_verdicts_v0.9.6/`, `results/predictions_v0.9.6/`)
 - **Why.** At dense bge-m3 k=50, 18 of the 81 cross-source aggregation items have every matching table row in
   their 50 passages but no chunk of the announcement page that states the condition, and no model answers any
   of them correctly. All 18 come from two of the nine announcement-table pairs (LH 0000061086 x HUG and
   LH 0000061016 x HUG, 9 items each); the other 63 items already contain a chunk of their page.
-- **Pre-registered.** The setting, models, caps, judges and the reported quantity were fixed in the paper's
+- **Pre-specified.** The setting, models, caps, judges and the reported quantity were fixed in the paper's
   results registry before any generation call; the text is copied verbatim, with commit hashes and
-  timestamps, to `results/judge_verdicts_v0.9.6/PREREGISTRATION.md`.
+  timestamps, to `results/judge_verdicts_v0.9.6/PRESPECIFICATION.md`.
 - **Prompt.** Each item's exact k=50 prompt (same 50 bge-m3 passages, v0.9.2 chunker, same template) with the
   whole gold announcement page (4,490 or 4,936 characters) inserted as one more passage in reading order;
   nothing else changes. The page is added in full, as one passage, whereas the k=50 coverage rule counts a

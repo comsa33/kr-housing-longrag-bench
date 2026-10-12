@@ -1,4 +1,4 @@
-"""k=50 + announcement page on the 18 uncovered aggregation items (pre-registered 2026-10-12).
+"""k=50 + announcement page on the 18 uncovered aggregation items (pre-specified 2026-10-12).
 
 For each of the 18 items whose k=50 bge-m3 passages contain no chunk of the gold announcement page
 (results/retrieval_v0.9.4/k50_coverage_agg81.jsonl, page=false), take the exact k=50 prompt and insert the

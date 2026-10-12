@@ -3,7 +3,7 @@
 Reads results/judge_verdicts_v0.9.6/ (k=50+page, primary and secondary judges, four panel judges on the two
 Anthropic models), results/judge_verdicts_v0.9.4/ (k=50, same 18 items), results/judge_verdicts_v0.9.3/
 (open-region, same 18 items) and results/retrieval_v0.9.4/k50_coverage_agg81.jsonl. No API calls.
-Pre-registered report: correct of 18 per model; no interval (the 18 items come from two announcement-table pairs).
+Pre-specified report: correct of 18 per model; no interval (the 18 items come from two announcement-table pairs).
 Usage (from the repository root): python3 scripts/v096/score_k50page.py
 """
 import json

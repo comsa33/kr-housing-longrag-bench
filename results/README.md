@@ -102,7 +102,7 @@ python3 scripts/v094/bootstrap_agg81.py  # aggregation-set intervals (pair and c
 
 - `judge_verdicts_v0.9.6/{claude-sonnet-5-5,gpt-4.1-mini}/k50page_<model>.jsonl`: the six full-window models on
   the 18 aggregation items whose k=50 passages lack the announcement page, with the whole page added as one
-  passage (pre-registered; `judge_verdicts_v0.9.6/PREREGISTRATION.md`).
+  passage (pre-specified; `judge_verdicts_v0.9.6/PRESPECIFICATION.md`).
 - `judge_verdicts_v0.9.6/panel/`: the four panel judges on the two Anthropic models' answers.
 - `judge_verdicts_v0.9.6/MANIFEST.csv`: judge, tag, model, regime, split, n for every file.
 - `predictions_v0.9.6/k50page_<model>.jsonl`: the 108 model answers, same format, terms and masking as

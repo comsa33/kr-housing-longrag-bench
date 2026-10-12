@@ -1,9 +1,10 @@
-# Pre-registration: k=50 + announcement page on the 18 uncovered items
+# Pre-specification document: k=50 + announcement page on the 18 uncovered items
 
 The text below is copied verbatim from the paper's results registry (shared/roadmap/03_results_registry_v09.md
-in the paper repository), as committed before any generation call of this run.
+in the paper repository), as committed before any generation call of this run. The registry heading says
+"Pre-registered"; no external registry was used, so this paper and release call it a pre-specification.
 
-- Pre-registration commit (paper repository): `93b348a`, committed 2026-10-12 09:09:13 +0900.
+- Pre-specification commit (paper repository): `93b348a`, committed 2026-10-12 09:09:13 +0900.
 - First call of the run (smoke test file written): 2026-10-12 09:11:28 +0900. Generation batches created
   2026-10-12 09:13:17 and 09:13:20 +0900 (OpenAI batch ids `batch_6acc261d…`, `batch_6acc2620…`; the creation
   time is encoded in the id) and the Anthropic batches `msgbatch_01UUtBhCqfT84T5oZwZzPsTP` and

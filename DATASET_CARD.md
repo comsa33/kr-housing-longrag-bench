@@ -10,7 +10,7 @@ This seed benchmark is designed for research on Korean long-context document und
 
 ## Dataset Status
 
-**v0.9.6: k=50 plus the announcement page.** A pre-registered run adds the whole announcement page as one passage to the k=50 prompts of the 18 aggregation items whose passages lacked it (two announcement-table pairs); gpt-5.5, minimax-m3, glm-5.2 and claude-sonnet-5-5 rise from 0 to 15-18 of 18, claude-haiku-5-5 to 7 and gpt-4.1-mini to 1 (`results/judge_verdicts_v0.9.6/`, `results/predictions_v0.9.6/`). The effect of the page cannot be separated from these two announcements.
+**v0.9.6: k=50 plus the announcement page.** A pre-specified run adds the whole announcement page as one passage to the k=50 prompts of the 18 aggregation items whose passages lacked it (two announcement-table pairs); gpt-5.5, minimax-m3, glm-5.2 and claude-sonnet-5-5 rise from 0 to 15-18 of 18, claude-haiku-5-5 to 7 and gpt-4.1-mini to 1 (`results/judge_verdicts_v0.9.6/`, `results/predictions_v0.9.6/`). The effect of the page cannot be separated from these two announcements.
 
 **v0.9.5: model answers.** The final answer text of every judged prediction behind the reported results is released in `results/predictions_v0.9.5/` (24,074 model answers, mirroring the verdict files) so the evaluation can be re-judged. Reasoning traces, the model input prompts (which contain bundle text), bundle text and the unreported qwen3.5 runs are excluded; 1 source-text span and 6 unverified phone numbers are masked. The model answers are not covered by CC BY 4.0; each model provider's terms apply, and they must not be used to train competing models. Nothing else changes.
 
@@ -133,7 +133,7 @@ always cite the latest version):
   publisher = {Zenodo},
   doi       = {10.5281/zenodo.TBD},
   url       = {https://doi.org/10.5281/zenodo.TBD},
-  note      = {v0.9.6 adds a pre-registered dense k=50 plus announcement-page run on 18 aggregation items; v0.9.5 keeps the 1,997 QA, questions, splits, gold fixes, evaluation scope, verdicts and every reported number of v0.9.4 and adds the model answers of every judged prediction (not covered by CC BY 4.0; provider terms apply).}
+  note      = {v0.9.6 adds a pre-specified dense k=50 plus announcement-page run on 18 aggregation items; v0.9.5 keeps the 1,997 QA, questions, splits, gold fixes, evaluation scope, verdicts and every reported number of v0.9.4 and adds the model answers of every judged prediction (not covered by CC BY 4.0; provider terms apply).}
 }
 ```
 
