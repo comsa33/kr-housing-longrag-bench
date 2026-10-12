@@ -2,15 +2,16 @@
 """BM25 gold-page recall@5 (majority-page rule) after the full dev review (v0.9.7 candidate). No API calls.
 
 Same computation as the dataset's scripts/v094/recall_majority_page.py, with two changes taken from the dev review:
-- the 11 dev items excluded in eval_exclusions_v0.9.7.txt are dropped as well;
-- the gold pages of the locator_fixed items are replaced by the adjudicated new pages
-  (adjudication_filled_v2.csv, column new_locator "old -> new ; old -> new").
+- the 11 dev items newly listed in data/v0.9.7/eval_exclusions.txt are dropped as well;
+- the gold pages of the locator_fixed items are replaced by the new pages in the released
+  data/errata_v0.9.7.csv, column new_locator ("old_page -> new_page", several joined by " ; "; added in v0.9.8).
 The 122 items keep being reported separately (their membership is unchanged by the new pages).
+Like the v0.9.4 script, it needs the bundle text and the stored BM25 prompt files under workspace_local/
+(not redistributed); the exclusions and the new locators come from released files only.
 
-Usage (from file-search-map-reduce-agent/):
-  KRH_WORKSPACE=kr-housing-longrag-bench/workspace_local python3 \
-    kr-housing-longrag-bench-paper/shared/scripts/peerreview_check/recall_v097.py \
-    kr-housing-longrag-bench-v096 EXCLUSIONS_V097 ADJUDICATION_V2 [--before]
+Usage (from the repository root):
+  KRH_WORKSPACE=<workspace_local> python3 scripts/v097/recall_v097.py . [--errata PATH] [--before]
+--errata reads the new_locator column from another copy of the errata file (default data/errata_v0.9.7.csv).
 --before reproduces the v0.9.4 figures (no extra exclusions, no locator changes) as a check.
 """
 import csv
@@ -18,18 +19,21 @@ import importlib.util
 import sys
 from pathlib import Path
 
-DS, EXCL97, ADJ = Path(sys.argv[1]).resolve(), Path(sys.argv[2]), Path(sys.argv[3])
+DS = Path(sys.argv[1]).resolve()
+ERRATA = Path(sys.argv[sys.argv.index("--errata") + 1]) if "--errata" in sys.argv else DS / "data/errata_v0.9.7.csv"
 BEFORE = "--before" in sys.argv
 spec = importlib.util.spec_from_file_location("rmp", DS / "scripts/v094/recall_majority_page.py")
 rmp = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(rmp)
 
-new_dev_excl = set() if BEFORE else (rmp.ids(EXCL97) - rmp.ids(DS / "data/v0.9.3/eval_exclusions.txt"))
+new_dev_excl = set() if BEFORE else (rmp.ids(DS / "data/v0.9.7/eval_exclusions.txt")
+                                     - rmp.ids(DS / "data/v0.9.3/eval_exclusions.txt"))
 relocate = {}
 if not BEFORE:
-    for r in csv.DictReader(open(ADJ, encoding="utf-8-sig")):
-        if r["action"].strip() == "locator_fixed" and r["new_locator"].strip():
+    for r in csv.DictReader(open(ERRATA, encoding="utf-8")):
+        if r["v0.9.7_status"] == "locator_fixed":
             relocate[r["qa_id"]] = dict(p.split(" -> ") for p in r["new_locator"].split(" ; "))
+    assert len(relocate) == 30 and sum(map(len, relocate.values())) == 31, "expected 30 items / 31 page mappings"
 
 orig_load = rmp.load
 

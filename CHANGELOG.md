@@ -1,5 +1,23 @@
 # Changelog
 
+## v0.9.8 — machine-readable locator corrections for the dev review (2026-10-12)
+
+No change to the questions, gold answers, locators in the question files, splits, exclusions, verdicts, or
+any reported number of v0.9.7. This release makes the v0.9.7 locator corrections machine-readable and
+corrects three statements in the v0.9.7 notes below.
+
+- `data/errata_v0.9.7.csv` gains a last column `new_locator`, filled for the 30 locator_fixed rows
+  (`old -> new`, several pages joined by ` ; `; 31 page mappings) and empty elsewhere; the other nine
+  columns are unchanged. Use it with the question files, which keep the original locators.
+- `scripts/v097/score_dev_review.py` writes the new column; `scripts/v097/recall_v097.py` reads the new
+  locators from it and the exclusions from `data/v0.9.7/eval_exclusions.txt` (it asserts 30 items and 31
+  mappings). It reproduces the v0.9.7 majority-page recall (dev 75.05%, pooled 78.89%; before the review
+  74.90 / 78.74) given the bundle texts, which are not redistributed.
+- v0.9.7 notes corrected: the author adjudicated 122 items (121 flagged and 1 with only a review-sheet
+  note), not 121; the locator corrections cover 30 items and 31 page mappings, and the split
+  10 / 15 / 1 / 5 counted pages; the locator rule was recorded before the new locators were computed, not
+  before the review.
+
 ## v0.9.7 — full human review of dev and a second judge-validation sample (2026-10-12)
 
 No change to the questions, schema, splits, or the test_public gold answers and verdicts of v0.9.6. This
@@ -15,8 +33,8 @@ and a second human-labeled sample for validating the two judges.
   assignment (`assignment.csv`) was fixed before labeling.
 - **Labels.** 121 items flagged by at least one annotator (79 by both; 9 unsure marks, none by both);
   pairwise raw agreement 94.0-100% (Cohen's kappa 0.488-1.000, PABAK 0.880-1.000; by pair AB 96.8/0.774,
-  AC 95.6/0.732, AD 94.0/0.488, BC 98.4/0.825, BD 98.8/0.897, CD 100/1.000). The author adjudicated the 121
-  flagged items: 120 confirmed errors (7.8% of 1,534, Wilson 95% [6.6, 9.3]; test_public: 29 of 347, 8.4%);
+  AC 95.6/0.732, AD 94.0/0.488, BC 98.4/0.825, BD 98.8/0.897, CD 100/1.000). The author adjudicated 122 items
+  (the 121 flagged items and 1 item with only a review-sheet note): 120 confirmed errors (7.8% of 1,534, Wilson 95% [6.6, 9.3]; test_public: 29 of 347, 8.4%);
   the 2 other flags were annotator misreadings; no flag arose from a review-sheet defect. Of the 100 items
   of the earlier sample review, 93 are in scope and the new labels agree with the earlier ones on 91. This
   result supersedes the sample estimate 7.0% [3.4, 13.7] (n=100).
@@ -29,12 +47,14 @@ and a second human-labeled sample for validating the two judges.
   confirmed errors (48 in scope, 6 among the 7 earlier sample exclusions; precision 48/48 = 100% [92.6,
   100]); the detectors recall 48 of the 120 errors (40.0% [31.7, 48.9]).
 - **Treatment.** 79 gold answers corrected without changing the question (74 now accept any of several
-  values, 5 replaced); 30 evidence locators corrected under a rule recorded before the review (10 unique by
-  rule, 15 author-selected among 2 candidates, 1 among 11, 5 author-confirmed table-row addresses; the 122
+  values, 5 replaced); the evidence locators of 30 items (31 page mappings) corrected under a rule recorded before the new
+  locators were computed (by item: 10 unique under the rule, 15 author-selected among candidates, one of which
+  moves two pages chosen among 2 and among 11, and 5 author-confirmed table-row addresses; the 122
   bundle-exclusion list is unchanged); 11 items excluded from evaluation (ill-posed as written; they stay in
   the data). `data/v0.9.7/eval_exclusions.txt` lists the 11 new exclusions;
   `data/errata_v0.9.7.csv` has one row per corrected or excluded item (qa_id, split, task_type,
-  errata_type, status, old_answer, new_answer_or_accepted, source=human_review_v0.9.7, note); the notes are
+  errata_type, status, old_answer, new_answer_or_accepted, source=human_review_v0.9.7, note; since v0.9.8
+  also new_locator); the notes are
   deterministic sentences (type, action, new locator) and the annotators' free-text memos are not released. The 54
   detector flags are kept beside the review labels.
 - **Re-judging.** The 636 reported dev predictions of the four OpenAI models on the 79 items whose gold

@@ -20,7 +20,8 @@ Step 2 (adjudication filled):
   - final_error = no: reason must be one of annotator_misread, sheet_defect, other; action stays empty.
     Rule D(ii): sheet_defect is counted separately and never as an error.
   Any other combination stops the script.
-  Writes OUT_DIR/errata_v0.9.7.csv (v0.9.3 errata columns, status column v0.9.7_status),
+  Writes OUT_DIR/errata_v0.9.7.csv (v0.9.3 errata columns, status column v0.9.7_status, and since v0.9.8 a
+  new_locator column for locator_fixed rows: "old_page -> new_page", several joined by " ; "),
   OUT_DIR/eval_exclusions_v0.9.7.txt (draft: the v0.9.3 list plus new exclusions),
   OUT_DIR/human_review_v0.9.7/{annotator_labels.jsonl, adjudication.jsonl, assignment.csv, seed.txt},
   and prints the final error rate (Wilson 95%) overall and by family, a route summary line (script /
@@ -245,7 +246,7 @@ if a.out:
     with open(out / "errata_v0.9.7.csv", "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow(["qa_id", "split", "task_type", "errata_type", "v0.9.7_status", "old_answer",
-                    "new_answer_or_accepted", "source", "note"])
+                    "new_answer_or_accepted", "source", "note", "new_locator"])
         for q in sorted(q for q in asg if final[q]):
             r = adj[q]
             act = r["action"].strip()
@@ -253,7 +254,8 @@ if a.out:
                    else r["new_locator"].strip() if act == "locator_fixed" else "")
             w.writerow([q, "dev", qa[q]["task_type"], ERRATA_TYPE[r["final_type"].strip()], ACTIONS[act],
                         qa[q]["answer"], "" if act == "locator_fixed" else new, "human_review_v0.9.7",
-                        public_note(r["final_type"].strip(), act, r["new_locator"].strip())])
+                        public_note(r["final_type"].strip(), act, r["new_locator"].strip()),
+                        r["new_locator"].strip() if act == "locator_fixed" else ""])
     old = [l.rstrip("\n") for l in open(DS / "data/v0.9.3/eval_exclusions.txt")]
     new = sorted(q for q in asg if final[q] and adj[q]["action"].strip() == "excluded")
     (out / "eval_exclusions_v0.9.7.txt").write_text(
