@@ -1,0 +1,21 @@
+judge,tag,model,regime,split,n
+claude-sonnet-5-5,k50page_gpt-5.5,gpt-5.5,dense k=50 + announcement page,test_public,18
+claude-sonnet-5-5,k50page_minimax-m3,minimax-m3,dense k=50 + announcement page,test_public,18
+claude-sonnet-5-5,k50page_glm-5.2,glm-5.2,dense k=50 + announcement page,test_public,18
+claude-sonnet-5-5,k50page_claude-sonnet-5-5,claude-sonnet-5-5,dense k=50 + announcement page,test_public,18
+claude-sonnet-5-5,k50page_claude-haiku-5-5,claude-haiku-5-5,dense k=50 + announcement page,test_public,18
+claude-sonnet-5-5,k50page_gpt-4.1-mini,gpt-4.1-mini,dense k=50 + announcement page,test_public,18
+gpt-4.1-mini,k50page_gpt-5.5,gpt-5.5,dense k=50 + announcement page,test_public,18
+gpt-4.1-mini,k50page_minimax-m3,minimax-m3,dense k=50 + announcement page,test_public,18
+gpt-4.1-mini,k50page_glm-5.2,glm-5.2,dense k=50 + announcement page,test_public,18
+gpt-4.1-mini,k50page_claude-sonnet-5-5,claude-sonnet-5-5,dense k=50 + announcement page,test_public,18
+gpt-4.1-mini,k50page_claude-haiku-5-5,claude-haiku-5-5,dense k=50 + announcement page,test_public,18
+gpt-4.1-mini,k50page_gpt-4.1-mini,gpt-4.1-mini,dense k=50 + announcement page,test_public,18
+deepseek-v4.1-flash,panel_deepseek-v4.1-flash_k50page_claude-haiku-5-5,claude-haiku-5-5,dense k=50 + announcement page (panel re-score),test_public,18
+deepseek-v4.1-flash,panel_deepseek-v4.1-flash_k50page_claude-sonnet-5-5,claude-sonnet-5-5,dense k=50 + announcement page (panel re-score),test_public,18
+gemma4_31b,panel_gemma4_31b_k50page_claude-haiku-5-5,claude-haiku-5-5,dense k=50 + announcement page (panel re-score),test_public,18
+gemma4_31b,panel_gemma4_31b_k50page_claude-sonnet-5-5,claude-sonnet-5-5,dense k=50 + announcement page (panel re-score),test_public,18
+kimi-k2.6,panel_kimi-k2.6_k50page_claude-haiku-5-5,claude-haiku-5-5,dense k=50 + announcement page (panel re-score),test_public,18
+kimi-k2.6,panel_kimi-k2.6_k50page_claude-sonnet-5-5,claude-sonnet-5-5,dense k=50 + announcement page (panel re-score),test_public,18
+mistral-large-3_675b,panel_mistral-large-3_675b_k50page_claude-haiku-5-5,claude-haiku-5-5,dense k=50 + announcement page (panel re-score),test_public,18
+mistral-large-3_675b,panel_mistral-large-3_675b_k50page_claude-sonnet-5-5,claude-sonnet-5-5,dense k=50 + announcement page (panel re-score),test_public,18

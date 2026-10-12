@@ -16,7 +16,7 @@ This repository contains two distinct kinds of material with different terms:
    in this repository; only locators (source URLs, page/cell/row ids) and short
    factual excerpts are included.
 
-3. MODEL ANSWERS — the files under results/predictions_v0.9.5/ are outputs of
+3. MODEL ANSWERS — the files under results/predictions_v0.9.5/ and results/predictions_v0.9.6/ are outputs of
    third-party language models. They are NOT covered by the CC BY 4.0 license
    that applies to the benchmark annotations and remain subject to each model
    provider's terms of use. They are released only for reproducing and

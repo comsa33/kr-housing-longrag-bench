@@ -1,5 +1,37 @@
 # Changelog
 
+## v0.9.6 — dense k=50 plus the announcement page on the 18 uncovered aggregation items (2026-10-12)
+
+No change to the questions, answers, schema, splits, gold fixes, evaluation scope, or any number released in
+v0.9.5. This release adds one pre-registered run.
+
+### k=50 + announcement page (`results/judge_verdicts_v0.9.6/`, `results/predictions_v0.9.6/`)
+- **Why.** At dense bge-m3 k=50, 18 of the 81 cross-source aggregation items have every matching table row in
+  their 50 passages but no chunk of the announcement page that states the condition, and no model answers any
+  of them correctly. All 18 come from two of the nine announcement-table pairs (LH 0000061086 x HUG and
+  LH 0000061016 x HUG, 9 items each); the other 63 items already contain a chunk of their page.
+- **Pre-registered.** The setting, models, caps, judges and the reported quantity were fixed in the paper's
+  results registry before any generation call; the text is copied verbatim, with commit hashes and
+  timestamps, to `results/judge_verdicts_v0.9.6/PREREGISTRATION.md`.
+- **Prompt.** Each item's exact k=50 prompt (same 50 bge-m3 passages, v0.9.2 chunker, same template) with the
+  whole gold announcement page (4,490 or 4,936 characters) inserted as one more passage in reading order;
+  nothing else changes. The page is added in full, as one passage, whereas the k=50 coverage rule counts a
+  page as present when any one of its 1,200-character chunks is retrieved. `scripts/v096/build_prompts_k50page.py`
+  rebuilds the 18 prompts and checks that removing the added block gives back the k=50 prompt exactly.
+- **Run.** The six full-window models with their k=50 settings (minimax-m3 and glm-5.2 with reasoning on) and
+  the same output caps; OpenAI and Anthropic through the Batch APIs, Ollama with three concurrent workers.
+  108 of 108 answered; 0 empty, 0 at the cap, no retries.
+- **Result (correct of 18, primary judge claude-sonnet-5-5; secondary gpt-4.1-mini in parentheses).**
+  gpt-5.5 18 (18), minimax-m3 17 (17), glm-5.2 18 (16), claude-sonnet-5-5 15 (14), claude-haiku-5-5 7 (6),
+  gpt-4.1-mini 1 (1). On the same 18 items every model scores 0 at k=50, and open-region gives 18, 18, 17, 17,
+  7 and 2. The four panel judges give claude-sonnet-5-5 14 to 15 and claude-haiku-5-5 6 to 7. Because the 18
+  items come from only two announcements, the effect of the missing page cannot be separated from these two
+  announcements, and no interval is reported. `scripts/v096/score_k50page.py` reproduces every count from the
+  released verdicts.
+- **Model answers.** The 108 final answers, the exact strings the primary judge scored, in
+  `results/predictions_v0.9.6/` with the v0.9.5 format, terms and masking rules; no span or phone number
+  needed masking (0 and 0). Reasoning traces and prompts are not included.
+
 ## v0.9.5 — model answers released (2026-10-12)
 
 No change to the questions, answers, schema, splits, gold fixes, evaluation scope, verdicts, or any reported

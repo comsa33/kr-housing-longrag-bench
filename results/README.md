@@ -98,6 +98,18 @@ python3 scripts/v094/hitmiss.py        # accuracy by gold-page hit at k=5
 python3 scripts/v094/bootstrap_agg81.py  # aggregation-set intervals (pair and cluster bootstrap), by matched-row count
 ```
 
+## k=50 + announcement page (v0.9.6)
+
+- `judge_verdicts_v0.9.6/{claude-sonnet-5-5,gpt-4.1-mini}/k50page_<model>.jsonl`: the six full-window models on
+  the 18 aggregation items whose k=50 passages lack the announcement page, with the whole page added as one
+  passage (pre-registered; `judge_verdicts_v0.9.6/PREREGISTRATION.md`).
+- `judge_verdicts_v0.9.6/panel/`: the four panel judges on the two Anthropic models' answers.
+- `judge_verdicts_v0.9.6/MANIFEST.csv`: judge, tag, model, regime, split, n for every file.
+- `predictions_v0.9.6/k50page_<model>.jsonl`: the 108 model answers, same format, terms and masking as
+  `predictions_v0.9.5/` (nothing masked).
+- `python3 scripts/v096/score_k50page.py` prints the per-model counts next to k=50 and open-region on the same
+  18 items.
+
 ## Model answers (v0.9.5)
 
 - `predictions_v0.9.5/<v0.9.2|v0.9.3|v0.9.4|variance|human80>/<tag>.jsonl`: the final answer text of every

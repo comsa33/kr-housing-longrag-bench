@@ -18,6 +18,7 @@ tabular data (MOLIT 실거래 / HUG 분양이력), and housing statutes.
   source-grounded questions, fixes location/answer errors, and removes 14 unrepairable items; it supersedes
   earlier seed builds. See `CHANGELOG.md`.
 - **v0.9.3 corrections and added labels:** a closed-book locator leak (64 count items showed as many row ids as the gold count; 4 ids embedded the gold date) is fixed in `scripts/run_llm_baseline.py`; page ids with Hangul (18 SH announcements) are now parsed by `scripts/build_rag_smoke.py`, which corrects dev gold-page recall (40.9% reported, 74.1% matched by text); 122 dev items whose 512k bundle lacks at least one of their gold pages are excluded from BM25, dense and full context (`data/v0.9.3/bundle_exclusions.txt`). Round-2 human labels (100 random dev items: 7 errors, 7.0% [3.4, 13.7], excluded from evaluation in `data/v0.9.3/eval_exclusions.txt`; independent labels on the 80 judge-validation predictions) and round-3 labels (74 Anthropic predictions on which six judges disagree) are in `results/human_review_v0.9.3/`. Re-run verdicts, two Anthropic models and a four-judge panel are in `results/judge_verdicts_v0.9.3/`. See CHANGELOG 0.9.3.
+- **v0.9.6 k=50 + announcement page:** a pre-registered run on the 18 aggregation items whose k=50 passages lack the announcement page (two announcement-table pairs): adding the whole page as one passage raises gpt-5.5, minimax-m3, glm-5.2 and claude-sonnet-5-5 from 0 to 15-18 of 18 (`results/judge_verdicts_v0.9.6/`, model answers in `results/predictions_v0.9.6/`).
 - **v0.9.5 model answers:** the final answer text of every judged prediction behind the reported results (24,074 model answers in `results/predictions_v0.9.5/`, mirroring the verdict files), so the evaluation can be re-judged. Reasoning traces, the model input prompts (which contain bundle text), bundle text and the unreported qwen3.5 runs are not included; 1 source-text span and 6 unverified phone numbers are masked. The model answers are **not** covered by CC BY 4.0 and remain subject to each model provider's terms; do not use them to train competing models. See CHANGELOG 0.9.5.
 - **v0.9.4 additions:** dense bge-m3 retrieval with 50 passages on the 81 aggregation items for six models (verdicts in `results/judge_verdicts_v0.9.4/`, per-item coverage in `results/retrieval_v0.9.4/`), with the comparison rule fixed before any generation call; a gold-page recall rule that assigns each passage to one page (dev BM25 recall@5 74.9%, pooled 78.7%, test unchanged at 89.7%); and disclosures on the minimax-m3 reasoning flag and four July 2026 full-context re-calls. Questions, answers and evaluation scope are unchanged. Scripts: `scripts/v094/`. See CHANGELOG 0.9.4.
 - **v0.9.2 human review and gold fixes:** three annotators reviewed all 347 evaluated `test_public` items; 29 have an error, 8.4% [5.9, 11.7] (Wilson 95%). This corrects the 0.8% figure of the v0.9.1 one-author sample audit: the same 118 items have 8 errors under the three-annotator review. 24 gold answers are corrected in `data/v0.9.2/gold_fixes.json` (questions unchanged; the QA files are byte-identical to v0.9.1) and 5 ill-posed items are excluded from evaluation (`data/v0.9.2/eval_exclusions.txt`). Evaluated: 1,883 items (dev 1,541 / test_public 342). Dev was not reviewed by people; 54 dev items carry unverified automatic flags and are still evaluated. Errata: `data/errata_v0.9.2.csv`. Primary judge `claude-sonnet-5-5`, secondary `gpt-4.1-mini`; verdicts in `results/judge_verdicts_v0.9.2/`, review labels in `results/human_review_v0.9.2/`.
@@ -211,7 +212,7 @@ permits it. Korean statutes/rules fall under the non-protected categories of Cop
 
 ## Citation
 
-If you use this benchmark, cite the **v0.9.5 release** by its Zenodo versioned DOI (or use the concept DOI to
+If you use this benchmark, cite the **v0.9.6 release** by its Zenodo versioned DOI (or use the concept DOI to
 always cite the latest version):
 
 ```bibtex
@@ -219,15 +220,15 @@ always cite the latest version):
   author    = {Lee, Ruo},
   title     = {KR-Housing-LongRAG-Bench},
   year      = {2026},
-  version   = {v0.9.5 (1,997 QA; model answers released)},
+  version   = {v0.9.6 (1,997 QA; k=50 plus announcement page run)},
   publisher = {Zenodo},
-  doi       = {10.5281/zenodo.23306443},
-  url       = {https://doi.org/10.5281/zenodo.23306443},
-  note      = {v0.9.5 keeps the 1,997 QA, questions, splits, gold fixes, evaluation scope, verdicts and every reported number of v0.9.4 and adds the model answers of every judged prediction (not covered by CC BY 4.0; provider terms apply).}
+  doi       = {10.5281/zenodo.TBD},
+  url       = {https://doi.org/10.5281/zenodo.TBD},
+  note      = {v0.9.6 adds a pre-registered dense k=50 plus announcement-page run on 18 aggregation items; v0.9.5 keeps the 1,997 QA, questions, splits, gold fixes, evaluation scope, verdicts and every reported number of v0.9.4 and adds the model answers of every judged prediction (not covered by CC BY 4.0; provider terms apply).}
 }
 ```
 
-DOI state: the **v0.9.5 versioned DOI is `10.5281/zenodo.23306443`** (minted on release); the v0.9.4 versioned DOI is `10.5281/zenodo.23300582` (Zenodo, 2026-10-12); the v0.9.3 versioned DOI is `10.5281/zenodo.23298455` (Zenodo, 2026-10-11); the v0.9.2 versioned DOI is `10.5281/zenodo.23291297` (Zenodo, 2026-10-11); the v0.9.1 versioned DOI is `10.5281/zenodo.23282680` (Zenodo, 2026-10-10); the v0.9 versioned DOI is `10.5281/zenodo.20640480` (2026-06-11); the **concept DOI
+DOI state: the **v0.9.6 versioned DOI is `10.5281/zenodo.TBD`** (minted on release); the v0.9.5 versioned DOI is `10.5281/zenodo.23306443` (Zenodo, 2026-10-12); the v0.9.4 versioned DOI is `10.5281/zenodo.23300582` (Zenodo, 2026-10-12); the v0.9.3 versioned DOI is `10.5281/zenodo.23298455` (Zenodo, 2026-10-11); the v0.9.2 versioned DOI is `10.5281/zenodo.23291297` (Zenodo, 2026-10-11); the v0.9.1 versioned DOI is `10.5281/zenodo.23282680` (Zenodo, 2026-10-10); the v0.9 versioned DOI is `10.5281/zenodo.20640480` (2026-06-11); the **concept DOI
 `10.5281/zenodo.20559127`** always resolves to the latest version. Prior versioned DOIs:
 **v0.8 `10.5281/zenodo.20571211`**, **v0.7 `10.5281/zenodo.20570856`**, **v0.6.3 dataset build
 `10.5281/zenodo.20563604`**.

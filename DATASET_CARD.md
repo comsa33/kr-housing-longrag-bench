@@ -10,6 +10,8 @@ This seed benchmark is designed for research on Korean long-context document und
 
 ## Dataset Status
 
+**v0.9.6: k=50 plus the announcement page.** A pre-registered run adds the whole announcement page as one passage to the k=50 prompts of the 18 aggregation items whose passages lacked it (two announcement-table pairs); gpt-5.5, minimax-m3, glm-5.2 and claude-sonnet-5-5 rise from 0 to 15-18 of 18, claude-haiku-5-5 to 7 and gpt-4.1-mini to 1 (`results/judge_verdicts_v0.9.6/`, `results/predictions_v0.9.6/`). The effect of the page cannot be separated from these two announcements.
+
 **v0.9.5: model answers.** The final answer text of every judged prediction behind the reported results is released in `results/predictions_v0.9.5/` (24,074 model answers, mirroring the verdict files) so the evaluation can be re-judged. Reasoning traces, the model input prompts (which contain bundle text), bundle text and the unreported qwen3.5 runs are excluded; 1 source-text span and 6 unverified phone numbers are masked. The model answers are not covered by CC BY 4.0; each model provider's terms apply, and they must not be used to train competing models. Nothing else changes.
 
 **v0.9.4: dense retrieval at k=50 on the aggregation set and a recall rule.** Six models read 50 bge-m3 passages on the 81 aggregation items under a comparison rule fixed before any generation call; the 50 passages hold the announcement page and every matched row for 63 items, and no model answers any of the other 18 correctly (verdicts: `results/judge_verdicts_v0.9.4/`). Gold-page recall now assigns each retrieved passage to one page: BM25 recall@5 is 74.9% on dev and 78.7% pooled (test unchanged at 89.7%). The 122 dev items of v0.9.3 are those whose 512k bundle lacks at least one gold page. The minimax-m3 reasoning flag and four July 2026 full-context re-calls are disclosed in the changelog. Questions, answers and evaluation scope are unchanged.
@@ -119,7 +121,7 @@ Do not use this benchmark to provide legal, financial, or housing eligibility ad
 
 ## Citation
 
-If you use this benchmark, cite the **v0.9.5 release** by its Zenodo versioned DOI (or use the concept DOI to
+If you use this benchmark, cite the **v0.9.6 release** by its Zenodo versioned DOI (or use the concept DOI to
 always cite the latest version):
 
 ```bibtex
@@ -127,15 +129,15 @@ always cite the latest version):
   author    = {Lee, Ruo},
   title     = {KR-Housing-LongRAG-Bench},
   year      = {2026},
-  version   = {v0.9.5 (1,997 QA; model answers released)},
+  version   = {v0.9.6 (1,997 QA; k=50 plus announcement page run)},
   publisher = {Zenodo},
-  doi       = {10.5281/zenodo.23306443},
-  url       = {https://doi.org/10.5281/zenodo.23306443},
-  note      = {v0.9.5 keeps the 1,997 QA, questions, splits, gold fixes, evaluation scope, verdicts and every reported number of v0.9.4 and adds the model answers of every judged prediction (not covered by CC BY 4.0; provider terms apply).}
+  doi       = {10.5281/zenodo.TBD},
+  url       = {https://doi.org/10.5281/zenodo.TBD},
+  note      = {v0.9.6 adds a pre-registered dense k=50 plus announcement-page run on 18 aggregation items; v0.9.5 keeps the 1,997 QA, questions, splits, gold fixes, evaluation scope, verdicts and every reported number of v0.9.4 and adds the model answers of every judged prediction (not covered by CC BY 4.0; provider terms apply).}
 }
 ```
 
-DOI state: the v0.9.5 versioned DOI is `10.5281/zenodo.23306443` (minted on release); the v0.9.4 versioned DOI is `10.5281/zenodo.23300582` (Zenodo, 2026-10-12); the v0.9.3 versioned DOI is `10.5281/zenodo.23298455` (Zenodo, 2026-10-11); the v0.9.2 versioned DOI is `10.5281/zenodo.23291297` (Zenodo, 2026-10-11); the v0.9.1 versioned DOI is `10.5281/zenodo.23282680` (Zenodo, 2026-10-10); the v0.9 versioned DOI is `10.5281/zenodo.20640480` (2026-06-11); the concept DOI
+DOI state: the v0.9.6 versioned DOI is `10.5281/zenodo.TBD` (minted on release); the v0.9.5 versioned DOI is `10.5281/zenodo.23306443` (Zenodo, 2026-10-12); the v0.9.4 versioned DOI is `10.5281/zenodo.23300582` (Zenodo, 2026-10-12); the v0.9.3 versioned DOI is `10.5281/zenodo.23298455` (Zenodo, 2026-10-11); the v0.9.2 versioned DOI is `10.5281/zenodo.23291297` (Zenodo, 2026-10-11); the v0.9.1 versioned DOI is `10.5281/zenodo.23282680` (Zenodo, 2026-10-10); the v0.9 versioned DOI is `10.5281/zenodo.20640480` (2026-06-11); the concept DOI
 `10.5281/zenodo.20559127` always resolves to the latest version. Prior versioned DOIs: v0.8 `10.5281/zenodo.20571211`, v0.7 `10.5281/zenodo.20570856`,
 v0.6.3 dataset build `10.5281/zenodo.20563604` (the v0.7 release reuses that v0.6 data).
 

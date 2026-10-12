@@ -1,0 +1,7 @@
+file,model,setting,n,n_test_public,n_dev,verdict_file
+k50page_gpt-5.5.jsonl,gpt-5.5,dense k=50 + announcement page,18,18,0,"judge_verdicts_v0.9.6/{claude-sonnet-5-5,gpt-4.1-mini}/k50page_gpt-5.5.jsonl"
+k50page_minimax-m3.jsonl,minimax-m3,dense k=50 + announcement page,18,18,0,"judge_verdicts_v0.9.6/{claude-sonnet-5-5,gpt-4.1-mini}/k50page_minimax-m3.jsonl"
+k50page_glm-5.2.jsonl,glm-5.2,dense k=50 + announcement page,18,18,0,"judge_verdicts_v0.9.6/{claude-sonnet-5-5,gpt-4.1-mini}/k50page_glm-5.2.jsonl"
+k50page_claude-sonnet-5-5.jsonl,claude-sonnet-5-5,dense k=50 + announcement page,18,18,0,"judge_verdicts_v0.9.6/{claude-sonnet-5-5,gpt-4.1-mini}/k50page_claude-sonnet-5-5.jsonl"
+k50page_claude-haiku-5-5.jsonl,claude-haiku-5-5,dense k=50 + announcement page,18,18,0,"judge_verdicts_v0.9.6/{claude-sonnet-5-5,gpt-4.1-mini}/k50page_claude-haiku-5-5.jsonl"
+k50page_gpt-4.1-mini.jsonl,gpt-4.1-mini,dense k=50 + announcement page,18,18,0,"judge_verdicts_v0.9.6/{claude-sonnet-5-5,gpt-4.1-mini}/k50page_gpt-4.1-mini.jsonl"
