@@ -1,0 +1,30 @@
+# v0.9.7: items excluded from evaluation in every setting (closed-book included).
+# test_public (5, unchanged from v0.9.2): ill-posed questions found in the three-annotator test review.
+# dev (7, new in v0.9.3): confirmed errors from the round-2 human review of 100 random dev items.
+# Use with: --exclude-ids data/v0.9.7/eval_exclusions.txt
+# --- test_public ---
+krhlrb_v05_0994
+krhlrb_v05_0995
+krhlrb_v05_1125
+krhlrb_v05_1132
+krhlrb_v05_1369
+# --- dev ---
+krhlrb_v05_0596
+krhlrb_v05_0788
+krhlrb_v05_0800
+krhlrb_v05_0875
+krhlrb_v05_0884
+krhlrb_v05_1056
+krhlrb_v05_1142
+# --- dev (new in v0.9.7): question defects confirmed in the full dev review ---
+krhlrb_v05_0887
+krhlrb_v05_0937
+krhlrb_v05_0938
+krhlrb_v05_0973
+krhlrb_v05_0974
+krhlrb_v05_1133
+krhlrb_v05_1155
+krhlrb_v05_1158
+krhlrb_v05_1308
+krhlrb_v05_1316
+krhlrb_v05_1484

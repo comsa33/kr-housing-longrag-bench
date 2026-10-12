@@ -1,5 +1,93 @@
 # Changelog
 
+## v0.9.7 — full human review of dev and a second judge-validation sample (2026-10-12)
+
+No change to the questions, schema, splits, or the test_public gold answers and verdicts of v0.9.6. This
+release adds a two-annotator review of every evaluated dev item, the corrections and exclusions it produced,
+and a second human-labeled sample for validating the two judges.
+
+### Full review of dev (`results/human_review_v0.9.7/`, `data/errata_v0.9.7.csv`)
+- **Scope.** All 1,534 evaluated dev items (1,608 minus the 67 legal items, which are not evaluated, and the
+  7 items excluded after the 100-item sample review). Each item was labeled independently by two of four
+  non-author annotators (native Korean speakers, not domain experts) in 31 blocks of 50 items that rotate
+  through all six annotator pairs under seed 20261012; the same error definition as the test_public review (a "no" on any of: single interpretation,
+  evidence supports the answer, answer correct and complete). Naturalness was not collected. The block
+  assignment (`assignment.csv`) was fixed before labeling.
+- **Labels.** 121 items flagged by at least one annotator (79 by both; 9 unsure marks, none by both);
+  pairwise raw agreement 94.0-100% (Cohen's kappa 0.488-1.000, PABAK 0.880-1.000; by pair AB 96.8/0.774,
+  AC 95.6/0.732, AD 94.0/0.488, BC 98.4/0.825, BD 98.8/0.897, CD 100/1.000). The author adjudicated the 121
+  flagged items: 120 confirmed errors (7.8% of 1,534, Wilson 95% [6.6, 9.3]; test_public: 29 of 347, 8.4%);
+  the 2 other flags were annotator misreadings; no flag arose from a review-sheet defect. Of the 100 items
+  of the earlier sample review, 93 are in scope and the new labels agree with the earlier ones on 91. This
+  result supersedes the sample estimate 7.0% [3.4, 13.7] (n=100).
+- **By type.** dual_row 51, other 32, unspecified 18, wrong_gold 5, header_parse 5, multiple_schedules 5,
+  scope 4. By family (errors/n): eligibility 28/56 (50.0% [37.3, 62.7]), schedule 5/20, multi-document 13/82,
+  provider 3/25, table_numeric 47/485 (9.7% [7.4, 12.6]), region 2/27, aggregation 12/180, long_context
+  10/474 (2.1% [1.1, 3.8]), answerability 0/90, format 0/60, long_distance 0/35. By route: script 47/496
+  (9.5% [7.2, 12.4]), template_reworded 63/529 (11.9% [9.4, 14.9]), cloze_regenerated 10/509 (2.0% [1.1,
+  3.6]); route is nearly determined by family in dev. Detector check: all 54 `auto_flag_unverified` items are
+  confirmed errors (48 in scope, 6 among the 7 earlier sample exclusions; precision 48/48 = 100% [92.6,
+  100]); the detectors recall 48 of the 120 errors (40.0% [31.7, 48.9]).
+- **Treatment.** 79 gold answers corrected without changing the question (74 now accept any of several
+  values, 5 replaced); 30 evidence locators corrected under a rule recorded before the review (10 unique by
+  rule, 15 author-selected among 2 candidates, 1 among 11, 5 author-confirmed table-row addresses; the 122
+  bundle-exclusion list is unchanged); 11 items excluded from evaluation (ill-posed as written; they stay in
+  the data). `data/v0.9.7/eval_exclusions.txt` lists the 11 new exclusions;
+  `data/errata_v0.9.7.csv` has one row per corrected or excluded item (qa_id, split, task_type,
+  errata_type, status, old_answer, new_answer_or_accepted, source=human_review_v0.9.7, note); the notes are
+  deterministic sentences (type, action, new locator) and the annotators' free-text memos are not released. The 54
+  detector flags are kept beside the review labels.
+- **Re-judging.** The 79 items whose gold answer changed were re-judged under both judges in every dev
+  setting in which they were run (closed-book 316, BM25 296, full context 24 = 636 predictions per judge,
+  1,272 judge calls; no generation calls). Updated verdict files: `results/judge_verdicts_v0.9.7/`.
+  **Re-judging.** The 636 reported dev predictions of the four OpenAI models on the 79 items whose gold
+  changed (gold_accept_any 74, gold_replaced 5; closed-book, BM25, full context) were judged again by both
+  judges with the v0.9.2 judge settings and the corrected gold (`results/judge_verdicts_v0.9.7/`; Claude
+  batch msgbatch_01NoLXXdz2U3N41TTWrpfBtj for 635 requests and one direct call for the request that batch
+  canceled; gpt-4.1-mini batch batch_6acc6b3780a881909a4bbcc950b1b212; 0 failures). The primary judge
+  changed 70 verdicts (64 to correct, 6 to incorrect), the secondary 68 (58 and 10). Pooled accuracy under
+  the primary judge (plain / cluster-weighted, %): gpt-4.1-mini closed-book 14.4 / 18.2, BM25 63.7 / 57.1,
+  full context 83.1 / 70.0; gpt-5.4-mini 15.1 / 14.0, 61.7 / 54.9, 92.7 / 87.0; gpt-5.4-nano 7.8 / 9.8,
+  51.7 / 43.4, 70.0 / 59.7; gpt-5.5 37.0 / 37.2, 66.0 / 59.1, 100.0 / 100.0. Against v0.9.6 the re-judge
+  moves pooled plain accuracy by at most 1.1 points (cluster-weighted 3.4) and the 11 exclusions by at most
+  0.2 points; test_public scores are unchanged (`scripts/v097/score_pooled_v097.py`). Evaluated dev items after this
+  release: 1,523; dev items in the BM25 and full-context columns: 954 (1,523 minus the 447 items without a
+  context bundle, 448 before one of them was excluded, and the unchanged 122 bundle exclusions); pooled n: closed-book 1,865, BM25
+  1,293 (full-context samples unchanged). BM25 majority-page recall@5 after the exclusions: dev 75.05% on
+  954 items (SH announcements 69.2% on 419, others 79.6% on 535), pooled 78.89% on 1,293, test_public 89.7%
+  unchanged (before: 74.90 / 78.74).
+- **Files.** `results/human_review_v0.9.7/{assignment.csv, annotator_labels.jsonl, adjudication.jsonl,
+  seed.txt, prespec_dev_review_2026-10-12.md, INSTRUCTIONS_ko.md, README.md}`; `data/errata_v0.9.7.csv`;
+  `data/v0.9.7/eval_exclusions.txt`; `results/judge_verdicts_v0.9.7/`; `scripts/v097/{export_dev_review.py,
+  score_dev_review.py, locator_candidates.py, recall_v097.py, rejudge_v097.py, score_pooled_v097.py}`.
+
+### Second judge-validation sample (`results/judge_validation_v0.9.7/`)
+- **Sample.** 200 reported test_public predictions, 4 from each of 50 cells (eight models x closed-book,
+  BM25, dense, full context; six models x k=50, open-region, oracle), seed 20261012, excluding the 2
+  predictions that overlap the earlier 80-prediction sample; plus 16 auxiliary predictions whose answer
+  string differs from the released one. Script: `scripts/v097/sample_judge_validation.py`.
+- **Labels.** Two non-author annotators labeled all 216 independently (correct / incorrect / unsure) with
+  model, setting and judge labels hidden; an answer that lists several values without committing to one
+  counts as incorrect. Neither used unsure; raw agreement 99.5% (215/216) [97.4, 99.9], Cohen's kappa 0.991;
+  the author adjudicated the one disagreement (in the auxiliary set).
+- **Result (main 200).** Primary judge claude-sonnet-5-5 agrees with the adjudicated label on 200 of 200
+  (Wilson 95% [98.1, 100.0]; kappa 1.000; 100.0% post-stratified to cell weights). Secondary judge
+  gpt-4.1-mini: 198 of 200 (99.0% [96.4, 99.7]; kappa 0.980; 99.6% post-stratified); the two disagreements
+  are one k=50 and one oracle prediction (one gpt-4.1-mini, one claude-haiku-5-5; both aggregation items).
+  By setting, model and task family the primary judge agrees on every label; the secondary judge on 23/24
+  for k=50 and oracle, 27/28 for gpt-4.1-mini and claude-haiku-5-5, 102/104 for aggregation items.
+- **Panel on the 56 Anthropic predictions in the sample.** claude-sonnet-5-5, deepseek-v4.1-flash and
+  gemma4:31b 56/56 (kappa 1.000); gpt-4.1-mini, kimi-k2.6 and mistral-large-3 55/56 (kappa 0.963).
+- **Auxiliary 16.** Both judges 16/16.
+- **Files.** `results/judge_validation_v0.9.7/{sample.csv, labels_a.csv, labels_b.csv, adjudication.csv,
+  prespec_judge_validation_2026-10-12.md, INSTRUCTIONS_ko.md, README.md}` and `scripts/v097/score_judge_validation.py`. The earlier 80-prediction sample stays in
+  `results/human_review_v0.9.3/`.
+
+### Scripts
+- `scripts/v097/`: export_dev_review.py, score_dev_review.py, locator_candidates.py, recall_v097.py,
+  rejudge_v097.py, score_pooled_v097.py, sample_judge_validation.py, score_judge_validation.py (see
+  `scripts/v097/README.md` for what each needs; only `rejudge_v097.py` submit/fetch call a model API).
+
 ## v0.9.6 — dense k=50 plus the announcement page on the 18 uncovered aggregation items (2026-10-12)
 
 No change to the questions, answers, schema, splits, gold fixes, evaluation scope, or any number released in
