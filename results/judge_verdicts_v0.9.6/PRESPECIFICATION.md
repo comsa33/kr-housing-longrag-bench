@@ -4,12 +4,7 @@ The text below is copied verbatim from the paper's results registry (shared/road
 in the paper repository), as committed before any generation call of this run. The registry heading says
 "Pre-registered"; no external registry was used, so this paper and release call it a pre-specification.
 
-- Pre-specification commit (paper repository): `93b348a`, committed 2026-10-12 09:09:13 +0900.
-- First call of the run (smoke test file written): 2026-10-12 09:11:28 +0900. Generation batches created
-  2026-10-12 09:13:17 and 09:13:20 +0900 (OpenAI batch ids `batch_6acc261d…`, `batch_6acc2620…`; the creation
-  time is encoded in the id) and the Anthropic batches `msgbatch_01UUtBhCqfT84T5oZwZzPsTP` and
-  `msgbatch_01Q2m8VoRxp1H1Gjbupvn8as`.
-- Results commit (paper repository): `68411fe`, committed 2026-10-12 09:27:50 +0900.
+- Written on 2026-10-12, before any generation call of this run.
 
 ---
 
