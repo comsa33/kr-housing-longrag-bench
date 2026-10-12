@@ -59,7 +59,8 @@ and a second human-labeled sample for validating the two judges.
 - **Files.** `results/human_review_v0.9.7/{assignment.csv, annotator_labels.jsonl, adjudication.jsonl,
   seed.txt, prespec_dev_review_2026-10-12.md, INSTRUCTIONS_ko.md, README.md}`; `data/errata_v0.9.7.csv`;
   `data/v0.9.7/eval_exclusions.txt`; `results/judge_verdicts_v0.9.7/`; `scripts/v097/{export_dev_review.py,
-  score_dev_review.py, locator_candidates.py, recall_v097.py, rejudge_v097.py, score_pooled_v097.py}`.
+  score_dev_review.py, locator_candidates.py, recall_v097.py, rejudge_v097.py, score_pooled_v097.py,
+  multi_answer_bound_v097.py}`.
 
 ### Second judge-validation sample (`results/judge_validation_v0.9.7/`)
 - **Sample.** 200 reported test_public predictions, 4 from each of 50 cells (eight models x closed-book,
@@ -85,7 +86,8 @@ and a second human-labeled sample for validating the two judges.
 
 ### Scripts
 - `scripts/v097/`: export_dev_review.py, score_dev_review.py, locator_candidates.py, recall_v097.py,
-  rejudge_v097.py, score_pooled_v097.py, sample_judge_validation.py, score_judge_validation.py (see
+  rejudge_v097.py, score_pooled_v097.py, multi_answer_bound_v097.py, sample_judge_validation.py,
+  score_judge_validation.py (see
   `scripts/v097/README.md` for what each needs; only `rejudge_v097.py` submit/fetch call a model API).
 
 ## v0.9.6 — dense k=50 plus the announcement page on the 18 uncovered aggregation items (2026-10-12)
