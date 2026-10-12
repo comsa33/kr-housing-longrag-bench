@@ -5,10 +5,12 @@ Released files only, no API calls.
 Three states per cell (closed-book, BM25, full context; primary and secondary judge):
   v096   : the published scope (v0.9.3 exclusions; 122 dev items out of BM25/FC) and verdicts -> reproduces S3
   excl   : + the 11 new v0.9.7 exclusions, verdicts unchanged
-  v097   : + the v0.9.7 re-judged verdicts of the 79 gold-changed dev items (results/judge_verdicts_v0.9.7/)
+  v097   : + the v0.9.7 re-judged verdicts of the 79 gold-changed dev items (results/judge_verdicts_v0.9.7/),
+           with BM25/FC scoped by --bundle-exclusions (default data/v0.9.9/bundle_exclusions.txt: the 122 dev items
+           plus the 20 answerability items of v0.9.9; data/v0.9.3/bundle_exclusions.txt gives the v0.9.7/v0.9.8 values)
 Plain and cluster-weighted accuracy as scripts/score_judge.py (weights = released cluster_weight).
 
-Usage: python3 score_pooled_v097.py DATASET_V097
+Usage: python3 score_pooled_v097.py DATASET [--bundle-exclusions FILE] [--json OUT.json]
 """
 import json
 import sys
@@ -29,6 +31,17 @@ def ids(p):
 G = {d["qa_id"]: d for sp in ("dev", "test_public") for d in jl(R / f"data/qa_v0.6_{sp}.jsonl")}
 EX3, EX7 = ids(R / "data/v0.9.3/eval_exclusions.txt"), ids(R / "data/v0.9.7/eval_exclusions.txt")
 B122 = ids(R / "data/v0.9.3/bundle_exclusions.txt")
+
+
+def _opt(name, default=None):
+    return sys.argv[sys.argv.index(name) + 1] if name in sys.argv else default
+
+
+_bx = _opt("--bundle-exclusions")
+if _bx is None:
+    _bx = R / "data/v0.9.9/bundle_exclusions.txt"
+    _bx = _bx if _bx.exists() else R / "data/v0.9.3/bundle_exclusions.txt"
+B_FINAL = ids(Path(_bx) if Path(_bx).is_absolute() else R / _bx)
 JUDGES = ("claude-sonnet-5-5", "gpt-4.1-mini")
 
 
@@ -73,10 +86,10 @@ def score(v, keep):
     return {"n": n, "hits": h, "plain": 100 * h / n if n else 0, "cw": 100 * wh / wn if wn else 0}
 
 
-def scope(excl, split, setting):
+def scope(excl, split, setting, bex=None):
     s = {q for q, g in G.items() if g["task_type"] != LEGAL and q not in excl and (split == "pooled" or g["split"] == split)}
     if setting != "cb":
-        s -= B122
+        s -= B122 if bex is None else bex
     return s
 
 
@@ -87,7 +100,7 @@ for judge in JUDGES:
             for split in ("pooled", "dev"):
                 a = score(verdicts(judge, m, setting, False), scope(EX3, split, setting))
                 b = score(verdicts(judge, m, setting, False), scope(EX7, split, setting))
-                c = score(verdicts(judge, m, setting, True), scope(EX7, split, setting))
+                c = score(verdicts(judge, m, setting, True), scope(EX7, split, setting, B_FINAL))
                 out[f"{judge}|{m}|{setting}|{split}"] = {"v096": a, "excl": b, "v097": c}
                 rows.append((judge, m, setting, split, a, b, c))
 
@@ -117,8 +130,10 @@ for m in M:
     cells = []
     for t in ("32k", "64k", "128k", "256k", "512k"):
         a = score(verdicts("claude-sonnet-5-5", m, "fc", False), {q for q in scope(EX3, "pooled", "fc") if G[q].get("context_tier") == t})
-        c = score(verdicts("claude-sonnet-5-5", m, "fc", True), {q for q in scope(EX7, "pooled", "fc") if G[q].get("context_tier") == t})
+        c = score(verdicts("claude-sonnet-5-5", m, "fc", True), {q for q in scope(EX7, "pooled", "fc", B_FINAL) if G[q].get("context_tier") == t})
         if a["n"] or c["n"]:
             cells.append(f"{t} {a['plain']:.0f}->{c['plain']:.0f} (n {a['n']}->{c['n']})")
     print(f"  {m}: " + "; ".join(cells))
-json.dump(out, open(Path(__file__).with_suffix(".json").name, "w"), indent=1)
+print(f"\nbundle exclusions for the final state: {len(B_FINAL)} items ({_bx})")
+if _opt("--json"):
+    json.dump(out, open(_opt("--json"), "w"), indent=1)

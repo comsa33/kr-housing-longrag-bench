@@ -3,6 +3,8 @@
 
 Same computation as the dataset's scripts/v094/recall_majority_page.py, with two changes taken from the dev review:
 - the 11 dev items newly listed in data/v0.9.7/eval_exclusions.txt are dropped as well;
+- the items added to the bundle exclusions after v0.9.3 (--bundle-exclusions, default data/v0.9.9/bundle_exclusions.txt:
+  the 20 answerability items of v0.9.9) are dropped as well; data/v0.9.3/bundle_exclusions.txt gives the v0.9.8 figures;
 - the gold pages of the locator_fixed items are replaced by the new pages in the released
   data/errata_v0.9.7.csv, column new_locator ("old_page -> new_page", several joined by " ; "; added in v0.9.8).
 The 122 items keep being reported separately (their membership is unchanged by the new pages).
@@ -10,7 +12,7 @@ Like the v0.9.4 script, it needs the bundle text and the stored BM25 prompt file
 (not redistributed); the exclusions and the new locators come from released files only.
 
 Usage (from the repository root):
-  KRH_WORKSPACE=<workspace_local> python3 scripts/v097/recall_v097.py . [--errata PATH] [--before]
+  KRH_WORKSPACE=<workspace_local> python3 scripts/v097/recall_v097.py . [--errata PATH] [--bundle-exclusions FILE] [--before]
 --errata reads the new_locator column from another copy of the errata file (default data/errata_v0.9.7.csv).
 --before reproduces the v0.9.4 figures (no extra exclusions, no locator changes) as a check.
 """
@@ -26,8 +28,14 @@ spec = importlib.util.spec_from_file_location("rmp", DS / "scripts/v094/recall_m
 rmp = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(rmp)
 
-new_dev_excl = set() if BEFORE else (rmp.ids(DS / "data/v0.9.7/eval_exclusions.txt")
-                                     - rmp.ids(DS / "data/v0.9.3/eval_exclusions.txt"))
+BX = sys.argv[sys.argv.index("--bundle-exclusions") + 1] if "--bundle-exclusions" in sys.argv else None
+if BX is None:
+    BX = DS / "data/v0.9.9/bundle_exclusions.txt"
+    BX = BX if BX.exists() else DS / "data/v0.9.3/bundle_exclusions.txt"
+BX = Path(BX) if Path(BX).is_absolute() else DS / BX
+extra_bundle_excl = rmp.ids(BX) - rmp.ids(DS / "data/v0.9.3/bundle_exclusions.txt")
+new_dev_excl = set() if BEFORE else ((rmp.ids(DS / "data/v0.9.7/eval_exclusions.txt")
+                                      - rmp.ids(DS / "data/v0.9.3/eval_exclusions.txt")) | extra_bundle_excl)
 relocate = {}
 if not BEFORE:
     for r in csv.DictReader(open(ERRATA, encoding="utf-8")):
@@ -55,6 +63,6 @@ def load(p):
 
 rmp.load = load
 rmp.ROOT = DS
-print(f"extra dev exclusions {len(new_dev_excl)}, relocated items {len(relocate)}"
+print(f"extra exclusions {len(new_dev_excl)} (of them bundle-based {0 if BEFORE else len(extra_bundle_excl)}; {(BX.parent.name + '/' + BX.name) if not BEFORE else '-'}), relocated items {len(relocate)}"
       + (" (--before: v0.9.4 reproduction)" if BEFORE else ""))
 rmp.main()

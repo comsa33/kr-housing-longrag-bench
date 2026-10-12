@@ -1,5 +1,27 @@
 # Changelog
 
+## v0.9.9 — bundle exclusions for 20 answerability items (2026-10-12)
+
+No change to the questions, gold answers, splits, closed-book scope, or verdicts. This release adds one
+exclusion list for the bundle-based settings.
+
+- `data/v0.9.9/bundle_exclusions.txt` (142 items) = the 122 dev items of `data/v0.9.3/bundle_exclusions.txt`
+  plus 20 answerability items (test_public 7: `krhlrb_v05_0354`, `0359`-`0364`; dev 13: `0355`-`0358`, `0365`,
+  `0366`, `1687`, `1688`, `1703`, `1704`, `1707`-`1709`). Each of the 20 questions states that only one
+  announcement is provided and asks about a second one; the generator checked only the provided
+  announcement, and the item's 256k bundle also holds pages of the second announcement (its district name
+  appears there). Drop the 142 items from BM25, dense, other retrieval runs and full context; keep them in
+  closed-book, where the gold "cannot be determined" stands.
+- Effect (released verdicts, no model calls): test_public BM25/dense n 339 -> 332, full-context sample
+  98 -> 96; dev BM25/full-context n 954 -> 941; pooled BM25 n 1,293 -> 1,273, full context 177 -> 175;
+  13 of the 48 retrieval and full-context cells of the main table move by 1-2 points; BM25 majority-page
+  recall test 90.4%, dev 75.66%, pooled 79.50%. The aggregation set, k=50, open-region, oracle and the
+  judge-validation sample are unaffected.
+- `scripts/v097/score_pooled_v097.py`, `multi_answer_bound_v097.py` and `recall_v097.py` take `--bundle-exclusions`
+  (default `data/v0.9.9/bundle_exclusions.txt`; the v0.9.3 list reproduces the v0.9.8 numbers). New
+  `scripts/v099/score_test_v099.py` rebuilds the test_public tables of the paper from the released verdicts;
+  it replaces `scripts/paper/*`, which reproduce the v0.9.1 runs only.
+
 ## v0.9.8 — machine-readable locator corrections for the dev review (2026-10-12)
 
 No change to the questions, gold answers, locators in the question files, splits, exclusions, verdicts, or

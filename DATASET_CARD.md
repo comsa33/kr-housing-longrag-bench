@@ -10,6 +10,8 @@ This seed benchmark is designed for research on Korean long-context document und
 
 ## Dataset Status
 
+**v0.9.9: bundle exclusions.** 20 answerability items whose bundle also holds the asked-about announcement are dropped from the bundle-based settings (`data/v0.9.9/bundle_exclusions.txt`); no data changes (see `CHANGELOG.md`).
+
 **v0.9.8: machine-readable locator corrections.** `data/errata_v0.9.7.csv` gains a `new_locator` column (30 items, 31 page mappings); no data or number changes (see `CHANGELOG.md`).
 
 **v0.9.7: full dev review and a second judge-validation sample.** Every evaluated dev item (1,534) was reviewed independently by two of four non-author annotators and adjudicated by the author: 120 errors (7.8% [6.6, 9.3]; test_public 8.4%), 79 gold answers and 30 locators corrected, 11 items excluded (evaluated dev 1,523) (`data/errata_v0.9.7.csv`, `results/human_review_v0.9.7/`); the corrected items were re-judged. A 200-prediction sample of reported test_public predictions (4 per model x setting), labeled by two annotators, agrees with the primary judge on 200/200 (Wilson 95% [98.1, 100]) and with the secondary judge on 198/200 (`results/judge_validation_v0.9.7/`). The 67 legal dev items were not reviewed; the annotators are not domain experts; the author adjudicated flagged items.
@@ -125,7 +127,7 @@ Do not use this benchmark to provide legal, financial, or housing eligibility ad
 
 ## Citation
 
-If you use this benchmark, cite the **v0.9.8 release** by its Zenodo versioned DOI (or use the concept DOI to
+If you use this benchmark, cite the **v0.9.9 release** by its Zenodo versioned DOI (or use the concept DOI to
 always cite the latest version):
 
 ```bibtex
@@ -133,15 +135,15 @@ always cite the latest version):
   author    = {Lee, Ruo},
   title     = {KR-Housing-LongRAG-Bench},
   year      = {2026},
-  version   = {v0.9.8 (1,997 QA; full dev review; machine-readable locator corrections)},
+  version   = {v0.9.9 (1,997 QA; full dev review; bundle exclusions)},
   publisher = {Zenodo},
-  doi       = {10.5281/zenodo.23311591},
-  url       = {https://doi.org/10.5281/zenodo.23311591},
-  note      = {v0.9.8 keeps every file and number of v0.9.7 and adds the machine-readable locator corrections of the v0.9.7 dev review (new_locator column in data/errata_v0.9.7.csv); v0.9.7 added a two-annotator review of every evaluated dev item (79 gold answers and 30 locators corrected, 11 items excluded) and a 200-prediction judge-validation sample.}
+  doi       = {10.5281/zenodo.TBD},
+  url       = {https://doi.org/10.5281/zenodo.TBD},
+  note      = {v0.9.9 drops 20 answerability items from the bundle-based settings (data/v0.9.9/bundle_exclusions.txt); v0.9.8 added the machine-readable locator corrections of the v0.9.7 dev review (new_locator column in data/errata_v0.9.7.csv); v0.9.7 added a two-annotator review of every evaluated dev item (79 gold answers and 30 locators corrected, 11 items excluded) and a 200-prediction judge-validation sample.}
 }
 ```
 
-DOI state: the v0.9.8 versioned DOI is `10.5281/zenodo.23311591` (Zenodo, 2026-10-12); the v0.9.7 versioned DOI is `10.5281/zenodo.23311037` (Zenodo, 2026-10-12); the v0.9.6 versioned DOI is `10.5281/zenodo.23307114` (Zenodo, 2026-10-12); the v0.9.5 versioned DOI is `10.5281/zenodo.23306443` (Zenodo, 2026-10-12); the v0.9.4 versioned DOI is `10.5281/zenodo.23300582` (Zenodo, 2026-10-12); the v0.9.3 versioned DOI is `10.5281/zenodo.23298455` (Zenodo, 2026-10-11); the v0.9.2 versioned DOI is `10.5281/zenodo.23291297` (Zenodo, 2026-10-11); the v0.9.1 versioned DOI is `10.5281/zenodo.23282680` (Zenodo, 2026-10-10); the v0.9 versioned DOI is `10.5281/zenodo.20640480` (2026-06-11); the concept DOI
+DOI state: the v0.9.9 versioned DOI is `10.5281/zenodo.TBD` (minted on release); the v0.9.8 versioned DOI is `10.5281/zenodo.23311591` (Zenodo, 2026-10-12); the v0.9.7 versioned DOI is `10.5281/zenodo.23311037` (Zenodo, 2026-10-12); the v0.9.6 versioned DOI is `10.5281/zenodo.23307114` (Zenodo, 2026-10-12); the v0.9.5 versioned DOI is `10.5281/zenodo.23306443` (Zenodo, 2026-10-12); the v0.9.4 versioned DOI is `10.5281/zenodo.23300582` (Zenodo, 2026-10-12); the v0.9.3 versioned DOI is `10.5281/zenodo.23298455` (Zenodo, 2026-10-11); the v0.9.2 versioned DOI is `10.5281/zenodo.23291297` (Zenodo, 2026-10-11); the v0.9.1 versioned DOI is `10.5281/zenodo.23282680` (Zenodo, 2026-10-10); the v0.9 versioned DOI is `10.5281/zenodo.20640480` (2026-06-11); the concept DOI
 `10.5281/zenodo.20559127` always resolves to the latest version. Prior versioned DOIs: v0.8 `10.5281/zenodo.20571211`, v0.7 `10.5281/zenodo.20570856`,
 v0.6.3 dataset build `10.5281/zenodo.20563604` (the v0.7 release reuses that v0.6 data).
 

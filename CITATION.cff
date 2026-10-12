@@ -16,18 +16,22 @@ abstract: >-
   release is not leaderboard-ready and has no sealed hidden split. v0.9.7 adds a
   two-annotator review of every evaluated dev item and a 200-prediction
   judge-validation sample; questions, splits and test_public answers are unchanged.
-  v0.9.8 adds the machine-readable locator corrections of that review.
+  v0.9.8 adds the machine-readable locator corrections of that review; v0.9.9 drops 20
+  answerability items from the bundle-based settings.
 type: dataset
-version: v0.9.8
-date-released: 2026-10-12
+version: v0.9.9
+date-released: [YYYY-MM-DD]
 license: CC-BY-4.0
 repository-code: "https://github.com/comsa33/kr-housing-longrag-bench"
 # The concept DOI (resolves to the latest version) and prior versioned DOIs are listed under identifiers.
-doi: "10.5281/zenodo.23311591"
+doi: "10.5281/zenodo.TBD"
 identifiers:
   - type: doi
+    value: "10.5281/zenodo.TBD"
+    description: "Versioned DOI for this v0.9.9 release (bundle exclusions for 20 answerability items)."
+  - type: doi
     value: "10.5281/zenodo.23311591"
-    description: "Versioned DOI for this v0.9.8 release (machine-readable locator corrections of the v0.9.7 dev review)."
+    description: "Versioned DOI for the v0.9.8 release (machine-readable locator corrections of the v0.9.7 dev review)."
   - type: doi
     value: "10.5281/zenodo.23311037"
     description: "Versioned DOI for the v0.9.7 release (full two-annotator review of dev; second judge-validation sample)."

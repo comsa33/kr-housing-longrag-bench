@@ -18,7 +18,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 R = Path(sys.argv[1]).resolve()
-sys.argv = [sys.argv[0], str(R)]
+sys.argv = [sys.argv[0], str(R)] + sys.argv[2:]
 import score_pooled_v097 as sp  # noqa: E402  (also prints its tables; silenced below)
 
 acc_test = set(json.load(open(R / "data/v0.9.2/gold_fixes.json"))["accept_any"])
@@ -27,7 +27,7 @@ J = "claude-sonnet-5-5"
 rows = []
 for m, (cb, rag, fc) in sp.M.items():
     for setting, tag in (("cb", cb), ("bm25", rag), ("fc", fc)):
-        keep = sp.scope(sp.EX7, "pooled", setting)
+        keep = sp.scope(sp.EX7, "pooled", setting, sp.B_FINAL)
         multi = sp.verdicts(J, m, setting, True)
         strict_test = {r["qa_id"]: bool(r["judge_correct"]) for r in sp.jl(R / f"results/judge_verdicts/{tag}.jsonl")}
         single_dev = sp.V(J, "v0.9.2", tag)
