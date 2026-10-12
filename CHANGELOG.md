@@ -37,10 +37,7 @@ and a second human-labeled sample for validating the two judges.
   errata_type, status, old_answer, new_answer_or_accepted, source=human_review_v0.9.7, note); the notes are
   deterministic sentences (type, action, new locator) and the annotators' free-text memos are not released. The 54
   detector flags are kept beside the review labels.
-- **Re-judging.** The 79 items whose gold answer changed were re-judged under both judges in every dev
-  setting in which they were run (closed-book 316, BM25 296, full context 24 = 636 predictions per judge,
-  1,272 judge calls; no generation calls). Updated verdict files: `results/judge_verdicts_v0.9.7/`.
-  **Re-judging.** The 636 reported dev predictions of the four OpenAI models on the 79 items whose gold
+- **Re-judging.** The 636 reported dev predictions of the four OpenAI models on the 79 items whose gold
   changed (gold_accept_any 74, gold_replaced 5; closed-book, BM25, full context) were judged again by both
   judges with the v0.9.2 judge settings and the corrected gold (`results/judge_verdicts_v0.9.7/`; Claude
   batch msgbatch_01NoLXXdz2U3N41TTWrpfBtj for 635 requests and one direct call for the request that batch

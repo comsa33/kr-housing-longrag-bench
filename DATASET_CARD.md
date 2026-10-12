@@ -133,13 +133,13 @@ always cite the latest version):
   year      = {2026},
   version   = {v0.9.7 (1,997 QA; full dev review; second judge-validation sample)},
   publisher = {Zenodo},
-  doi       = {10.5281/zenodo.TBD},
-  url       = {https://doi.org/10.5281/zenodo.TBD},
+  doi       = {10.5281/zenodo.23311037},
+  url       = {https://doi.org/10.5281/zenodo.23311037},
   note      = {v0.9.7 adds a two-annotator review of every evaluated dev item (79 gold answers and 30 locators corrected, 11 items excluded) and a 200-prediction judge-validation sample; the 1,997 QA, splits and test_public gold answers of v0.9.6 are unchanged.}
 }
 ```
 
-DOI state: the v0.9.7 versioned DOI is `10.5281/zenodo.TBD` (minted on release); the v0.9.6 versioned DOI is `10.5281/zenodo.23307114` (Zenodo, 2026-10-12); the v0.9.5 versioned DOI is `10.5281/zenodo.23306443` (Zenodo, 2026-10-12); the v0.9.4 versioned DOI is `10.5281/zenodo.23300582` (Zenodo, 2026-10-12); the v0.9.3 versioned DOI is `10.5281/zenodo.23298455` (Zenodo, 2026-10-11); the v0.9.2 versioned DOI is `10.5281/zenodo.23291297` (Zenodo, 2026-10-11); the v0.9.1 versioned DOI is `10.5281/zenodo.23282680` (Zenodo, 2026-10-10); the v0.9 versioned DOI is `10.5281/zenodo.20640480` (2026-06-11); the concept DOI
+DOI state: the v0.9.7 versioned DOI is `10.5281/zenodo.23311037` (Zenodo, 2026-10-12); the v0.9.6 versioned DOI is `10.5281/zenodo.23307114` (Zenodo, 2026-10-12); the v0.9.5 versioned DOI is `10.5281/zenodo.23306443` (Zenodo, 2026-10-12); the v0.9.4 versioned DOI is `10.5281/zenodo.23300582` (Zenodo, 2026-10-12); the v0.9.3 versioned DOI is `10.5281/zenodo.23298455` (Zenodo, 2026-10-11); the v0.9.2 versioned DOI is `10.5281/zenodo.23291297` (Zenodo, 2026-10-11); the v0.9.1 versioned DOI is `10.5281/zenodo.23282680` (Zenodo, 2026-10-10); the v0.9 versioned DOI is `10.5281/zenodo.20640480` (2026-06-11); the concept DOI
 `10.5281/zenodo.20559127` always resolves to the latest version. Prior versioned DOIs: v0.8 `10.5281/zenodo.20571211`, v0.7 `10.5281/zenodo.20570856`,
 v0.6.3 dataset build `10.5281/zenodo.20563604` (the v0.7 release reuses that v0.6 data).
 

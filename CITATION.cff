@@ -18,14 +18,14 @@ abstract: >-
   judge-validation sample; questions, splits and test_public answers are unchanged.
 type: dataset
 version: v0.9.7
-date-released: [YYYY-MM-DD]
+date-released: 2026-10-12
 license: CC-BY-4.0
 repository-code: "https://github.com/comsa33/kr-housing-longrag-bench"
 # The concept DOI (resolves to the latest version) and prior versioned DOIs are listed under identifiers.
-doi: "10.5281/zenodo.TBD"
+doi: "10.5281/zenodo.23311037"
 identifiers:
   - type: doi
-    value: "10.5281/zenodo.TBD"
+    value: "10.5281/zenodo.23311037"
     description: "Versioned DOI for this v0.9.7 release (full two-annotator review of dev; second judge-validation sample)."
   - type: doi
     value: "10.5281/zenodo.23307114"
