@@ -131,13 +131,13 @@ always cite the latest version):
   year      = {2026},
   version   = {v0.9.6 (1,997 QA; k=50 plus announcement page run)},
   publisher = {Zenodo},
-  doi       = {10.5281/zenodo.TBD},
-  url       = {https://doi.org/10.5281/zenodo.TBD},
+  doi       = {10.5281/zenodo.23307114},
+  url       = {https://doi.org/10.5281/zenodo.23307114},
   note      = {v0.9.6 adds a pre-specified dense k=50 plus announcement-page run on 18 aggregation items; v0.9.5 keeps the 1,997 QA, questions, splits, gold fixes, evaluation scope, verdicts and every reported number of v0.9.4 and adds the model answers of every judged prediction (not covered by CC BY 4.0; provider terms apply).}
 }
 ```
 
-DOI state: the v0.9.6 versioned DOI is `10.5281/zenodo.TBD` (minted on release); the v0.9.5 versioned DOI is `10.5281/zenodo.23306443` (Zenodo, 2026-10-12); the v0.9.4 versioned DOI is `10.5281/zenodo.23300582` (Zenodo, 2026-10-12); the v0.9.3 versioned DOI is `10.5281/zenodo.23298455` (Zenodo, 2026-10-11); the v0.9.2 versioned DOI is `10.5281/zenodo.23291297` (Zenodo, 2026-10-11); the v0.9.1 versioned DOI is `10.5281/zenodo.23282680` (Zenodo, 2026-10-10); the v0.9 versioned DOI is `10.5281/zenodo.20640480` (2026-06-11); the concept DOI
+DOI state: the v0.9.6 versioned DOI is `10.5281/zenodo.23307114` (minted on release); the v0.9.5 versioned DOI is `10.5281/zenodo.23306443` (Zenodo, 2026-10-12); the v0.9.4 versioned DOI is `10.5281/zenodo.23300582` (Zenodo, 2026-10-12); the v0.9.3 versioned DOI is `10.5281/zenodo.23298455` (Zenodo, 2026-10-11); the v0.9.2 versioned DOI is `10.5281/zenodo.23291297` (Zenodo, 2026-10-11); the v0.9.1 versioned DOI is `10.5281/zenodo.23282680` (Zenodo, 2026-10-10); the v0.9 versioned DOI is `10.5281/zenodo.20640480` (2026-06-11); the concept DOI
 `10.5281/zenodo.20559127` always resolves to the latest version. Prior versioned DOIs: v0.8 `10.5281/zenodo.20571211`, v0.7 `10.5281/zenodo.20570856`,
 v0.6.3 dataset build `10.5281/zenodo.20563604` (the v0.7 release reuses that v0.6 data).
 
