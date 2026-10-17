@@ -1,5 +1,7 @@
 # KR-Housing-LongRAG-Bench
 
+> Superseded by KHAT (https://doi.org/10.5281/zenodo.23429293, https://github.com/comsa33/khat).
+
 [![CI](https://github.com/comsa33/kr-housing-longrag-bench/actions/workflows/ci.yml/badge.svg)](https://github.com/comsa33/kr-housing-longrag-bench/actions/workflows/ci.yml)
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](LICENSE)
 [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.20559127-blue.svg)](https://doi.org/10.5281/zenodo.20559127)
